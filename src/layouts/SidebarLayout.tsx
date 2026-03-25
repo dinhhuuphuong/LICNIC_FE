@@ -1,7 +1,7 @@
 import { ROUTES } from '@/constants/routes';
-import { DashboardOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
+import { LayoutDashboard, Users } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/stores/authStore';
@@ -26,15 +26,19 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
   const items: MenuProps['items'] = [
     {
       key: ROUTES.admin,
-      icon: <DashboardOutlined />,
+      icon: <LayoutDashboard size={16} />,
       label: 'Dashboard',
     },
     {
       key: ROUTES.adminUsers,
-      icon: <UserOutlined />,
+      icon: <Users size={16} />,
       label: 'Người dùng',
     },
   ];
+
+  const handleToHome = () => {
+    navigate(ROUTES.home);
+  };
 
   if (roles && !roles.includes(user?.role?.roleName ?? ''))
     return (
@@ -56,7 +60,10 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
         style={{ position: 'sticky', top: 0, height: '100vh' }}
         className="bg-[#001529] overflow-hidden flex flex-col z-10"
       >
-        <div className="h-16 flex items-center px-4 border-b border-white/10 text-black/90 font-bold tracking-[0.2px]">
+        <div
+          className="h-16 flex items-center px-4 border-b border-white/10 text-black/90 font-bold tracking-[0.2px] cursor-pointer"
+          onClick={handleToHome}
+        >
           Clinic Admin
         </div>
 

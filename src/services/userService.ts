@@ -62,3 +62,37 @@ export function createUser(payload: CreateUserPayload) {
     body: JSON.stringify(payload),
   });
 }
+
+export type GetUserDetailResponse = import('@/services/http').Response<User>;
+
+export function getUserDetail(userId: number) {
+  return http<GetUserDetailResponse>(`${USERS_URL}/${userId}`);
+}
+
+// Backend PUT `/users/:id` có thể nhận subset fields (vd: { name, status })
+// nhưng shape nhìn chung tương tự CreateUserPayload.
+export type UpdateUserPayload = Partial<CreateUserPayload>;
+
+export type UpdateUserResponse = import('@/services/http').Response<User>;
+
+export function updateUser(userId: number, payload: UpdateUserPayload) {
+  return http<UpdateUserResponse>(`${USERS_URL}/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export type DeleteUserResponse = import('@/services/http').Response<null>;
+
+export function deleteUser(userId: number) {
+  return http<DeleteUserResponse>(`${USERS_URL}/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}

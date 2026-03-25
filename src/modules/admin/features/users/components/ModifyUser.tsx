@@ -1,13 +1,16 @@
 import { Button, Form, Input, InputNumber, Modal, Select, message } from 'antd';
 import type { ReactElement } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { cloneElement, useEffect, useState } from 'react';
 
-import { type CreateUserPayload, type User } from '@/services/userService';
+import { type CreateUserPayload, type UpdateUserPayload, type User } from '@/services/userService';
 
 import { useCreateUserMutation } from '../hooks/mutations/useCreateUserMutation';
+import { useUpdateUserMutation } from '../hooks/mutations/useUpdateUserMutation';
+import { useGetUserDetailQuery } from '../hooks/queries/useGetUserDetailQuery';
 
 type ModifyUserProps = {
   trigger?: ReactElement;
+  userId?: number;
   initialValues?: Partial<CreateUserPayload>;
   onSuccess?: (user: User) => void;
 };
@@ -17,64 +20,84 @@ const STATUS_OPTIONS = [
   { value: 'inactive', label: 'inactive' },
 ];
 
-const ModifyUser = ({ trigger, initialValues, onSuccess }: ModifyUserProps) => {
+const ModifyUser = ({ trigger, userId, initialValues, onSuccess }: ModifyUserProps) => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
   const createUserMutation = useCreateUserMutation();
+  const updateUserMutation = useUpdateUserMutation();
 
-  const isEditLike = useMemo(() => Boolean(initialValues?.email || initialValues?.name), [initialValues]);
+  const editUserId = (initialValues as User)?.userId as number | undefined;
+  const effectiveUserId = userId ?? editUserId;
+
+  const userDetailQuery = useGetUserDetailQuery(effectiveUserId, open);
 
   useEffect(() => {
     if (!open) return;
+    const detail = userDetailQuery.data?.data;
     form.setFieldsValue({
-      name: initialValues?.name ?? undefined,
-      email: initialValues?.email ?? undefined,
-      phone: initialValues?.phone ?? undefined,
-      roleId: initialValues?.roleId ?? 1,
-      status: (initialValues?.status as string) ?? 'active',
+      name: detail?.name ?? initialValues?.name ?? undefined,
+      email: detail?.email ?? initialValues?.email ?? undefined,
+      phone: detail?.phone ?? initialValues?.phone ?? undefined,
+      roleId: detail?.roleId ?? initialValues?.roleId ?? 1,
+      status: (detail?.status as string) ?? (initialValues?.status as string) ?? 'active',
+      password: undefined,
     });
-  }, [form, initialValues, open]);
+  }, [form, initialValues, open, userDetailQuery.data]);
 
   async function handleFinish(values: CreateUserPayload) {
     try {
+      if (effectiveUserId) {
+        const payload: UpdateUserPayload = {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          roleId: values.roleId,
+          status: values.status,
+        };
+        if (values.password) payload.password = values.password;
+        const res = await updateUserMutation.mutateAsync({ userId: effectiveUserId, payload });
+        message.success(res.message || 'Thành công');
+        setOpen(false);
+        form.resetFields();
+        onSuccess?.(res.data);
+        return;
+      }
+
       const res = await createUserMutation.mutateAsync(values);
-      const created = res.data;
       message.success(res.message || 'Thành công');
       setOpen(false);
       form.resetFields();
-      onSuccess?.(created);
+      onSuccess?.(res.data);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Tạo người dùng thất bại';
+      const msg = e instanceof Error ? e.message : 'Thao tác thất bại';
       message.error(msg);
     }
   }
 
   const triggerNode = trigger ? (
-    // Clone để giữ nguyên các props/appearance của nút trigger từ parent.
-    // Khi bấm sẽ mở modal ModifyUser.
-    (() => {
-      if (!trigger) return null;
-      return (
-        <span style={{ display: 'inline-block' }} onClick={() => setOpen(true)} role="button" tabIndex={0}>
-          {trigger}
-        </span>
-      );
-    })()
+    cloneElement(trigger, {
+      onClick: (e: unknown) => {
+        trigger.props?.onClick?.(e);
+        setOpen(true);
+      },
+    })
   ) : (
     <Button type="primary" onClick={() => setOpen(true)}>
       Thêm người dùng
     </Button>
   );
 
+  const submitting = createUserMutation.isPending || updateUserMutation.isPending;
+
   return (
     <>
       {triggerNode}
       <Modal
         open={open}
-        title={isEditLike ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}
+        title={effectiveUserId ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}
         okText="Lưu"
         cancelText="Hủy"
-        confirmLoading={createUserMutation.isPending}
+        confirmLoading={submitting}
         destroyOnClose
         onCancel={() => setOpen(false)}
         onOk={() => form.submit()}
@@ -103,7 +126,11 @@ const ModifyUser = ({ trigger, initialValues, onSuccess }: ModifyUserProps) => {
             <Input placeholder="a@example.com" />
           </Form.Item>
 
-          <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
+          <Form.Item
+            name="password"
+            label="Mật khẩu"
+            rules={effectiveUserId ? [] : [{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
+          >
             <Input.Password placeholder="P@ssw0rd123" />
           </Form.Item>
 
