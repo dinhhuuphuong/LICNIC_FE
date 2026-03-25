@@ -1,11 +1,14 @@
-import { Table } from 'antd';
+import { Button, Flex, Modal, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { DEFAULT_AVATAR_URL } from '@/constants';
 import { type User } from '@/services/userService';
 
+import { Pencil, Trash2 } from 'lucide-react';
+import { useDeleteUserMutation } from '../hooks/mutations/useDeleteUserMutation';
 import { useGetUsersQuery } from '../hooks/queries/useGetUsersQuery';
+import ModifyUser from './ModifyUser';
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -20,6 +23,29 @@ const UsersTable = () => {
   const { data, isFetching } = useGetUsersQuery({ page, limit });
   const users: User[] = data?.data.items ?? [];
   const total = data?.data.total ?? 0;
+  const deleteUserMutation = useDeleteUserMutation();
+
+  const handleDelete = useCallback(
+    (record: User) => {
+      Modal.confirm({
+        title: 'Xác nhận xóa người dùng',
+        content: `Bạn có chắc muốn xóa "${record.name ?? record.email ?? `ID ${record.userId}`}"?`,
+        okText: 'Xóa',
+        cancelText: 'Hủy',
+        okButtonProps: { danger: true },
+        onOk: async () => {
+          try {
+            const res = await deleteUserMutation.mutateAsync(record.userId);
+            message.success(res.message || 'Đã xóa người dùng');
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Xóa thất bại';
+            message.error(msg);
+          }
+        },
+      });
+    },
+    [deleteUserMutation],
+  );
 
   const columns = useMemo<ColumnsType<User>>(
     () => [
@@ -77,8 +103,29 @@ const UsersTable = () => {
         key: 'createdAt',
         render: (createdAt) => formatDate(String(createdAt)),
       },
+      {
+        title: '',
+        key: 'action',
+        fixed: 'right',
+        render: (_, record) => (
+          <Flex gap={8} justify="center" align="center">
+            <ModifyUser
+              userId={record.userId}
+              trigger={<Button variant="text" color="primary" icon={<Pencil size={16} />} />}
+            />
+            <Button
+              danger
+              type="text"
+              icon={<Trash2 size={16} />}
+              loading={deleteUserMutation.isPending}
+              disabled={deleteUserMutation.isPending}
+              onClick={() => handleDelete(record)}
+            />
+          </Flex>
+        ),
+      },
     ],
-    [],
+    [deleteUserMutation.isPending, handleDelete],
   );
 
   return (
@@ -87,6 +134,9 @@ const UsersTable = () => {
       columns={columns}
       dataSource={users}
       loading={isFetching}
+      scroll={{
+        x: 'max-content',
+      }}
       pagination={{
         current: page,
         pageSize: limit,
