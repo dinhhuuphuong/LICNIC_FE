@@ -12,4 +12,8 @@
   knowledgePorcelain: '/kien-thuc/kien-thuc-rang-su',
   login: '/dang-nhap',
   register: '/dang-ky',
+
+  // admin routes
+  admin: '/admin',
+  adminUsers: '/admin/users',
 } as const;

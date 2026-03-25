@@ -1,6 +1,20 @@
-﻿import type { PropsWithChildren } from 'react';
 import { LanguageProvider } from '@/contexts/NgonNguContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { PropsWithChildren } from 'react';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 export function AppProviders({ children }: PropsWithChildren) {
-  return <LanguageProvider>{children}</LanguageProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>{children}</LanguageProvider>
+    </QueryClientProvider>
+  );
 }
