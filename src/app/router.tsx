@@ -1,5 +1,6 @@
-﻿import { createBrowserRouter } from 'react-router-dom';
-import { App } from '@/app/App';
+﻿import { App } from '@/app/App';
+import { ROUTES } from '@/constants/routes';
+import featureRoutes from '@/modules';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
@@ -14,9 +15,10 @@ import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
 import { AboutPage } from '@/pages/VeTamDucSmilePage';
-import { ROUTES } from '@/constants/routes';
+import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
+  ...featureRoutes,
   {
     path: ROUTES.home,
     element: <App />,
