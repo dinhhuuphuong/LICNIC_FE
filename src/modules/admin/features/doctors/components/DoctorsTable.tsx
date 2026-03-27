@@ -1,6 +1,6 @@
 import { Button, Flex, Modal, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { type Doctor } from '@/services/doctorService';
 import { DOCTOR_SEARCH_PARAMS } from '../constants';
 import { useDeleteDoctorMutation } from '../hooks/mutations/useDeleteDoctorMutation';
 import { useGetDoctorsQuery } from '../hooks/queries/useGetDoctorsQuery';
+import ManageDoctorServices from './ManageDoctorServices';
 import ModifyDoctor from './ModifyDoctor';
 
 function formatCurrency(value: number) {
@@ -153,6 +154,11 @@ const DoctorsTable = () => {
         fixed: 'right',
         render: (_, record) => (
           <Flex gap={8} justify="center" align="center">
+            <ManageDoctorServices
+              doctorId={record.doctorId}
+              doctorName={record.user?.name ?? record.user?.email ?? undefined}
+              trigger={<Button type="text" icon={<Eye size={16} />} />}
+            />
             <ModifyDoctor
               doctorId={record.doctorId}
               trigger={<Button variant="text" color="primary" icon={<Pencil size={16} />} />}

@@ -1,4 +1,5 @@
 import { http, type PaginationResponse, type Response } from '@/services/http';
+import type { Service } from '@/services/serviceService';
 
 export type DoctorUser = {
   userId: number;
@@ -110,5 +111,28 @@ export function deleteDoctor(doctorId: number) {
     headers: {
       accept: '*/*',
     },
+  });
+}
+
+export type GetDoctorServicesResponse = Response<Service[]>;
+
+export function getDoctorServices(doctorId: number) {
+  return http<GetDoctorServicesResponse>(`/doctor-services/doctors/${doctorId}/services`);
+}
+
+export type SetDoctorServicesPayload = {
+  serviceIds: number[];
+};
+
+export type SetDoctorServicesResponse = Response<Service[]>;
+
+export function setDoctorServices(doctorId: number, payload: SetDoctorServicesPayload) {
+  return http<SetDoctorServicesResponse>(`/doctor-services/doctors/${doctorId}/services`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
   });
 }
