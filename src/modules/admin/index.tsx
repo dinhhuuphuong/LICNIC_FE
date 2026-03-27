@@ -2,6 +2,7 @@ import { ROUTES } from '@/constants/routes';
 import { RouteObject } from 'react-router-dom';
 import Dashboard from './features/dashboard/pages/Dashboard';
 import ServiceCategoriesManage from './features/service-categories/pages/Manage';
+import ServicesManage from './features/services/pages/Manage';
 import Manage from './features/users/pages/Manage';
 
 const adminRoutes: RouteObject[] = [
@@ -12,6 +13,10 @@ const adminRoutes: RouteObject[] = [
   {
     path: ROUTES.adminUsers,
     element: <Manage />,
+  },
+  {
+    path: ROUTES.adminServices,
+    element: <ServicesManage />,
   },
   {
     path: ROUTES.adminServiceCategories,

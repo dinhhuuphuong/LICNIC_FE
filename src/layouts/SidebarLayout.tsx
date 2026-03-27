@@ -1,7 +1,7 @@
 import { ROUTES } from '@/constants/routes';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
-import { LayoutDashboard, ListTree, Users } from 'lucide-react';
+import { BriefcaseMedical, LayoutDashboard, ListTree, Users } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useLanguage } from '@/contexts/NgonNguContext';
@@ -27,6 +27,8 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
     selectedKey = ROUTES.adminUsers;
   } else if (location.pathname.startsWith(ROUTES.adminServiceCategories)) {
     selectedKey = ROUTES.adminServiceCategories;
+  } else if (location.pathname.startsWith(ROUTES.adminServices)) {
+    selectedKey = ROUTES.adminServices;
   }
 
   const { language } = useLanguage();
@@ -47,6 +49,11 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminUsers,
       icon: <Users size={16} />,
       label: 'Người dùng',
+    },
+    {
+      key: ROUTES.adminServices,
+      icon: <BriefcaseMedical size={16} />,
+      label: 'Dịch vụ',
     },
     {
       key: ROUTES.adminServiceCategories,

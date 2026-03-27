@@ -26,6 +26,7 @@ export const SEARCH_PARAMS = {
   ROLE_ID: 'roleId',
   ROLE: 'role',
   DEPARTMENTS: 'departmentCodes',
+  CATEGORY: 'category',
 
   AIRLINE: 'airline',
   ROUTING_GROUP: 'routingGroup',
