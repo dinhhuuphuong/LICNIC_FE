@@ -1,7 +1,7 @@
 import { ROUTES } from '@/constants/routes';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
-import { BriefcaseMedical, LayoutDashboard, ListTree, Users } from 'lucide-react';
+import { BriefcaseMedical, LayoutDashboard, ListTree, Stethoscope, Users } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useLanguage } from '@/contexts/NgonNguContext';
@@ -25,6 +25,8 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
   let selectedKey: string = ROUTES.admin;
   if (location.pathname.startsWith(ROUTES.adminUsers)) {
     selectedKey = ROUTES.adminUsers;
+  } else if (location.pathname.startsWith(ROUTES.adminDoctors)) {
+    selectedKey = ROUTES.adminDoctors;
   } else if (location.pathname.startsWith(ROUTES.adminServiceCategories)) {
     selectedKey = ROUTES.adminServiceCategories;
   } else if (location.pathname.startsWith(ROUTES.adminServices)) {
@@ -49,6 +51,11 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminUsers,
       icon: <Users size={16} />,
       label: 'Người dùng',
+    },
+    {
+      key: ROUTES.adminDoctors,
+      icon: <Stethoscope size={16} />,
+      label: 'Bác sĩ',
     },
     {
       key: ROUTES.adminServices,
