@@ -1,9 +1,10 @@
 import { ROUTES } from '@/constants/routes';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
-import { LayoutDashboard, Users } from 'lucide-react';
+import { BriefcaseMedical, LayoutDashboard, ListTree, Users } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
+import { useLanguage } from '@/contexts/NgonNguContext';
 import { useAuthStore } from '@/stores/authStore';
 import 'antd/dist/reset.css';
 
@@ -21,7 +22,22 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
 
   const { user } = useAuthStore();
 
-  const selectedKey = location.pathname.startsWith(ROUTES.adminUsers) ? ROUTES.adminUsers : ROUTES.admin;
+  let selectedKey: string = ROUTES.admin;
+  if (location.pathname.startsWith(ROUTES.adminUsers)) {
+    selectedKey = ROUTES.adminUsers;
+  } else if (location.pathname.startsWith(ROUTES.adminServiceCategories)) {
+    selectedKey = ROUTES.adminServiceCategories;
+  } else if (location.pathname.startsWith(ROUTES.adminServices)) {
+    selectedKey = ROUTES.adminServices;
+  }
+
+  const { language } = useLanguage();
+  const isVi = language === 'vi';
+
+  const subTitle = isVi
+    ? 'Xin lỗi, bạn không có quyền truy cập trang này.'
+    : 'Sorry, you are not authorized to access this page.';
+  const buttonText = isVi ? 'Quay về trang chủ' : 'Back Home';
 
   const items: MenuProps['items'] = [
     {
@@ -34,6 +50,16 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       icon: <Users size={16} />,
       label: 'Người dùng',
     },
+    {
+      key: ROUTES.adminServices,
+      icon: <BriefcaseMedical size={16} />,
+      label: 'Dịch vụ',
+    },
+    {
+      key: ROUTES.adminServiceCategories,
+      icon: <ListTree size={16} />,
+      label: 'Danh mục dịch vụ',
+    },
   ];
 
   const handleToHome = () => {
@@ -45,8 +71,12 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       <Result
         status="403"
         title="403"
-        subTitle="Sorry, you are not authorized to access this page."
-        extra={<Button type="primary">Back Home</Button>}
+        subTitle={subTitle}
+        extra={
+          <Button type="primary" onClick={handleToHome}>
+            {buttonText}
+          </Button>
+        }
       />
     );
 

@@ -5,7 +5,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { DEFAULT_AVATAR_URL } from '@/constants';
 import { type User } from '@/services/userService';
 
+import { SEARCH_PARAMS } from '@/constants/search-params';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useDeleteUserMutation } from '../hooks/mutations/useDeleteUserMutation';
 import { useGetUsersQuery } from '../hooks/queries/useGetUsersQuery';
 import ModifyUser from './ModifyUser';
@@ -17,10 +19,15 @@ function formatDate(dateStr: string) {
 }
 
 const UsersTable = () => {
+  const [searchParams] = useSearchParams();
+  const role = searchParams.get(SEARCH_PARAMS.ROLE) ? Number(searchParams.get(SEARCH_PARAMS.ROLE)) : undefined;
+  const status = searchParams.get(SEARCH_PARAMS.STATUS) ?? undefined;
+  const keyword = searchParams.get(SEARCH_PARAMS.KEYWORD) ?? undefined;
+
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const { data, isFetching } = useGetUsersQuery({ page, limit });
+  const { data, isFetching } = useGetUsersQuery({ page, limit, role, status, keyword });
   const users: User[] = data?.data.items ?? [];
   const total = data?.data.total ?? 0;
   const deleteUserMutation = useDeleteUserMutation();
