@@ -17,6 +17,7 @@ export const ROUTES = {
   admin: '/admin',
   adminUsers: '/admin/users',
   adminDoctors: '/admin/doctors',
+  adminDoctorWorkSchedules: '/admin/doctor-work-schedules',
   adminServices: '/admin/services',
   adminServiceCategories: '/admin/service-categories',
 } as const;

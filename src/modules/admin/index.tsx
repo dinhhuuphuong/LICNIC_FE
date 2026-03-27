@@ -1,6 +1,7 @@
 import { ROUTES } from '@/constants/routes';
 import { RouteObject } from 'react-router-dom';
 import Dashboard from './features/dashboard/pages/Dashboard';
+import DoctorWorkSchedulesManage from './features/doctor-work-schedules/pages/Manage';
 import DoctorsManage from './features/doctors/pages/Manage';
 import ServiceCategoriesManage from './features/service-categories/pages/Manage';
 import ServicesManage from './features/services/pages/Manage';
@@ -18,6 +19,10 @@ const adminRoutes: RouteObject[] = [
   {
     path: ROUTES.adminDoctors,
     element: <DoctorsManage />,
+  },
+  {
+    path: ROUTES.adminDoctorWorkSchedules,
+    element: <DoctorWorkSchedulesManage />,
   },
   {
     path: ROUTES.adminServices,
