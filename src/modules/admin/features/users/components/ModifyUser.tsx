@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Modal, Select, message } from 'antd';
+import { Button, Form, Input, Modal, Select, message } from 'antd';
 import type { ReactElement } from 'react';
 import { cloneElement, useEffect, useState } from 'react';
 
@@ -7,6 +7,7 @@ import { type CreateUserPayload, type UpdateUserPayload, type User } from '@/ser
 import { useCreateUserMutation } from '../hooks/mutations/useCreateUserMutation';
 import { useUpdateUserMutation } from '../hooks/mutations/useUpdateUserMutation';
 import { useGetUserDetailQuery } from '../hooks/queries/useGetUserDetailQuery';
+import SelectRole from './selects/select-role';
 
 type ModifyUserProps = {
   trigger?: ReactElement;
@@ -142,12 +143,8 @@ const ModifyUser = ({ trigger, userId, initialValues, onSuccess }: ModifyUserPro
             <Input placeholder="0901234567" />
           </Form.Item>
 
-          <Form.Item
-            name="roleId"
-            label="Vai trò (roleId)"
-            rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
-          >
-            <InputNumber min={1} style={{ width: '100%' }} />
+          <Form.Item name="roleId" label="Vai trò" rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}>
+            <SelectRole />
           </Form.Item>
 
           <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}>

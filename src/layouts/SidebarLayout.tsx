@@ -6,6 +6,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/stores/authStore';
 import 'antd/dist/reset.css';
+import { useLanguage } from '@/contexts/NgonNguContext';
 
 interface SidebarLayoutProps {
   roles?: string[];
@@ -22,6 +23,14 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
   const { user } = useAuthStore();
 
   const selectedKey = location.pathname.startsWith(ROUTES.adminUsers) ? ROUTES.adminUsers : ROUTES.admin;
+
+  const { language } = useLanguage();
+  const isVi = language === 'vi';
+
+  const subTitle = isVi
+    ? 'Xin lỗi, bạn không có quyền truy cập trang này.'
+    : 'Sorry, you are not authorized to access this page.';
+  const buttonText = isVi ? 'Quay về trang chủ' : 'Back Home';
 
   const items: MenuProps['items'] = [
     {
@@ -45,8 +54,12 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       <Result
         status="403"
         title="403"
-        subTitle="Sorry, you are not authorized to access this page."
-        extra={<Button type="primary">Back Home</Button>}
+        subTitle={subTitle}
+        extra={
+          <Button type="primary" onClick={handleToHome}>
+            {buttonText}
+          </Button>
+        }
       />
     );
 

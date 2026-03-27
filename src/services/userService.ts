@@ -24,6 +24,9 @@ export type GetUsersResponse = PaginationResponse<User>;
 export type GetUsersParams = {
   limit?: number;
   page?: number;
+  role?: number;
+  status?: string;
+  keyword?: string;
 };
 
 const USERS_URL = '/users';
@@ -31,13 +34,26 @@ const USERS_URL = '/users';
 export function getUsers(params: GetUsersParams = {}) {
   const limit = params.limit ?? 10;
   const page = params.page ?? 1;
-
-  const query = new URLSearchParams({
+  const queryParams = new URLSearchParams({
     limit: String(limit),
     page: String(page),
-  }).toString();
+  });
 
-  // Example: GET `${VITE_ENDPOINT_API}/users?limit=10&page=1`
+  if (params.role !== undefined) {
+    queryParams.set('role', String(params.role));
+  }
+
+  if (params.status) {
+    queryParams.set('status', params.status);
+  }
+
+  if (params.keyword) {
+    queryParams.set('keyword', params.keyword);
+  }
+
+  const query = queryParams.toString();
+
+  // Example: GET `${VITE_ENDPOINT_API}/users?role=2&status=active&keyword=nguyen%20van%20a&limit=10&page=1`
   return http<GetUsersResponse>(`${USERS_URL}?${query}`);
 }
 

@@ -1,0 +1,14 @@
+const DATE_FORMAT = {
+  DATE: "DD/MM/YYYY",
+  DB_DATE: "YYYY-MM-DD",
+  DATE_TIME: "DD/MM/YYYY HH:mm",
+  DB_DATE_TIME: "YYYY-MM-DDTHH:mm:ss",
+  DATE_TIME_WITH_SECOND: "DD/MM/YYYY HH:mm:ss",
+  MONTH_YEAR: "MM/YYYY",
+  MONTH_YEAR_DB: "YYYY-MM",
+  YEAR: "YYYY",
+  TIME: "HH:mm",
+  TIME_WITH_SECOND: "HH:mm:ss",
+};
+
+export default DATE_FORMAT;
