@@ -1,4 +1,4 @@
-﻿export const ROUTES = {
+export const ROUTES = {
   home: '/',
   about: '/gioi-thieu/ve-tam-duc-smile',
   aboutTeam: '/gioi-thieu/doi-ngu-bac-si',
@@ -16,4 +16,5 @@
   // admin routes
   admin: '/admin',
   adminUsers: '/admin/users',
+  adminServiceCategories: '/admin/service-categories',
 } as const;
