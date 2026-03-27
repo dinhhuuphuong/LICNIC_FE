@@ -6,6 +6,7 @@ export const SEARCH_PARAMS = {
   DAY: 'day',
   FROM_DATE: 'fromDate',
   TO_DATE: 'toDate',
+  DOCTOR_ID: 'doctorId',
   DEPARTMENT: 'departmentCodes',
   POSITION: 'positionCodes',
   LEAVE_TYPE: 'leaveType',
@@ -25,6 +26,7 @@ export const SEARCH_PARAMS = {
   TYPE: 'type',
   ROLE_ID: 'roleId',
   ROLE: 'role',
+  AUTHOR_ID: 'authorId',
   DEPARTMENTS: 'departmentCodes',
   CATEGORY: 'category',
 

@@ -1,7 +1,16 @@
 import { ROUTES } from '@/constants/routes';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
-import { BriefcaseMedical, LayoutDashboard, ListTree, Users } from 'lucide-react';
+import {
+  BadgePercent,
+  BriefcaseMedical,
+  CalendarDays,
+  FileText,
+  LayoutDashboard,
+  ListTree,
+  Stethoscope,
+  Users,
+} from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useLanguage } from '@/contexts/NgonNguContext';
@@ -25,10 +34,18 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
   let selectedKey: string = ROUTES.admin;
   if (location.pathname.startsWith(ROUTES.adminUsers)) {
     selectedKey = ROUTES.adminUsers;
+  } else if (location.pathname.startsWith(ROUTES.adminDoctors)) {
+    selectedKey = ROUTES.adminDoctors;
+  } else if (location.pathname.startsWith(ROUTES.adminDoctorWorkSchedules)) {
+    selectedKey = ROUTES.adminDoctorWorkSchedules;
   } else if (location.pathname.startsWith(ROUTES.adminServiceCategories)) {
     selectedKey = ROUTES.adminServiceCategories;
   } else if (location.pathname.startsWith(ROUTES.adminServices)) {
     selectedKey = ROUTES.adminServices;
+  } else if (location.pathname.startsWith(ROUTES.adminPaymentDiscounts)) {
+    selectedKey = ROUTES.adminPaymentDiscounts;
+  } else if (location.pathname.startsWith(ROUTES.adminBlogPosts)) {
+    selectedKey = ROUTES.adminBlogPosts;
   }
 
   const { language } = useLanguage();
@@ -51,6 +68,16 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       label: 'Người dùng',
     },
     {
+      key: ROUTES.adminDoctors,
+      icon: <Stethoscope size={16} />,
+      label: 'Bác sĩ',
+    },
+    {
+      key: ROUTES.adminDoctorWorkSchedules,
+      icon: <CalendarDays size={16} />,
+      label: 'Lịch làm việc',
+    },
+    {
       key: ROUTES.adminServices,
       icon: <BriefcaseMedical size={16} />,
       label: 'Dịch vụ',
@@ -59,6 +86,16 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminServiceCategories,
       icon: <ListTree size={16} />,
       label: 'Danh mục dịch vụ',
+    },
+    {
+      key: ROUTES.adminPaymentDiscounts,
+      icon: <BadgePercent size={16} />,
+      label: 'Ưu đãi thanh toán',
+    },
+    {
+      key: ROUTES.adminBlogPosts,
+      icon: <FileText size={16} />,
+      label: 'Bài viết',
     },
   ];
 
