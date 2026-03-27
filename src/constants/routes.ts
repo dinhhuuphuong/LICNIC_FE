@@ -21,4 +21,5 @@ export const ROUTES = {
   adminServices: '/admin/services',
   adminServiceCategories: '/admin/service-categories',
   adminPaymentDiscounts: '/admin/payment-discounts',
+  adminBlogPosts: '/admin/blog-posts',
 } as const;

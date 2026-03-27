@@ -5,6 +5,7 @@ import {
   BadgePercent,
   BriefcaseMedical,
   CalendarDays,
+  FileText,
   LayoutDashboard,
   ListTree,
   Stethoscope,
@@ -43,6 +44,8 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
     selectedKey = ROUTES.adminServices;
   } else if (location.pathname.startsWith(ROUTES.adminPaymentDiscounts)) {
     selectedKey = ROUTES.adminPaymentDiscounts;
+  } else if (location.pathname.startsWith(ROUTES.adminBlogPosts)) {
+    selectedKey = ROUTES.adminBlogPosts;
   }
 
   const { language } = useLanguage();
@@ -88,6 +91,11 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminPaymentDiscounts,
       icon: <BadgePercent size={16} />,
       label: 'Ưu đãi thanh toán',
+    },
+    {
+      key: ROUTES.adminBlogPosts,
+      icon: <FileText size={16} />,
+      label: 'Bài viết',
     },
   ];
 

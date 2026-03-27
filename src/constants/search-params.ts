@@ -26,6 +26,7 @@ export const SEARCH_PARAMS = {
   TYPE: 'type',
   ROLE_ID: 'roleId',
   ROLE: 'role',
+  AUTHOR_ID: 'authorId',
   DEPARTMENTS: 'departmentCodes',
   CATEGORY: 'category',
 
