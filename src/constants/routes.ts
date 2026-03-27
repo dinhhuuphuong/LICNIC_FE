@@ -20,4 +20,5 @@ export const ROUTES = {
   adminDoctorWorkSchedules: '/admin/doctor-work-schedules',
   adminServices: '/admin/services',
   adminServiceCategories: '/admin/service-categories',
+  adminPaymentDiscounts: '/admin/payment-discounts',
 } as const;

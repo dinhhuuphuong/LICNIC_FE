@@ -1,7 +1,15 @@
 import { ROUTES } from '@/constants/routes';
 import type { MenuProps } from 'antd';
 import { Button, Layout, Menu, Result } from 'antd';
-import { BriefcaseMedical, CalendarDays, LayoutDashboard, ListTree, Stethoscope, Users } from 'lucide-react';
+import {
+  BadgePercent,
+  BriefcaseMedical,
+  CalendarDays,
+  LayoutDashboard,
+  ListTree,
+  Stethoscope,
+  Users,
+} from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useLanguage } from '@/contexts/NgonNguContext';
@@ -33,6 +41,8 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
     selectedKey = ROUTES.adminServiceCategories;
   } else if (location.pathname.startsWith(ROUTES.adminServices)) {
     selectedKey = ROUTES.adminServices;
+  } else if (location.pathname.startsWith(ROUTES.adminPaymentDiscounts)) {
+    selectedKey = ROUTES.adminPaymentDiscounts;
   }
 
   const { language } = useLanguage();
@@ -73,6 +83,11 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminServiceCategories,
       icon: <ListTree size={16} />,
       label: 'Danh mục dịch vụ',
+    },
+    {
+      key: ROUTES.adminPaymentDiscounts,
+      icon: <BadgePercent size={16} />,
+      label: 'Ưu đãi thanh toán',
     },
   ];
 
