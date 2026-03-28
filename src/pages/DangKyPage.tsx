@@ -4,10 +4,16 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { register, requestOtp } from '@/services/authService';
 import { type AuthUser, useAuthStore } from '@/stores/authStore';
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
+type RegisterLocationState = { returnTo?: string };
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as RegisterLocationState | null)?.returnTo;
+  const safeReturnTo =
+    typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : null;
 
   const { language } = useLanguage();
   const isVi = language === 'vi';
@@ -70,7 +76,7 @@ export function RegisterPage() {
       setUser(mappedUser);
 
       setSuccess(isVi ? 'Đăng ký thành công.' : 'Registration successful.');
-      navigate(ROUTES.home);
+      navigate(safeReturnTo ?? ROUTES.home, { replace: true });
     } catch {
       setError(
         isVi
@@ -221,7 +227,11 @@ export function RegisterPage() {
 
       <p className="mt-5! text-sm text-slate-600">
         {isVi ? 'Bạn đã có tài khoản?' : 'Already have an account?'}{' '}
-        <Link className="font-semibold text-blue-700 hover:text-blue-800" to={ROUTES.login}>
+        <Link
+          className="font-semibold text-blue-700 hover:text-blue-800"
+          to={ROUTES.login}
+          state={safeReturnTo ? { returnTo: safeReturnTo } : undefined}
+        >
           {isVi ? 'Đăng nhập' : 'Login'}
         </Link>
       </p>

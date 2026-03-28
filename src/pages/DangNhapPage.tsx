@@ -4,12 +4,18 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { login } from '@/services/authService';
 import { useAuthStore } from '@/stores/authStore';
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
+type LoginLocationState = { returnTo?: string };
 
 export function LoginPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as LoginLocationState | null)?.returnTo;
+  const safeReturnTo =
+    typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : null;
   const setUser = useAuthStore((state) => state.setUser);
 
   const [email, setEmail] = useState('');
@@ -38,7 +44,7 @@ export function LoginPage() {
       setUser(response.data.user);
 
       setSuccess(isVi ? 'Đăng nhập thành công.' : 'Login successful.');
-      navigate(ROUTES.home);
+      navigate(safeReturnTo ?? ROUTES.home, { replace: true });
     } catch {
       setError(
         isVi
@@ -100,7 +106,11 @@ export function LoginPage() {
 
       <p className="mt-5! text-sm text-slate-600">
         {isVi ? 'Bạn chưa có tài khoản?' : "Don't have an account?"}{' '}
-        <Link className="font-semibold text-blue-700 hover:text-blue-800" to={ROUTES.register}>
+        <Link
+          className="font-semibold text-blue-700 hover:text-blue-800"
+          to={ROUTES.register}
+          state={safeReturnTo ? { returnTo: safeReturnTo } : undefined}
+        >
           {isVi ? 'Đăng ký ngay' : 'Sign up now'}
         </Link>
       </p>

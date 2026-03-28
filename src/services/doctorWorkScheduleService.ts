@@ -4,6 +4,8 @@ import type { Doctor } from '@/services/doctorService';
 
 export type DoctorWorkScheduleStatus = 'pending' | 'approved' | 'rejected';
 
+export type DoctorWorkScheduleAppointmentSlotStatus = 'Available' | 'Unavailable';
+
 export type DoctorWorkSchedule = {
   scheduleId: number;
   doctorId: number;
@@ -12,8 +14,14 @@ export type DoctorWorkSchedule = {
   startTime: string; // HH:mm:ss
   endTime: string; // HH:mm:ss
   status: DoctorWorkScheduleStatus;
-  maxPatients: number;
-  slotDurationMinutes: number;
+  /** Một số API (vd. get-list store) có thể không trả hai field này. */
+  maxPatients?: number;
+  slotDurationMinutes?: number;
+  /**
+   * GET get-list + atTime: giao [atTime, atTime+slotDuration) với lịch hẹn cùng BS/ngày → Unavailable.
+   * Không có atTime thì thường là null/undefined.
+   */
+  appointmentStatus?: DoctorWorkScheduleAppointmentSlotStatus | null;
   createdAt: string;
   deletedAt?: string | null;
 };
@@ -24,6 +32,13 @@ export type GetDoctorWorkSchedulesParams = {
   doctorId?: number;
   fromDate?: string; // YYYY-MM-DD
   toDate?: string; // YYYY-MM-DD
+  /** Lọc bác sĩ có đăng ký dịch vụ (GET get-list store) */
+  serviceId?: number;
+  /** Get-list store: chỉ ca có start ≤ atTime < end; appointmentStatus theo trùng slot với appointments */
+  atTime?: string;
+  /** Cùng timeTo: lọc ca giao khoảng [timeFrom, timeTo) theo giờ ca */
+  timeFrom?: string;
+  timeTo?: string;
 };
 
 export type GetDoctorWorkSchedulesResponse = PaginationResponse<DoctorWorkSchedule>;
@@ -60,6 +75,10 @@ export function getDoctorWorkSchedulesFromStore(params: GetDoctorWorkSchedulesPa
   if (params.doctorId !== undefined) queryParams.set('doctorId', String(params.doctorId));
   if (params.fromDate) queryParams.set('fromDate', params.fromDate);
   if (params.toDate) queryParams.set('toDate', params.toDate);
+  if (params.serviceId !== undefined) queryParams.set('serviceId', String(params.serviceId));
+  if (params.atTime) queryParams.set('atTime', params.atTime);
+  if (params.timeFrom) queryParams.set('timeFrom', params.timeFrom);
+  if (params.timeTo) queryParams.set('timeTo', params.timeTo);
 
   return http<GetDoctorWorkSchedulesFromStoreResponse>(
     `${DOCTOR_WORK_SCHEDULES_URL}/get-list?${queryParams.toString()}`,

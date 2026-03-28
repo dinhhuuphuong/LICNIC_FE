@@ -1,4 +1,6 @@
+import { getServiceBookingRoute } from '@/constants/routes';
 import type { Service } from '@/services/serviceService';
+import { Link } from 'react-router-dom';
 
 type Props = {
   service: Service;
@@ -59,6 +61,14 @@ export function ServiceDetailContent({ service, isVi }: Props) {
           {isVi ? 'Giá: ' : 'Price: '}
           {formatPriceVnd(service.cost, isVi)}
         </p>
+        {service.status ? (
+          <Link
+            className="mt-5 inline-flex w-full max-w-sm items-center justify-center rounded-full bg-yellow-300 px-6 py-3 text-center text-sm font-black uppercase tracking-wide text-blue-900 shadow-lg transition hover:bg-yellow-200 md:mt-6"
+            to={getServiceBookingRoute(service.serviceId)}
+          >
+            {isVi ? 'Đặt lịch khám' : 'Book appointment'}
+          </Link>
+        ) : null}
       </div>
 
       <div className="space-y-4 bg-[#f4f8fc] p-5 md:space-y-5 md:p-8">

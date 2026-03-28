@@ -15,6 +15,8 @@ export const ROUTES = {
   patientProfile: '/benh-nhan/ho-so',
   /** Chi tiết dịch vụ — dùng `getServiceDetailRoute(id)` cho `Link`/`navigate` */
   serviceDetail: '/dich-vu/:serviceId',
+  /** Đặt lịch theo dịch vụ — dùng `getServiceBookingRoute(id)` */
+  serviceBooking: '/dich-vu/:serviceId/dat-lich',
 
   // admin routes
   admin: '/admin',
@@ -29,4 +31,8 @@ export const ROUTES = {
 
 export function getServiceDetailRoute(serviceId: number) {
   return `/dich-vu/${serviceId}`;
+}
+
+export function getServiceBookingRoute(serviceId: number) {
+  return `/dich-vu/${serviceId}/dat-lich`;
 }

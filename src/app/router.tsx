@@ -5,6 +5,7 @@ import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
+import { DatLichDichVuPage } from '@/pages/DatLichDichVuPage';
 import { AboutTeamPage } from '@/pages/DoiNguBacSiPage';
 import { PricePorcelainPage } from '@/pages/GiaBocRangSuPage';
 import { PriceBracesPage } from '@/pages/GiaNiengRangPage';
@@ -99,6 +100,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientProfile,
             element: <HoSoBenhNhanPage />,
+          },
+          {
+            path: ROUTES.serviceBooking,
+            element: <DatLichDichVuPage />,
           },
           {
             path: ROUTES.serviceDetail,
