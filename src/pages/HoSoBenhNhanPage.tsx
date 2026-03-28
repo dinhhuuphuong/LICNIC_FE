@@ -1,3 +1,4 @@
+import { AccountSummaryCard } from '@/components/patient/AccountSummaryCard';
 import { PatientProfileForm } from '@/components/patient/PatientProfileForm';
 import {
   patientFormDefaultsFromPatient,
@@ -7,55 +8,20 @@ import { PATIENT_ROLE_ID } from '@/constants/roleIds';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import {
-  createPatientProfile,
-  getMyPatientProfile,
-  updatePatientProfile,
-  type Patient,
-} from '@/services/patientService';
+import { getMe } from '@/services/authService';
+import { createPatientProfile, getMyPatientProfile, updatePatientProfile } from '@/services/patientService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 const patientMeQueryKey = ['patients', 'me'] as const;
 
-function AccountSummaryCard({ patient, isVi }: { patient: Patient; isVi: boolean }) {
-  const u = patient.user;
-  const name = u?.name ?? '—';
-  const email = u?.email ?? '—';
-  const phone = u?.phone ?? '—';
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-bold text-slate-900">{isVi ? 'Tài khoản' : 'Account'}</h2>
-      <dl className="mt-4 space-y-3 text-sm">
-        <div>
-          <dt className="font-semibold text-slate-500">{isVi ? 'Họ tên' : 'Full name'}</dt>
-          <dd className="text-slate-800">{name}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-slate-500">Email</dt>
-          <dd className="text-slate-800">{email}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-slate-500">{isVi ? 'Điện thoại' : 'Phone'}</dt>
-          <dd className="text-slate-800">{phone}</dd>
-        </div>
-      </dl>
-      <p className="mt-4 text-xs text-slate-500">
-        {isVi
-          ? 'Để đổi họ tên hoặc email, vui lòng liên hệ quầy lễ tân hoặc quản trị viên.'
-          : 'To change your name or email, please contact reception or an administrator.'}
-      </p>
-    </div>
-  );
-}
-
 export function HoSoBenhNhanPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
   const queryClient = useQueryClient();
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Hồ sơ bệnh nhân' : 'NHA KHOA TẬN TÂM | Patient profile');
@@ -103,7 +69,7 @@ export function HoSoBenhNhanPage() {
 
   if (!user) {
     return (
-      <section className="mx-auto w-full max-w-2xl rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
+      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
         <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Cần đăng nhập' : 'Sign in required'}</h1>
         <p className="mt-2 text-sm text-slate-700">
           {isVi ? 'Vui lòng đăng nhập để quản lý hồ sơ bệnh nhân.' : 'Please sign in to manage your patient profile.'}
@@ -121,7 +87,7 @@ export function HoSoBenhNhanPage() {
 
   if (user.roleId !== PATIENT_ROLE_ID) {
     return (
-      <section className="mx-auto w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Không có quyền truy cập' : 'Access denied'}</h1>
         <p className="mt-2 text-sm text-slate-600">
           {isVi ? 'Trang này chỉ dành cho tài khoản bệnh nhân.' : 'This page is only available for patient accounts.'}
@@ -139,7 +105,7 @@ export function HoSoBenhNhanPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-3xl space-y-6 animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-10 w-64 rounded-lg bg-slate-200" />
         <div className="h-48 rounded-2xl bg-slate-100" />
         <div className="h-64 rounded-2xl bg-slate-100" />
@@ -149,7 +115,7 @@ export function HoSoBenhNhanPage() {
 
   if (isError) {
     return (
-      <section className="mx-auto w-full max-w-2xl rounded-3xl border border-red-200 bg-red-50 p-8">
+      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-red-200 bg-red-50 p-8">
         <h1 className="text-xl font-bold text-red-900">{isVi ? 'Không tải được hồ sơ' : 'Could not load profile'}</h1>
         <p className="mt-2 text-sm text-red-800">{error instanceof Error ? error.message : 'Error'}</p>
         <button
@@ -172,7 +138,7 @@ export function HoSoBenhNhanPage() {
         : null;
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div>
       <header className="mb-8">
         <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Hồ sơ bệnh nhân' : 'Patient profile'}</h1>
         <p className="mt-2 text-sm text-slate-600">
@@ -185,7 +151,19 @@ export function HoSoBenhNhanPage() {
       <div className="grid gap-8 lg:grid-cols-5">
         {patient ? (
           <div className="lg:col-span-2">
-            <AccountSummaryCard patient={patient} isVi={isVi} />
+            <AccountSummaryCard
+              patient={patient}
+              isVi={isVi}
+              onAccountUpdated={() => {
+                void queryClient.invalidateQueries({ queryKey: patientMeQueryKey });
+                const token = typeof window !== 'undefined' ? window.localStorage.getItem('accessToken') : null;
+                if (token) {
+                  void getMe(token).then((res) => {
+                    if (res?.data) setUser(res.data);
+                  });
+                }
+              }}
+            />
           </div>
         ) : null}
 
