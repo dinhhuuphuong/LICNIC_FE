@@ -14,6 +14,9 @@ export const ROUTES = {
   register: '/dang-ky',
   patientProfile: '/benh-nhan/ho-so',
   patientAppointments: '/benh-nhan/lich-hen',
+  patientMedicalRecords: '/benh-nhan/benh-an',
+  /** Chi tiết bệnh án — dùng `getPatientMedicalRecordDetailRoute(recordId)`. */
+  patientMedicalRecordDetail: '/benh-nhan/benh-an/:recordId',
   /** Chi tiết dịch vụ — dùng `getServiceDetailRoute(id)` cho `Link`/`navigate` */
   serviceDetail: '/dich-vu/:serviceId',
   /** Đặt lịch theo dịch vụ — dùng `getServiceBookingRoute(id)` */
@@ -36,4 +39,8 @@ export function getServiceDetailRoute(serviceId: number) {
 
 export function getServiceBookingRoute(serviceId: number) {
   return `/dich-vu/${serviceId}/dat-lich`;
+}
+
+export function getPatientMedicalRecordDetailRoute(recordId: number) {
+  return `/benh-nhan/benh-an/${recordId}`;
 }

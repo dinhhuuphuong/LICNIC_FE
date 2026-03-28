@@ -148,12 +148,20 @@ export function HoSoBenhNhanPage() {
               : 'Keep your medical and contact details up to date for appointments and care.'}
           </p>
         </div>
-        <Link
-          to={ROUTES.patientAppointments}
-          className="inline-flex h-10 items-center justify-center self-start rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
-        >
-          {isVi ? 'Lịch hẹn của tôi →' : 'My appointments →'}
-        </Link>
+        <div className="flex flex-wrap gap-2 self-start">
+          <Link
+            to={ROUTES.patientAppointments}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
+          >
+            {isVi ? 'Lịch hẹn của tôi →' : 'My appointments →'}
+          </Link>
+          <Link
+            to={ROUTES.patientMedicalRecords}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 text-sm font-bold text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100"
+          >
+            {isVi ? 'Bệnh án →' : 'Medical records →'}
+          </Link>
+        </div>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-5">

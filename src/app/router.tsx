@@ -1,6 +1,8 @@
 import { App } from '@/app/App';
 import { ROUTES } from '@/constants/routes';
 import featureRoutes from '@/modules';
+import { BenhAnBenhNhanPage } from '@/pages/BenhAnBenhNhanPage';
+import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
@@ -105,6 +107,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientAppointments,
             element: <LichHenBenhNhanPage />,
+          },
+          {
+            path: ROUTES.patientMedicalRecords,
+            element: <BenhAnBenhNhanPage />,
+          },
+          {
+            path: ROUTES.patientMedicalRecordDetail,
+            element: <ChiTietBenhAnBenhNhanPage />,
           },
           {
             path: ROUTES.serviceBooking,

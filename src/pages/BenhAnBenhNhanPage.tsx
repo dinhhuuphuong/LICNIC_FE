@@ -1,35 +1,29 @@
-import { PatientAppointmentCard } from '@/components/patient/PatientAppointmentCard';
-import { PatientCancelAppointmentModal } from '@/components/patient/PatientCancelAppointmentModal';
-import { PatientRescheduleModal } from '@/components/patient/PatientRescheduleModal';
+import { PatientMedicalRecordCard } from '@/components/patient/PatientMedicalRecordCard';
 import { PATIENT_ROLE_ID } from '@/constants/roleIds';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { getAppointments, type AppointmentListItem } from '@/services/appointmentService';
+import { listMyMedicalRecords } from '@/services/medicalRecordService';
 import { getMyPatientProfile } from '@/services/patientService';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const PAGE_SIZE = 8;
 
-const appointmentsQueryKeyRoot = ['appointments', 'patient'] as const;
+const medicalRecordsQueryRoot = ['medical-records', 'patient', 'me'] as const;
 const patientMeQueryKey = ['patients', 'me'] as const;
 
-export function LichHenBenhNhanPage() {
+export function BenhAnBenhNhanPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [rescheduleTarget, setRescheduleTarget] = useState<AppointmentListItem | null>(null);
-  const [cancelTarget, setCancelTarget] = useState<AppointmentListItem | null>(null);
 
-  useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Lịch hẹn' : 'NHA KHOA TẬN TÂM | Appointments');
+  useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Hồ sơ bệnh án' : 'NHA KHOA TẬN TÂM | Medical records');
 
   const {
     data: patient,
@@ -46,37 +40,23 @@ export function LichHenBenhNhanPage() {
     enabled: !!user && user.roleId === PATIENT_ROLE_ID,
   });
 
-  const patientId = patient?.patientId;
-
-  const queryKey = useMemo(
-    () => [...appointmentsQueryKeyRoot, patientId, page, statusFilter || 'all'] as const,
-    [patientId, page, statusFilter],
-  );
+  const queryKey = useMemo(() => [...medicalRecordsQueryRoot, page] as const, [page]);
 
   const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await getAppointments({
-        patientId: patientId!,
-        page,
-        limit: PAGE_SIZE,
-        ...(statusFilter ? { status: statusFilter } : {}),
-      });
+      const res = await listMyMedicalRecords({ page, limit: PAGE_SIZE });
       return res.data;
     },
-    enabled: !!user && user.roleId === PATIENT_ROLE_ID && patientId != null,
+    enabled: !!user && user.roleId === PATIENT_ROLE_ID && patient != null,
   });
-
-  const invalidateList = () => {
-    void queryClient.invalidateQueries({ queryKey: appointmentsQueryKeyRoot });
-  };
 
   if (!user) {
     return (
       <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
         <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Cần đăng nhập' : 'Sign in required'}</h1>
         <p className="mt-2 text-sm text-slate-700">
-          {isVi ? 'Vui lòng đăng nhập để xem lịch hẹn của bạn.' : 'Please sign in to view your appointments.'}
+          {isVi ? 'Vui lòng đăng nhập để xem hồ sơ bệnh án.' : 'Please sign in to view your medical records.'}
         </p>
         <button
           type="button"
@@ -108,7 +88,7 @@ export function LichHenBenhNhanPage() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
-  const listLoading = isPatientLoading || (patientId != null && (isLoading || isFetching));
+  const listLoading = isPatientLoading || (patient != null && (isLoading || isFetching));
 
   if (isPatientError) {
     return (
@@ -130,11 +110,11 @@ export function LichHenBenhNhanPage() {
     return (
       <div>
         <header className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Lịch hẹn của tôi' : 'My appointments'}</h1>
+          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Hồ sơ bệnh án' : 'Medical records'}</h1>
           <p className="mt-2 text-sm text-slate-600">
             {isVi
-              ? 'Cần có hồ sơ bệnh nhân để xem lịch hẹn theo mã bệnh nhân.'
-              : 'You need a patient profile to view appointments by patient id.'}
+              ? 'Cần có hồ sơ bệnh nhân để xem bệnh án theo tài khoản của bạn.'
+              : 'You need a patient profile to view medical records linked to your account.'}
           </p>
         </header>
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
@@ -156,55 +136,33 @@ export function LichHenBenhNhanPage() {
     <div>
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Lịch hẹn của tôi' : 'My appointments'}</h1>
+          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Hồ sơ bệnh án' : 'Medical records'}</h1>
           <p className="mt-2 text-sm text-slate-600">
             {isVi
-              ? 'Xem, đổi giờ hoặc hủy các lịch đang chờ hoặc đã xác nhận.'
-              : 'View, reschedule, or cancel pending and confirmed visits.'}
+              ? 'Theo dõi chẩn đoán, điều trị và đơn thuốc sau mỗi lần khám.'
+              : 'Review diagnosis, treatment, and prescriptions from each visit.'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 self-start">
           <Link
+            to={ROUTES.patientAppointments}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
+          >
+            {isVi ? 'Lịch hẹn →' : 'Appointments →'}
+          </Link>
+          <Link
             to={ROUTES.patientProfile}
             className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
           >
-            {isVi ? '← Hồ sơ bệnh nhân' : '← Patient profile'}
-          </Link>
-          <Link
-            to={ROUTES.patientMedicalRecords}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 text-sm font-bold text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100"
-          >
-            {isVi ? 'Bệnh án →' : 'Records →'}
+            {isVi ? 'Hồ sơ BN →' : 'Profile →'}
           </Link>
         </div>
       </header>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <label className="text-sm font-semibold text-slate-700" htmlFor="appt-status-filter">
-          {isVi ? 'Trạng thái' : 'Status'}
-        </label>
-        <select
-          id="appt-status-filter"
-          className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-blue-600"
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">{isVi ? 'Tất cả' : 'All'}</option>
-          <option value="pending">{isVi ? 'Chờ xác nhận' : 'Pending'}</option>
-          <option value="confirmed">{isVi ? 'Đã xác nhận' : 'Confirmed'}</option>
-          <option value="completed">{isVi ? 'Đã khám xong' : 'Completed'}</option>
-          <option value="cancelled">{isVi ? 'Đã hủy' : 'Cancelled'}</option>
-          <option value="checked_in">{isVi ? 'Đã check-in' : 'Checked in'}</option>
-        </select>
-      </div>
-
       {listLoading ? (
         <div className="space-y-4" aria-busy="true">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+            <div key={i} className="h-36 animate-pulse rounded-2xl bg-slate-100" />
           ))}
         </div>
       ) : isError ? (
@@ -223,22 +181,19 @@ export function LichHenBenhNhanPage() {
         </section>
       ) : !data?.items.length ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center">
-          <p className="text-slate-700">{isVi ? 'Bạn chưa có lịch hẹn nào.' : 'You have no appointments yet.'}</p>
+          <p className="text-slate-700">{isVi ? 'Chưa có bệnh án nào được lưu.' : 'No medical records yet.'}</p>
           <p className="mt-2 text-sm text-slate-500">
-            {isVi ? 'Đặt lịch từ trang dịch vụ để bắt đầu.' : 'Book from a service page to get started.'}
+            {isVi
+              ? 'Sau khi khám, phòng khám sẽ cập nhật vào hệ thống.'
+              : 'Records will appear here after your visits.'}
           </p>
         </div>
       ) : (
         <>
           <ul className="space-y-4">
-            {data.items.map((item) => (
-              <li key={item.appointmentId}>
-                <PatientAppointmentCard
-                  item={item}
-                  isVi={isVi}
-                  onReschedule={setRescheduleTarget}
-                  onCancel={setCancelTarget}
-                />
+            {data.items.map((record) => (
+              <li key={record.recordId}>
+                <PatientMedicalRecordCard record={record} isVi={isVi} />
               </li>
             ))}
           </ul>
@@ -271,21 +226,6 @@ export function LichHenBenhNhanPage() {
           ) : null}
         </>
       )}
-
-      <PatientRescheduleModal
-        open={!!rescheduleTarget}
-        appointment={rescheduleTarget}
-        isVi={isVi}
-        onClose={() => setRescheduleTarget(null)}
-        onSuccess={invalidateList}
-      />
-      <PatientCancelAppointmentModal
-        open={!!cancelTarget}
-        appointment={cancelTarget}
-        isVi={isVi}
-        onClose={() => setCancelTarget(null)}
-        onSuccess={invalidateList}
-      />
     </div>
   );
 }
