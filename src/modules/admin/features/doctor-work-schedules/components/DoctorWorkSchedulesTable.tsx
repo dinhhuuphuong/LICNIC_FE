@@ -112,14 +112,21 @@ export default function DoctorWorkSchedulesTable() {
           <Flex gap={8} justify="center" align="center">
             <ModifyDoctorWorkSchedule
               scheduleId={record.scheduleId}
-              trigger={<Button variant="text" color="primary" icon={<Pencil size={16} />} />}
+              trigger={
+                <Button
+                  disabled={record.status !== 'pending'}
+                  variant="text"
+                  color="primary"
+                  icon={<Pencil size={16} />}
+                />
+              }
             />
             <Button
               danger
               type="text"
               icon={<Trash2 size={16} />}
               loading={deleteMutation.isPending}
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || record.status !== 'pending'}
               onClick={() => handleDelete(record)}
             />
           </Flex>

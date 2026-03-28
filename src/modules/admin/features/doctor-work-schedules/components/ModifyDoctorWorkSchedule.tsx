@@ -82,41 +82,55 @@ export default function ModifyDoctorWorkSchedule({
     form.setFieldsValue({
       ...resolvedInitial,
       workDate: dayjs(resolvedInitial.workDate),
-      startTime: dayjs(resolvedInitial.startTime, DATE_FORMAT.TIME),
-      endTime: dayjs(resolvedInitial.endTime, DATE_FORMAT.TIME),
+      startTime: resolvedInitial.startTime
+        ? dayjs(resolvedInitial.startTime, DATE_FORMAT.TIME)
+        : dayjs().hour(8).minute(0).second(0).millisecond(0),
+      endTime: resolvedInitial.endTime
+        ? dayjs(resolvedInitial.endTime, DATE_FORMAT.TIME)
+        : dayjs().hour(17).minute(0).second(0).millisecond(0),
     });
   }, [form, open, resolvedInitial]);
 
   async function handleFinish(values: CreateDoctorWorkSchedulePayload) {
-    try {
-      const payloadBase: CreateDoctorWorkSchedulePayload = {
-        doctorId: Number(values.doctorId),
-        workDate: dayjs(values.workDate).format(DATE_FORMAT.DB_DATE),
-        startTime: dayjs(values.startTime).format(DATE_FORMAT.TIME),
-        endTime: dayjs(values.endTime).format(DATE_FORMAT.TIME),
-        maxPatients: Number(values.maxPatients),
-        slotDurationMinutes: Number(values.slotDurationMinutes),
-      };
+    const payloadBase: CreateDoctorWorkSchedulePayload = {
+      doctorId: Number(values.doctorId),
+      workDate: dayjs(values.workDate).format(DATE_FORMAT.DB_DATE),
+      startTime: dayjs(values.startTime).format(DATE_FORMAT.TIME),
+      endTime: dayjs(values.endTime).format(DATE_FORMAT.TIME),
+      maxPatients: Number(values.maxPatients),
+      slotDurationMinutes: Number(values.slotDurationMinutes),
+    };
 
-      if (effectiveScheduleId) {
-        const payload: UpdateDoctorWorkSchedulePayload = payloadBase;
-        const res = await updateMutation.mutateAsync({ scheduleId: effectiveScheduleId, payload });
+    if (effectiveScheduleId) {
+      const payload: UpdateDoctorWorkSchedulePayload = payloadBase;
+      updateMutation.mutateAsync(
+        { scheduleId: effectiveScheduleId, payload },
+        {
+          onSuccess: (res) => {
+            message.success(res.message || 'Thành công');
+            setOpen(false);
+            form.resetFields();
+            onSuccess?.(res.data);
+          },
+          onError: (error) => {
+            message.error(error.message || 'Thất bại');
+          },
+        },
+      );
+      return;
+    }
+
+    createMutation.mutateAsync(payloadBase, {
+      onSuccess: (res) => {
         message.success(res.message || 'Thành công');
         setOpen(false);
         form.resetFields();
         onSuccess?.(res.data);
-        return;
-      }
-
-      const res = await createMutation.mutateAsync(payloadBase);
-      message.success(res.message || 'Thành công');
-      setOpen(false);
-      form.resetFields();
-      onSuccess?.(res.data);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Thao tác thất bại';
-      message.error(msg);
-    }
+      },
+      onError: (error) => {
+        message.error(error.message || 'Thất bại');
+      },
+    });
   }
 
   const triggerNode = trigger ? (

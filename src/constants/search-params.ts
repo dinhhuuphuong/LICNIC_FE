@@ -1,4 +1,5 @@
 export const SEARCH_PARAMS = {
+  DATE_MODE: 'dateMode',
   PAGE_SIZE: 'pageSize',
   PAGE_INDEX: 'pageIndex',
   KEYWORD: 'keyword',
