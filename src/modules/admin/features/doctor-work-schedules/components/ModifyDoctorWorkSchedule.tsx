@@ -82,8 +82,12 @@ export default function ModifyDoctorWorkSchedule({
     form.setFieldsValue({
       ...resolvedInitial,
       workDate: dayjs(resolvedInitial.workDate),
-      startTime: dayjs(resolvedInitial.startTime, DATE_FORMAT.TIME),
-      endTime: dayjs(resolvedInitial.endTime, DATE_FORMAT.TIME),
+      startTime: resolvedInitial.startTime
+        ? dayjs(resolvedInitial.startTime, DATE_FORMAT.TIME)
+        : dayjs().hour(8).minute(0).second(0).millisecond(0),
+      endTime: resolvedInitial.endTime
+        ? dayjs(resolvedInitial.endTime, DATE_FORMAT.TIME)
+        : dayjs().hour(17).minute(0).second(0).millisecond(0),
     });
   }, [form, open, resolvedInitial]);
 
