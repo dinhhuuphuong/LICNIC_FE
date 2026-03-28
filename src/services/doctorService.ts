@@ -58,7 +58,18 @@ export function getDoctors(params: GetDoctorsParams = {}) {
   if (params.maxConsultationFee !== undefined) queryParams.set('maxConsultationFee', String(params.maxConsultationFee));
   if (params.userStatus) queryParams.set('userStatus', params.userStatus);
 
-  return http<GetDoctorsResponse>(`${DOCTORS_URL}?${queryParams.toString()}`);
+  return http<GetDoctorsResponse>(`${DOCTORS_URL}?${queryParams.toString()}`, {
+    headers: { accept: '*/*' },
+  });
+}
+
+/** Danh sách bác sĩ active cho block trang chủ (GET /doctors?userStatus=active&limit&page). */
+export function getActiveDoctorsForHome(options?: { limit?: number; page?: number }) {
+  return getDoctors({
+    userStatus: 'active',
+    limit: options?.limit ?? 10,
+    page: options?.page ?? 1,
+  });
 }
 
 export type GetDoctorDetailResponse = Response<Doctor>;

@@ -56,7 +56,18 @@ export function getServices(params: GetServicesParams = {}) {
     queryParams.set('keyword', params.keyword);
   }
 
-  return http<GetServicesResponse>(`${SERVICES_URL}?${queryParams.toString()}`);
+  return http<GetServicesResponse>(`${SERVICES_URL}?${queryParams.toString()}`, {
+    headers: { accept: '*/*' },
+  });
+}
+
+/** Trang chủ: GET /services?status=true&limit&page */
+export function getFeaturedServicesForHome(options?: { limit?: number; page?: number }) {
+  return getServices({
+    status: true,
+    limit: options?.limit ?? 10,
+    page: options?.page ?? 1,
+  });
 }
 
 export type GetServiceDetailResponse = Response<Service>;
