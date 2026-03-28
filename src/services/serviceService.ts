@@ -16,6 +16,7 @@ export type Service = {
   cost: number;
   process: string;
   trustedAddress: string;
+  thumbnail?: string | null;
   status: boolean;
   categoryId: number;
   category?: ServiceCategoryLite | null;
@@ -85,38 +86,103 @@ export type CreateServicePayload = {
   trustedAddress: string;
   status: boolean;
   categoryId: number;
+  thumbnail?: string | null;
+  thumbnailFile?: File;
 };
 
 export type CreateServiceResponse = Response<Service>;
 
+function buildServiceFormData(payload: (CreateServicePayload | UpdateServicePayload) & { thumbnailFile?: File }) {
+  const formData = new FormData();
+
+  if ('serviceName' in payload && payload.serviceName !== undefined) {
+    formData.append('serviceName', payload.serviceName);
+  }
+  if ('whatIs' in payload && payload.whatIs !== undefined) {
+    formData.append('whatIs', payload.whatIs);
+  }
+  if ('method' in payload && payload.method !== undefined) {
+    formData.append('method', payload.method);
+  }
+  if ('cost' in payload && payload.cost !== undefined) {
+    formData.append('cost', String(payload.cost));
+  }
+  if ('process' in payload && payload.process !== undefined) {
+    formData.append('process', payload.process);
+  }
+  if ('trustedAddress' in payload && payload.trustedAddress !== undefined) {
+    formData.append('trustedAddress', payload.trustedAddress);
+  }
+  if ('status' in payload && payload.status !== undefined) {
+    formData.append('status', String(payload.status));
+  }
+  if ('categoryId' in payload && payload.categoryId !== undefined) {
+    formData.append('categoryId', String(payload.categoryId));
+  }
+  if ('thumbnail' in payload && payload.thumbnail !== undefined) {
+    formData.append('thumbnail', payload.thumbnail ?? '');
+  }
+  if (payload.thumbnailFile) {
+    formData.append('thumbnail', payload.thumbnailFile);
+  }
+
+  return formData;
+}
+
 export function createService(payload: CreateServicePayload) {
+  const { thumbnailFile, ...rest } = payload;
+
+  if (thumbnailFile) {
+    const formData = buildServiceFormData({ ...rest, thumbnailFile });
+    return http<CreateServiceResponse>(SERVICES_URL, {
+      method: 'POST',
+      headers: {
+        accept: '*/*',
+      },
+      body: formData,
+    });
+  }
+
   return http<CreateServiceResponse>(SERVICES_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       accept: '*/*',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(rest),
   });
 }
 
 export type UpdateServicePayload = Partial<
   Pick<
     CreateServicePayload,
-    'serviceName' | 'whatIs' | 'method' | 'cost' | 'process' | 'trustedAddress' | 'status' | 'categoryId'
+    'serviceName' | 'whatIs' | 'method' | 'cost' | 'process' | 'trustedAddress' | 'status' | 'categoryId' | 'thumbnail'
   >
->;
+> & { thumbnailFile?: File };
 
 export type UpdateServiceResponse = Response<Service>;
 
 export function updateService(serviceId: number, payload: UpdateServicePayload) {
+  const { thumbnailFile, ...rest } = payload;
+
+  if (thumbnailFile) {
+    const formData = buildServiceFormData({ ...rest, thumbnailFile });
+    return http<UpdateServiceResponse>(`${SERVICES_URL}/${serviceId}`, {
+      method: 'PUT',
+      headers: {
+        accept: '*/*',
+      },
+      body: formData,
+    });
+  }
+
   return http<UpdateServiceResponse>(`${SERVICES_URL}/${serviceId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       accept: '*/*',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(rest),
   });
 }
 
