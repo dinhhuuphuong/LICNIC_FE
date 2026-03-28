@@ -1,4 +1,5 @@
-import { Button, Col, Form, Input, Modal, Row, Select, Switch, message } from 'antd';
+import { Button, Col, Form, Input, Modal, Row, Select, Switch, Upload, message } from 'antd';
+import type { UploadFile } from 'antd/es/upload/interface';
 import type { ReactElement } from 'react';
 import { cloneElement, useEffect, useState } from 'react';
 
@@ -19,6 +20,7 @@ type ModifyServiceProps = {
 
 const ModifyService = ({ trigger, serviceId, initialValues, onSuccess }: ModifyServiceProps) => {
   const [open, setOpen] = useState(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
   const createServiceMutation = useCreateServiceMutation();
   const updateServiceMutation = useUpdateServiceMutation();
@@ -44,13 +46,18 @@ const ModifyService = ({ trigger, serviceId, initialValues, onSuccess }: ModifyS
       cost: detail?.cost ?? initialValues?.cost ?? undefined,
       process: detail?.process ?? initialValues?.process ?? undefined,
       trustedAddress: detail?.trustedAddress ?? initialValues?.trustedAddress ?? undefined,
+      thumbnail: detail?.thumbnail ?? initialValues?.thumbnail ?? undefined,
       categoryId: detail?.categoryId ?? initialValues?.categoryId ?? undefined,
       status: detail?.status ?? initialValues?.status ?? true,
     });
+    setFileList([]);
   }, [form, initialValues, open, serviceDetailQuery.data]);
 
   async function handleFinish(values: CreateServicePayload) {
     try {
+      const thumbnailFile = fileList[0]?.originFileObj;
+      const thumbnail = values.thumbnail?.trim() ? values.thumbnail.trim() : (values.thumbnail ?? undefined);
+
       if (effectiveServiceId) {
         const payload: UpdateServicePayload = {
           serviceName: values.serviceName,
@@ -59,8 +66,10 @@ const ModifyService = ({ trigger, serviceId, initialValues, onSuccess }: ModifyS
           cost: values.cost,
           process: values.process,
           trustedAddress: values.trustedAddress,
+          thumbnail,
           status: values.status,
           categoryId: values.categoryId,
+          thumbnailFile,
         };
         const res = await updateServiceMutation.mutateAsync({
           serviceId: effectiveServiceId,
@@ -69,14 +78,20 @@ const ModifyService = ({ trigger, serviceId, initialValues, onSuccess }: ModifyS
         message.success(res.message || 'Thành công');
         setOpen(false);
         form.resetFields();
+        setFileList([]);
         onSuccess?.(res.data);
         return;
       }
 
-      const res = await createServiceMutation.mutateAsync(values);
+      const res = await createServiceMutation.mutateAsync({
+        ...values,
+        thumbnail,
+        thumbnailFile,
+      });
       message.success(res.message || 'Thành công');
       setOpen(false);
       form.resetFields();
+      setFileList([]);
       onSuccess?.(res.data);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Thao tác thất bại';
@@ -188,6 +203,22 @@ const ModifyService = ({ trigger, serviceId, initialValues, onSuccess }: ModifyS
               placeholder="Nên thực hiện tại cơ sở nha khoa uy tín..."
               autoSize={{ minRows: 2, maxRows: 4 }}
             />
+          </Form.Item>
+
+          <Form.Item name="thumbnail" label="URL ảnh thumbnail">
+            <Input placeholder="https://res.cloudinary.com/.../image.jpg" />
+          </Form.Item>
+
+          <Form.Item label="Hoặc tải ảnh lên">
+            <Upload
+              fileList={fileList}
+              beforeUpload={() => false}
+              maxCount={1}
+              onChange={(info) => setFileList(info.fileList)}
+              accept="image/*"
+            >
+              <Button>Chọn file ảnh</Button>
+            </Upload>
           </Form.Item>
 
           <Row gutter={16}>

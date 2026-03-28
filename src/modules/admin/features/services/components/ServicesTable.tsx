@@ -1,4 +1,4 @@
-import { Button, Flex, Modal, Table, Tag, message } from 'antd';
+import { Button, Flex, Image, Modal, Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
@@ -67,6 +67,23 @@ const ServicesTable = () => {
         title: 'ID',
         dataIndex: 'serviceId',
         key: 'serviceId',
+      },
+      {
+        title: 'Ảnh',
+        key: 'thumbnail',
+        width: 88,
+        render: (_, record) =>
+          record.thumbnail ? (
+            <Image
+              src={record.thumbnail}
+              alt=""
+              width={56}
+              height={56}
+              style={{ objectFit: 'cover', borderRadius: 4 }}
+            />
+          ) : (
+            '—'
+          ),
       },
       {
         title: 'Tên dịch vụ',

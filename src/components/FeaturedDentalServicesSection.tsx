@@ -120,10 +120,21 @@ export function FeaturedDentalServicesSection() {
                   to={ROUTES.home}
                 >
                   <div className="relative h-[280px] overflow-hidden bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-                    <div className="absolute inset-4 rounded-2xl border-2 border-dashed border-slate-300" />
-                    <p className="absolute inset-0 grid place-items-center px-8 text-center text-sm font-semibold text-slate-500">
-                      {isVi ? 'Ảnh slide sẽ bổ sung sau' : 'Slide image will be added later'}
-                    </p>
+                    {item.thumbnail?.trim() ? (
+                      <img
+                        src={item.thumbnail.trim()}
+                        alt={item.serviceName}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <>
+                        <div className="absolute inset-4 rounded-2xl border-2 border-dashed border-slate-300" />
+                        <p className="absolute inset-0 grid place-items-center px-8 text-center text-sm font-semibold text-slate-500">
+                          {isVi ? 'Chưa có ảnh dịch vụ' : 'No service image'}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   <div className="relative bg-blue-700 px-5 py-4 pb-5">
