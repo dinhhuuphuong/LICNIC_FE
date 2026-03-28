@@ -129,7 +129,8 @@ export async function http<T>(input: RequestInfo | URL, init?: RequestInit): Pro
       }
     }
 
-    throw new Error(`Request failed with status ${response.status}`);
+    const error = await response.json();
+    throw new Error(error.message);
   }
 
   return (await response.json()) as T;
