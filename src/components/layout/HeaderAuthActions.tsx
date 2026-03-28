@@ -1,4 +1,5 @@
 import ROLE from '@/constants/role';
+import { PATIENT_ROLE_ID } from '@/constants/roleIds';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,6 +20,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const { language } = useLanguage();
 
   const isAdminRole = user?.role?.roleName === ROLE.ADMIN;
+  const isPatientRole = user?.roleId === PATIENT_ROLE_ID;
 
   const initialAvatarSrc = useMemo(() => {
     if (!user?.avatar) return DEFAULT_AVATAR_URL;
@@ -60,6 +62,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const logoutLabel = language === 'vi' ? 'Đăng xuất' : 'Logout';
   const homeLabel = language === 'vi' ? 'Trang chủ' : 'Home';
   const adminLabel = language === 'vi' ? 'Quản trị' : 'Admin';
+  const profileLabel = language === 'vi' ? 'Hồ sơ bệnh nhân' : 'My profile';
 
   const handleLogout = () => {
     // Clear auth tokens first so future authenticated requests won't happen.
@@ -122,6 +125,16 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
           >
             {homeLabel}
           </Link>
+          {isPatientRole && (
+            <Link
+              className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+              to={ROUTES.patientProfile}
+              role="menuitem"
+              onClick={() => setIsPopoverOpen(false)}
+            >
+              {profileLabel}
+            </Link>
+          )}
           {isAdminRole && (
             <Link
               className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
