@@ -12,6 +12,7 @@ export const ROUTES = {
   knowledgePorcelain: '/kien-thuc/kien-thuc-rang-su',
   login: '/dang-nhap',
   register: '/dang-ky',
+  patientProfile: '/benh-nhan/ho-so',
 
   // admin routes
   admin: '/admin',

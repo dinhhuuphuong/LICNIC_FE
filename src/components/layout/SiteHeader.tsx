@@ -1,5 +1,6 @@
 import logoTanTam from '@/assets/images/logoTanTam.jpg';
 import { HeaderAuthActions } from '@/components/layout/HeaderAuthActions';
+import { HeaderNotificationBell } from '@/components/notifications/HeaderNotificationBell';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage, type Language } from '@/contexts/NgonNguContext';
 import { useEffect, useRef, useState } from 'react';
@@ -476,6 +477,8 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <HeaderNotificationBell />
+
             <HeaderAuthActions loginLabel={text.loginButton} registerLabel={text.registerButton} />
             <button
               className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-7 py-3 text-base font-bold text-white! transition hover:bg-blue-800"

@@ -112,3 +112,45 @@ export function deleteUser(userId: number) {
     },
   });
 }
+
+/** PUT `/users/me` — cập nhật profile user đang đăng nhập (không gồm email). */
+export type UpdateMePayload = {
+  name?: string;
+  phone?: string | null;
+  avatar?: string | null;
+};
+
+export type UpdateMeResponse = import('@/services/http').Response<User>;
+
+/**
+ * Cập nhật profile. Gửi `avatarFile` để upload ảnh (multipart); không có file thì dùng JSON (avatar = URL hoặc null).
+ */
+export function updateMe(payload: UpdateMePayload, avatarFile?: File | null) {
+  if (avatarFile && avatarFile.size > 0) {
+    const form = new FormData();
+    if (payload.name !== undefined) form.append('name', payload.name);
+    if (payload.phone !== undefined && payload.phone !== null) {
+      form.append('phone', payload.phone);
+    } else {
+      form.append('phone', '');
+    }
+    if (payload.avatar !== undefined) {
+      form.append('avatar', payload.avatar ?? '');
+    }
+    form.append('avatarFile', avatarFile);
+    return http<UpdateMeResponse>(`${USERS_URL}/me`, {
+      method: 'PUT',
+      headers: { accept: '*/*' },
+      body: form,
+    });
+  }
+
+  return http<UpdateMeResponse>(`${USERS_URL}/me`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}

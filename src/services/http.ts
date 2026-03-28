@@ -135,3 +135,51 @@ export async function http<T>(input: RequestInfo | URL, init?: RequestInit): Pro
 
   return (await response.json()) as T;
 }
+
+/** Giống `http` nhưng trả `null` khi server trả 404 (dùng cho GET `/patients/me` khi chưa có hồ sơ). */
+export async function httpAllow404<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T | null> {
+  const endpoint = import.meta.env.VITE_ENDPOINT_API;
+
+  let url = input;
+
+  if (typeof input === 'string' && input.startsWith('/')) {
+    url = `${endpoint}${input}`;
+  } else if (typeof input === 'string' && !input.startsWith('http')) {
+    url = `${endpoint}${input}`;
+  }
+
+  const requestInit = ensureAuthorizationHeader(init);
+  let response = await fetch(url, requestInit);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const requestUrlString = typeof url === 'string' ? url : url.toString();
+    const isRefreshEndpoint = requestUrlString.includes('/auth/refresh');
+
+    if (response.status === 401 && !isRefreshEndpoint) {
+      const didRefresh = await refreshTokens(endpoint);
+      if (didRefresh) {
+        const retriedInit = ensureAuthorizationHeader(init, {
+          force: true,
+        });
+        response = await fetch(url, retriedInit);
+        if (response.status === 404) {
+          return null;
+        }
+        if (!response.ok) {
+          const errJson = (await response.json().catch(() => ({}))) as { message?: string };
+          throw new Error(errJson.message ?? `Request failed with status ${response.status}`);
+        }
+        return (await response.json()) as T;
+      }
+    }
+
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message ?? `Request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+}

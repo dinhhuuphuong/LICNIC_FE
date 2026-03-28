@@ -8,6 +8,7 @@ import { AboutTeamPage } from '@/pages/DoiNguBacSiPage';
 import { PricePorcelainPage } from '@/pages/GiaBocRangSuPage';
 import { PriceBracesPage } from '@/pages/GiaNiengRangPage';
 import { PriceImplantPage } from '@/pages/GiaTrongRangImplantPage';
+import { HoSoBenhNhanPage } from '@/pages/HoSoBenhNhanPage';
 import { NotFoundPage } from '@/pages/KhongTimThayPage';
 import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
@@ -93,6 +94,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.register,
             element: <RegisterPage />,
+          },
+          {
+            path: ROUTES.patientProfile,
+            element: <HoSoBenhNhanPage />,
           },
         ],
       },
