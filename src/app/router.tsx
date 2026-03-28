@@ -15,6 +15,7 @@ import { NotFoundPage } from '@/pages/KhongTimThayPage';
 import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
+import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
 import { AboutPage } from '@/pages/VeTamDucSmilePage';
@@ -100,6 +101,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientProfile,
             element: <HoSoBenhNhanPage />,
+          },
+          {
+            path: ROUTES.patientAppointments,
+            element: <LichHenBenhNhanPage />,
           },
           {
             path: ROUTES.serviceBooking,

@@ -12,7 +12,7 @@ import { getMe } from '@/services/authService';
 import { createPatientProfile, getMyPatientProfile, updatePatientProfile } from '@/services/patientService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const patientMeQueryKey = ['patients', 'me'] as const;
 
@@ -139,13 +139,21 @@ export function HoSoBenhNhanPage() {
 
   return (
     <div>
-      <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Hồ sơ bệnh nhân' : 'Patient profile'}</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {isVi
-            ? 'Cập nhật thông tin y tế và liên hệ phục vụ đặt lịch và điều trị.'
-            : 'Keep your medical and contact details up to date for appointments and care.'}
-        </p>
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Hồ sơ bệnh nhân' : 'Patient profile'}</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {isVi
+              ? 'Cập nhật thông tin y tế và liên hệ phục vụ đặt lịch và điều trị.'
+              : 'Keep your medical and contact details up to date for appointments and care.'}
+          </p>
+        </div>
+        <Link
+          to={ROUTES.patientAppointments}
+          className="inline-flex h-10 items-center justify-center self-start rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
+        >
+          {isVi ? 'Lịch hẹn của tôi →' : 'My appointments →'}
+        </Link>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-5">

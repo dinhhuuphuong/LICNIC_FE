@@ -13,6 +13,7 @@ export const ROUTES = {
   login: '/dang-nhap',
   register: '/dang-ky',
   patientProfile: '/benh-nhan/ho-so',
+  patientAppointments: '/benh-nhan/lich-hen',
   /** Chi tiết dịch vụ — dùng `getServiceDetailRoute(id)` cho `Link`/`navigate` */
   serviceDetail: '/dich-vu/:serviceId',
   /** Đặt lịch theo dịch vụ — dùng `getServiceBookingRoute(id)` */

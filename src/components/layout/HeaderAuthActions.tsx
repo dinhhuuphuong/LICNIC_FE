@@ -63,6 +63,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const homeLabel = language === 'vi' ? 'Trang chủ' : 'Home';
   const adminLabel = language === 'vi' ? 'Quản trị' : 'Admin';
   const profileLabel = language === 'vi' ? 'Hồ sơ bệnh nhân' : 'My profile';
+  const appointmentsLabel = language === 'vi' ? 'Lịch hẹn' : 'Appointments';
 
   const handleLogout = () => {
     // Clear auth tokens first so future authenticated requests won't happen.
@@ -126,14 +127,24 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
             {homeLabel}
           </Link>
           {isPatientRole && (
-            <Link
-              className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-              to={ROUTES.patientProfile}
-              role="menuitem"
-              onClick={() => setIsPopoverOpen(false)}
-            >
-              {profileLabel}
-            </Link>
+            <>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.patientProfile}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {profileLabel}
+              </Link>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.patientAppointments}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {appointmentsLabel}
+              </Link>
+            </>
           )}
           {isAdminRole && (
             <Link
