@@ -1,18 +1,54 @@
-﻿import bannerHome from '@/assets/images/banner.png';
+import bannerHome from '@/assets/images/banner.png';
 import camKetChatLuong from '@/assets/images/chat-luong.svg';
 import camKetChinhHang from '@/assets/images/chinh-hang.svg';
 import camKetHoTro from '@/assets/images/ho-tro.svg';
 import camKetMinhBach from '@/assets/images/minh-bach.svg';
 import veChungToi from '@/assets/images/ve-chung-toi.webp';
+import { DoctorTeamAvatarGrid, DoctorTeamFeaturedPhoto } from '@/components/DoctorTeamAvatarGrid';
+import { FeaturedDentalServicesSection } from '@/components/FeaturedDentalServicesSection';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { ROUTES } from '@/constants/routes';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { getActiveDoctorsForHome, type Doctor } from '@/services/doctorService';
+import { useEffect, useMemo, useState } from 'react';
+
+type DoctorTeamDisplay = {
+  doctorId: number;
+  role: string;
+  name: string;
+  avatar: string | null;
+  summary: string[];
+  cta: string;
+};
+
+function mapDoctorToTeamDisplay(d: Doctor, isVi: boolean): DoctorTeamDisplay {
+  const role = d.specialization?.trim() ? d.specialization : isVi ? 'Bác sĩ' : 'Dentist';
+  const summary: string[] = [];
+  if (d.experienceYears != null) {
+    summary.push(isVi ? `${d.experienceYears} năm kinh nghiệm` : `${d.experienceYears} years of experience`);
+  }
+  if (d.description?.trim()) {
+    summary.push(
+      ...d.description
+        .split(/\n+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+  }
+  if (summary.length === 0) {
+    summary.push(isVi ? 'Thông tin đang được cập nhật.' : 'Information coming soon.');
+  }
+  return {
+    doctorId: d.doctorId,
+    role,
+    name: d.user.name,
+    avatar: d.user.avatar,
+    summary,
+    cta: isVi ? 'Xem chi tiết' : 'View details',
+  };
+}
 
 export function HomePage() {
   const { language } = useLanguage();
-  const [activeServiceIndex, setActiveServiceIndex] = useState(0);
   const [activeTechIndex, setActiveTechIndex] = useState(0);
   const [activeDoctorIndex, setActiveDoctorIndex] = useState(0);
   const [activeStoryPage, setActiveStoryPage] = useState(0);
@@ -113,36 +149,6 @@ export function HomePage() {
 
   const leftReasons = reasons.slice(0, 3);
   const rightReasons = reasons.slice(3);
-
-  const featuredServices = isVi
-    ? [
-        // TODO: Update `to` when real super-menu routes are confirmed.
-        { eyebrow: 'Bọc răng sứ', title: 'Veneer thẩm mỹ', to: ROUTES.home },
-        { eyebrow: 'Niềng răng', title: 'Chỉnh nha mắc cài', to: ROUTES.home },
-        { eyebrow: 'Trồng răng', title: 'Implant toàn hàm', to: ROUTES.home },
-        { eyebrow: 'Tiểu phẫu', title: 'Nhổ răng khôn', to: ROUTES.home },
-        { eyebrow: 'Nha khoa thẩm mỹ', title: 'Tẩy trắng răng', to: ROUTES.home },
-      ]
-    : [
-        // TODO: Update `to` when real super-menu routes are confirmed.
-        { eyebrow: 'Porcelain crowns', title: 'Veneer esthetics', to: ROUTES.home },
-        { eyebrow: 'Orthodontics', title: 'Braces treatment', to: ROUTES.home },
-        { eyebrow: 'Implant', title: 'Full-arch implant', to: ROUTES.home },
-        { eyebrow: 'Minor surgery', title: 'Wisdom tooth removal', to: ROUTES.home },
-        { eyebrow: 'Cosmetic dentistry', title: 'Teeth whitening', to: ROUTES.home },
-      ];
-
-  const featuredServiceCount = featuredServices.length;
-
-  const shiftFeaturedService = (step: number) => {
-    setActiveServiceIndex((prev) => (prev + step + featuredServiceCount) % featuredServiceCount);
-  };
-
-  const visibleServiceIndexes = [
-    (activeServiceIndex - 1 + featuredServiceCount) % featuredServiceCount,
-    activeServiceIndex,
-    (activeServiceIndex + 1) % featuredServiceCount,
-  ];
 
   const modernTechnologies = isVi
     ? [
@@ -280,124 +286,55 @@ export function HomePage() {
 
   const activeTechnology = modernTechnologies[activeTechIndex];
 
-  const doctors = isVi
-    ? [
-        {
-          role: 'Bác sĩ Chuyên khoa I',
-          name: 'Phạm Nguyễn',
-          summary: [
-            'Nguyên Phó Trưởng khoa Phẫu thuật Hàm mặt - BV Răng Hàm Mặt TPHCM.',
-            'Giấy phép hành nghề số 004447/HCM - CCHN.',
-            'Chuyên Cấy Ghép Implant.',
-            'Chứng chỉ: Cấy ghép Nha khoa, Phẫu thuật tăng thể tích xương và nâng xoang.',
-            'Bác sĩ Răng Hàm Mặt - Đại học Y dược TPHCM.',
-          ],
-          cta: 'Xem chi tiết',
-        },
-        {
-          role: 'Bác sĩ Chuyên khoa I',
-          name: 'Ngô Minh Trí',
-          summary: [
-            'Hơn 12 năm kinh nghiệm trong điều trị nha khoa tổng quát và thẩm mỹ.',
-            'Chuyên sâu bọc răng sứ và phục hình thẩm mỹ.',
-            'Tham gia đào tạo liên tục về công nghệ CAD/CAM.',
-            'Luôn ưu tiên điều trị bảo tồn răng thật cho khách hàng.',
-          ],
-          cta: 'Xem chi tiết',
-        },
-        {
-          role: 'Bác sĩ Chuyên khoa I',
-          name: 'Huỳnh Tấn Phát',
-          summary: [
-            'Phụ trách chuyên môn chỉnh nha cho trẻ em và người lớn.',
-            'Kinh nghiệm điều trị mắc cài kim loại, mắc cài sứ và Invisalign.',
-            'Lập kế hoạch điều trị dựa trên phân tích khớp cắn chi tiết.',
-            'Theo dõi sát tiến trình để đảm bảo kết quả ổn định lâu dài.',
-          ],
-          cta: 'Xem chi tiết',
-        },
-        {
-          role: 'Thạc sĩ - Bác sĩ',
-          name: 'Trần Đức Anh',
-          summary: [
-            'Chuyên sâu cấy ghép Implant đơn lẻ và toàn hàm.',
-            'Thực hiện thành công nhiều ca phục hình phức tạp.',
-            'Ứng dụng CT Cone Beam 3D trong lập kế hoạch điều trị.',
-            'Đặt tiêu chí an toàn và ít xâm lấn lên hàng đầu.',
-          ],
-          cta: 'Xem chi tiết',
-        },
-        {
-          role: 'Bác sĩ Chuyên khoa',
-          name: 'Nguyễn Minh Hiếu',
-          summary: [
-            'Kinh nghiệm trong điều trị nha chu và phục hình răng mất.',
-            'Tư vấn cá nhân hóa theo nhu cầu thẩm mỹ và chức năng ăn nhai.',
-            'Thực hiện điều trị nhẹ nhàng, tối ưu trải nghiệm khách hàng.',
-            'Đồng hành theo dõi sau điều trị để duy trì kết quả bền vững.',
-          ],
-          cta: 'Xem chi tiết',
-        },
-      ]
-    : [
-        {
-          role: 'Specialist Dentist',
-          name: 'Pham Nguyen',
-          summary: [
-            'Former Deputy Head of Maxillofacial Surgery at a major dental hospital.',
-            'Licensed practitioner with strong implant surgery background.',
-            'Experienced in bone grafting and sinus lift procedures.',
-            'Focused on safe, predictable, and minimally invasive treatment.',
-          ],
-          cta: 'View details',
-        },
-        {
-          role: 'Specialist Dentist',
-          name: 'Ngo Minh Tri',
-          summary: [
-            'Over 12 years of experience in general and cosmetic dentistry.',
-            'Specialized in porcelain restoration and smile design.',
-            'Continuously trained in CAD/CAM workflows.',
-            'Prioritizes conservative treatment planning.',
-          ],
-          cta: 'View details',
-        },
-        {
-          role: 'Specialist Dentist',
-          name: 'Huynh Tan Phat',
-          summary: [
-            'Focused on orthodontic care for teens and adults.',
-            'Experienced with metal braces, ceramic braces, and Invisalign.',
-            'Builds treatment plans from detailed bite analysis.',
-            'Provides close follow-up for long-term stability.',
-          ],
-          cta: 'View details',
-        },
-        {
-          role: 'Master - Dentist',
-          name: 'Tran Duc Anh',
-          summary: [
-            'Specialized in single and full-arch implant procedures.',
-            'Handled many advanced restorative cases.',
-            'Uses Cone Beam 3D imaging for precision planning.',
-            'Emphasizes safety and minimally invasive techniques.',
-          ],
-          cta: 'View details',
-        },
-        {
-          role: 'Specialist Dentist',
-          name: 'Nguyen Minh Hieu',
-          summary: [
-            'Experienced in periodontal and prosthodontic treatments.',
-            'Provides personalized consultation for function and esthetics.',
-            'Known for gentle procedures and patient comfort.',
-            'Offers thorough post-treatment follow-up care.',
-          ],
-          cta: 'View details',
-        },
-      ];
+  const [doctorsFromApi, setDoctorsFromApi] = useState<Doctor[]>([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+  const [doctorsError, setDoctorsError] = useState<string | null>(null);
 
-  const activeDoctor = doctors[activeDoctorIndex];
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setDoctorsLoading(true);
+        setDoctorsError(null);
+        const res = await getActiveDoctorsForHome();
+        if (cancelled) return;
+        setDoctorsFromApi(res.data.items);
+        setActiveDoctorIndex(0);
+      } catch (e) {
+        if (!cancelled) {
+          setDoctorsError(e instanceof Error ? e.message : 'Request failed');
+          setDoctorsFromApi([]);
+        }
+      } finally {
+        if (!cancelled) setDoctorsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayDoctors = useMemo(
+    () => doctorsFromApi.map((d) => mapDoctorToTeamDisplay(d, isVi)),
+    [doctorsFromApi, isVi],
+  );
+
+  useEffect(() => {
+    if (displayDoctors.length === 0) return;
+    setActiveDoctorIndex((i) => Math.min(i, displayDoctors.length - 1));
+  }, [displayDoctors.length]);
+
+  const activeDoctor = displayDoctors[activeDoctorIndex];
+  const avatarItems = useMemo(
+    () =>
+      displayDoctors.map((d) => ({
+        id: String(d.doctorId),
+        name: d.name,
+        role: d.role,
+        avatarUrl: d.avatar,
+      })),
+    [displayDoctors],
+  );
 
   const commitments = isVi
     ? [
@@ -613,8 +550,7 @@ export function HomePage() {
             {
               title: 'Combo thăm khám và vệ sinh răng định kỳ giá tốt',
               date: '18/02/2026',
-              excerpt:
-                'Gói ưu đãi giúp kiểm tra tổng quát, cạo vôi và tư vấn cá nhân hóa với mức chi phí tiết kiệm.',
+              excerpt: 'Gói ưu đãi giúp kiểm tra tổng quát, cạo vôi và tư vấn cá nhân hóa với mức chi phí tiết kiệm.',
             },
           ],
           side: [
@@ -763,78 +699,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[32px] border border-sky-100 bg-[#eaf2fa] px-4 py-10 shadow-xl shadow-sky-100/60 md:px-10 md:py-14">
-        <div className="pointer-events-none absolute -left-6 top-10 h-20 w-20 rounded-full bg-white/50 blur-2xl" />
-        <div className="pointer-events-none absolute -right-8 bottom-8 h-24 w-24 rounded-full bg-sky-200/50 blur-2xl" />
-
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Dịch vụ nha khoa nổi bật' : 'Featured Dental Services'}
-        </h2>
-
-        <div className="relative mx-auto mt-10 max-w-6xl">
-          <button
-            aria-label={isVi ? 'Dịch vụ trước' : 'Previous service'}
-            className="absolute left-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-blue-700 text-2xl text-white shadow-lg transition hover:bg-blue-800 md:grid"
-            onClick={() => shiftFeaturedService(-1)}
-            type="button"
-          >
-            &#8249;
-          </button>
-
-          <button
-            aria-label={isVi ? 'Dịch vụ tiếp theo' : 'Next service'}
-            className="absolute right-0 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-blue-500 text-2xl text-white shadow-lg transition hover:bg-blue-600 md:grid"
-            onClick={() => shiftFeaturedService(1)}
-            type="button"
-          >
-            &#8250;
-          </button>
-
-          <div className="grid gap-5 md:grid-cols-3 md:px-16">
-            {visibleServiceIndexes.map((itemIndex, slotIndex) => {
-              const item = featuredServices[itemIndex];
-              const isCenter = slotIndex === 1;
-
-              return (
-                <Link
-                  className={`group block overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                    isCenter ? 'md:scale-100' : 'md:translate-y-6 md:scale-[0.94] md:opacity-95'
-                  }`}
-                  key={`${item.title}-${itemIndex}`}
-                  to={item.to}
-                >
-                  <div className="relative h-[280px] overflow-hidden bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-                    <div className="absolute inset-4 rounded-2xl border-2 border-dashed border-slate-300" />
-                    <p className="absolute inset-0 grid place-items-center px-8 text-center text-sm font-semibold text-slate-500">
-                      {isVi ? 'Ảnh slide sẽ bổ sung sau' : 'Slide image will be added later'}
-                    </p>
-                  </div>
-
-                  <div className="relative bg-blue-700 px-5 py-4">
-                    <p className="text-sm font-bold uppercase tracking-wide text-white/90">{item.eyebrow}</p>
-                    <p className="text-[34px] font-black uppercase leading-tight text-yellow-300">{item.title}</p>
-                    <span className="absolute -bottom-3 left-1/2 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full bg-yellow-300 text-xs text-blue-700 shadow">
-                      &#10049;
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="mt-7 flex items-center justify-center gap-2">
-            {featuredServices.map((item, index) => (
-              <button
-                aria-label={`${isVi ? 'Chuyển đến' : 'Go to'} ${item.title}`}
-                className={`h-2.5 rounded-full transition ${index === activeServiceIndex ? 'w-8 bg-blue-700' : 'w-2.5 bg-slate-400 hover:bg-slate-500'}`}
-                key={`${item.title}-${index}`}
-                onClick={() => setActiveServiceIndex(index)}
-                type="button"
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      <FeaturedDentalServicesSection />
 
       <div className="rounded-[30px] border border-slate-200 bg-[#f3f5f8] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8">
         <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
@@ -910,72 +775,53 @@ export function HomePage() {
           {isVi ? 'Đội ngũ bác sĩ' : 'Doctor Team'}
         </h2>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1.45fr_0.85fr]">
-          <div>
-            <div className="inline-block rounded-md bg-white px-4 py-3">
-              <h3 className="text-2xl font-black text-blue-700 md:text-3xl">
-                {activeDoctor.role} - {activeDoctor.name}
-              </h3>
-            </div>
-
-            <ul className="mt-5 space-y-3 text-base leading-7 text-slate-700">
-              {activeDoctor.summary.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <span>-</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              className="mt-6 inline-flex items-center rounded-xl bg-blue-700 px-6 py-3 text-base font-bold text-white transition hover:bg-blue-800"
-              type="button"
-            >
-              {activeDoctor.cta}
-            </button>
-          </div>
-
-          <div className="mx-auto w-full max-w-[340px]">
-            <div className="grid h-[380px] place-items-center overflow-hidden rounded-[28px] border border-blue-200 bg-white shadow-sm md:h-[430px]">
-              <div className="m-4 grid h-[calc(100%-2rem)] w-[calc(100%-2rem)] place-items-center rounded-[24px] border-2 border-dashed border-slate-300 bg-linear-to-br from-slate-100 via-slate-200 to-slate-100 text-center">
-                <p className="px-6 text-base font-semibold text-slate-500 md:text-lg">
-                  {isVi ? 'Ảnh bác sĩ sẽ bổ sung sau' : 'Doctor image will be added later'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-          {doctors.map((doctor, index) => {
-            const isActive = index === activeDoctorIndex;
-            return (
-              <button
-                className="group text-center"
-                key={doctor.name}
-                onClick={() => setActiveDoctorIndex(index)}
-                type="button"
-              >
-                <div
-                  className={`mx-auto grid h-[190px] w-[190px] place-items-center rounded-full border bg-white transition md:h-[230px] md:w-[230px] ${
-                    isActive
-                      ? 'border-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.08)]'
-                      : 'border-slate-300 group-hover:border-blue-300'
-                  }`}
-                >
-                  <div className="grid h-[82%] w-[82%] place-items-center rounded-full bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-                    <span className="text-base font-bold text-slate-500 md:text-lg">{doctor.name}</span>
-                  </div>
+        {doctorsLoading ? (
+          <p className="mt-8 text-center text-base text-slate-600">
+            {isVi ? 'Đang tải đội ngũ bác sĩ...' : 'Loading doctor team...'}
+          </p>
+        ) : doctorsError ? (
+          <p className="mt-8 text-center text-base text-red-600">{doctorsError}</p>
+        ) : !activeDoctor ? (
+          <p className="mt-8 text-center text-base text-slate-600">
+            {isVi ? 'Hiện chưa có dữ liệu bác sĩ.' : 'No doctor profiles available yet.'}
+          </p>
+        ) : (
+          <>
+            <div className="mt-8 grid gap-8 lg:grid-cols-[1.45fr_0.85fr]">
+              <div>
+                <div className="inline-block rounded-md bg-white px-4 py-3">
+                  <h3 className="text-2xl font-black text-blue-700 md:text-3xl">
+                    {activeDoctor.role} - {activeDoctor.name}
+                  </h3>
                 </div>
 
-                <p className="mt-4 text-base text-slate-600">{doctor.role}</p>
-                <p className={`text-xl font-bold ${isActive ? 'text-blue-700' : 'text-slate-800'}`}>
-                  {doctor.name}
-                </p>
-              </button>
-            );
-          })}
-        </div>
+                <ul className="mt-5 space-y-3 text-base leading-7 text-slate-700">
+                  {activeDoctor.summary.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span>-</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className="mt-6 inline-flex items-center rounded-xl bg-blue-700 px-6 py-3 text-base font-bold text-white! transition hover:bg-blue-800"
+                  type="button"
+                >
+                  {activeDoctor.cta}
+                </button>
+              </div>
+
+              <div className="mx-auto w-full max-w-[340px]">
+                <div className="grid h-[380px] place-items-center overflow-hidden rounded-[28px] border border-blue-200 bg-white shadow-sm md:h-[430px]">
+                  <DoctorTeamFeaturedPhoto avatarUrl={activeDoctor.avatar} name={activeDoctor.name} />
+                </div>
+              </div>
+            </div>
+
+            <DoctorTeamAvatarGrid activeIndex={activeDoctorIndex} items={avatarItems} onSelect={setActiveDoctorIndex} />
+          </>
+        )}
       </div>
 
       <div className="rounded-[30px] border border-slate-200 bg-white px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8 md:py-12">
@@ -994,9 +840,7 @@ export function HomePage() {
               <div className="flex h-16 items-center">
                 <img alt={item.title} className="h-16 w-16 object-contain" src={item.icon} />
               </div>
-              <h3 className="mt-5 min-h-[4.5rem] text-2xl font-black uppercase leading-tight text-blue-700">
-                {item.title}
-              </h3>
+              <h3 className="mt-5 min-h-18 text-2xl font-black uppercase leading-tight text-blue-700">{item.title}</h3>
               <p className="mt-3 text-base leading-8 text-slate-700 md:text-lg">{item.description}</p>
             </article>
           ))}
@@ -1082,7 +926,10 @@ export function HomePage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.95fr_0.95fr]">
           <div className="grid gap-6 md:grid-cols-2">
             {activeNews.featured.map((item) => (
-              <article key={item.title} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60">
+              <article
+                key={item.title}
+                className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60"
+              >
                 <div className="relative grid h-[320px] place-items-center overflow-hidden rounded-2xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
                   <div className="absolute inset-3 rounded-2xl border-2 border-dashed border-slate-300" />
                   <p className="relative z-10 px-6 text-center text-sm font-semibold text-slate-500">
