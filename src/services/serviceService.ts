@@ -1,4 +1,4 @@
-import { http, type PaginationResponse, type Response } from '@/services/http';
+import { http, httpAllow404, type PaginationResponse, type Response } from '@/services/http';
 
 export type ServiceCategoryLite = {
   categoryId: number;
@@ -75,6 +75,11 @@ export type GetServiceDetailResponse = Response<Service>;
 
 export function getServiceDetail(serviceId: number) {
   return http<GetServiceDetailResponse>(`${SERVICES_URL}/${serviceId}`);
+}
+
+/** GET /services/:id — trả `null` khi 404 (dùng trang chi tiết khách). */
+export function getServiceDetailOrNull(serviceId: number) {
+  return httpAllow404<GetServiceDetailResponse>(`${SERVICES_URL}/${serviceId}`);
 }
 
 export type CreateServicePayload = {

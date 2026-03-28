@@ -1,6 +1,7 @@
 import { App } from '@/app/App';
 import { ROUTES } from '@/constants/routes';
 import featureRoutes from '@/modules';
+import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientProfile,
             element: <HoSoBenhNhanPage />,
+          },
+          {
+            path: ROUTES.serviceDetail,
+            element: <ServiceDetailPage />,
           },
         ],
       },

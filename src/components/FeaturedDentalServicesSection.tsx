@@ -1,4 +1,4 @@
-import { ROUTES } from '@/constants/routes';
+import { getServiceDetailRoute } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { getFeaturedServicesForHome, type Service } from '@/services/serviceService';
 import { useEffect, useMemo, useState } from 'react';
@@ -117,7 +117,7 @@ export function FeaturedDentalServicesSection() {
                     isCenter ? 'md:scale-100' : 'md:translate-y-6 md:scale-[0.94] md:opacity-95'
                   }`}
                   key={`${item.serviceId}-${itemIndex}`}
-                  to={ROUTES.home}
+                  to={getServiceDetailRoute(item.serviceId)}
                 >
                   <div className="relative h-[280px] overflow-hidden bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
                     {item.thumbnail?.trim() ? (

@@ -13,6 +13,8 @@ export const ROUTES = {
   login: '/dang-nhap',
   register: '/dang-ky',
   patientProfile: '/benh-nhan/ho-so',
+  /** Chi tiết dịch vụ — dùng `getServiceDetailRoute(id)` cho `Link`/`navigate` */
+  serviceDetail: '/dich-vu/:serviceId',
 
   // admin routes
   admin: '/admin',
@@ -24,3 +26,7 @@ export const ROUTES = {
   adminPaymentDiscounts: '/admin/payment-discounts',
   adminBlogPosts: '/admin/blog-posts',
 } as const;
+
+export function getServiceDetailRoute(serviceId: number) {
+  return `/dich-vu/${serviceId}`;
+}
