@@ -125,7 +125,7 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
         breakpoint="lg"
         theme="light"
         style={{ position: 'sticky', top: 0, height: '100vh' }}
-        className="bg-[#001529] overflow-hidden flex flex-col z-10"
+        className="overflow-hidden flex flex-col z-10"
       >
         <div
           className="h-16 flex items-center px-4 border-b border-white/10 text-black/90 font-bold tracking-[0.2px] cursor-pointer"
