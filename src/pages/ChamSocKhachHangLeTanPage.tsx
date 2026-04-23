@@ -19,7 +19,7 @@ export function ChamSocKhachHangLeTanPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
-  useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Chăm sóc khách hàng' : 'NHA KHOA TAN TAM | Customer care');
+  useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Chăm Sóc Khách Hàng' : 'NHA KHOA TAN TAM | Customer care');
 
   const notificationsQuery = useQuery({
     queryKey: ['receptionistCustomerCareNotifications'],
@@ -94,12 +94,7 @@ export function ChamSocKhachHangLeTanPage() {
   return (
     <div className="mx-auto w-full max-w-[1360px]">
       <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Chăm sóc khách hàng' : 'Customer care'}</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {isVi
-            ? 'Tổng hợp thông báo và tương tác liên quan đến khách hàng.'
-            : 'A quick feed of customer-related notifications and interactions.'}
-        </p>
+        <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Chăm Sóc Khách Hàng' : 'Customer care'}</h1>
       </header>
 
       <div className="grid gap-4">
