@@ -11,15 +11,15 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getDoctors } from '@/services/doctorService';
 import {
   approveDoctorWorkSchedule,
-  getDoctorWorkSchedules,
+  getDoctorWorkSchedulesFromStore,
   rejectDoctorWorkSchedule,
 } from '@/services/doctorWorkScheduleService';
 import { useAuthStore } from '@/stores/authStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Input, Modal, message } from 'antd';
+import { Button, Input, Modal, Pagination, message } from 'antd';
 import dayjs from 'dayjs';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryParam } from 'use-query-params';
 
@@ -44,11 +44,17 @@ export function LichLamViecBacSiPage() {
   const [toDateParam] = useQueryParam<string | undefined>(SEARCH_PARAMS.TO_DATE);
   const [rejectingScheduleId, setRejectingScheduleId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Lịch làm việc bác sĩ' : 'NHA KHOA TAN TAM | Doctor work schedules');
 
   const fromDate = fromDateParam ?? dayjs().startOf('month').format(DATE_FORMAT.DB_DATE);
   const toDate = toDateParam ?? dayjs().endOf('month').format(DATE_FORMAT.DB_DATE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [fromDate, toDate]);
 
   const doctorMeQuery = useQuery({
     queryKey: ['doctorProfileByUser', user?.userId],
@@ -60,11 +66,11 @@ export function LichLamViecBacSiPage() {
   });
 
   const schedulesQuery = useQuery({
-    queryKey: ['doctorMySchedules', doctorMeQuery.data?.doctorId, fromDate, toDate],
+    queryKey: ['doctorMySchedules', doctorMeQuery.data?.doctorId, fromDate, toDate, currentPage, pageSize],
     queryFn: async () =>
-      getDoctorWorkSchedules({
-        page: 1,
-        limit: 100,
+      getDoctorWorkSchedulesFromStore({
+        page: currentPage,
+        limit: pageSize,
         doctorId: doctorMeQuery.data?.doctorId,
         fromDate,
         toDate,
@@ -216,13 +222,14 @@ export function LichLamViecBacSiPage() {
   }
 
   const schedules = schedulesQuery.data?.data.items ?? [];
+  const totalSchedules = schedulesQuery.data?.data.total ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-[1360px]">
       <header className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Lịch làm việc' : 'Work schedules'}</h1>
+            <h1 className="text-3xl font-black text-slate-900 mb-0">{isVi ? 'Lịch làm việc' : 'Work schedules'}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <RangePickerParam
@@ -305,6 +312,24 @@ export function LichLamViecBacSiPage() {
           ))
         )}
       </div>
+      {totalSchedules > 0 ? (
+        <div className="mt-6 flex justify-end">
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={totalSchedules}
+            showSizeChanger
+            pageSizeOptions={[10, 20, 50, 100]}
+            showTotal={(total, range) =>
+              isVi ? `${range[0]}-${range[1]} / ${total} lịch` : `${range[0]}-${range[1]} of ${total} schedules`
+            }
+            onChange={(page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            }}
+          />
+        </div>
+      ) : null}
       <Modal
         title={isVi ? 'Từ chối lịch làm việc' : 'Reject work schedule'}
         open={rejectingScheduleId !== null}
