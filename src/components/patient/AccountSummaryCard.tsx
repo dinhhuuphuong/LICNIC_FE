@@ -1,6 +1,7 @@
 import type { Patient } from '@/services/patientService';
 import { updateMe } from '@/services/userService';
 import { useMutation } from '@tanstack/react-query';
+import { message } from 'antd';
 import { FormEvent, useEffect, useId, useRef, useState } from 'react';
 
 export type AccountSummaryCardProps = {
@@ -64,6 +65,15 @@ export function AccountSummaryCard({ patient, isVi, onAccountUpdated }: AccountS
     },
     onSuccess: () => {
       onAccountUpdated?.();
+    },
+    onError: (error) => {
+      message.error(
+        error instanceof Error
+          ? error.message
+          : isVi
+            ? 'Cập nhật thông tin tài khoản thất bại'
+            : 'Update account failed',
+      );
     },
   });
 

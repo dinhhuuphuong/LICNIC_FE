@@ -1,4 +1,4 @@
-import { http, type PaginationResponse, type Response } from '@/services/http';
+import { http, httpAllow404, type PaginationResponse, type Response } from '@/services/http';
 import type { Service } from '@/services/serviceService';
 
 export type DoctorUser = {
@@ -94,6 +94,15 @@ export function getDoctorDetail(doctorId: number) {
   return http<GetDoctorDetailResponse>(`${DOCTORS_URL}/${doctorId}`);
 }
 
+export type GetMyDoctorResponse = Response<Doctor>;
+
+/** GET /doctors/me — `null` nếu bác sĩ chưa có hồ sơ chi tiết. */
+export function getMyDoctorProfile() {
+  return httpAllow404<GetMyDoctorResponse>(`${DOCTORS_URL}/me`, {
+    headers: { accept: '*/*' },
+  });
+}
+
 export type CreateDoctorPayload = {
   userId: number;
   specialization: string;
@@ -115,12 +124,38 @@ export function createDoctor(payload: CreateDoctorPayload) {
   });
 }
 
+export type CreateMyDoctorPayload = Omit<CreateDoctorPayload, 'userId'>;
+
+export function createMyDoctorProfile(payload: CreateMyDoctorPayload) {
+  return http<CreateDoctorResponse>(`${DOCTORS_URL}/me`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 export type UpdateDoctorPayload = Partial<Omit<CreateDoctorPayload, 'userId'>>;
 
 export type UpdateDoctorResponse = Response<Doctor>;
 
 export function updateDoctor(doctorId: number, payload: UpdateDoctorPayload) {
   return http<UpdateDoctorResponse>(`${DOCTORS_URL}/${doctorId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export type UpdateMyDoctorPayload = Partial<CreateMyDoctorPayload>;
+
+export function updateMyDoctorProfile(payload: UpdateMyDoctorPayload) {
+  return http<UpdateDoctorResponse>(`${DOCTORS_URL}/me`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
