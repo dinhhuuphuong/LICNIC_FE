@@ -1,9 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import {
-  getDoctorWorkSchedules,
+  getDoctorWorkSchedulesFromStore,
   type GetDoctorWorkSchedulesParams,
-  type GetDoctorWorkSchedulesResponse,
+  type GetDoctorWorkSchedulesResponse
 } from '@/services/doctorWorkScheduleService';
 
 import { adminDoctorWorkSchedulesListQueryKey } from '../queryKeys';
@@ -25,7 +25,7 @@ export function useGetDoctorWorkSchedulesQuery(params: GetDoctorWorkSchedulesPar
       fromDate ?? null,
       toDate ?? null,
     ],
-    queryFn: () => getDoctorWorkSchedules({ page, limit, doctorId, fromDate, toDate }),
+    queryFn: () => getDoctorWorkSchedulesFromStore({ page, limit, doctorId, fromDate, toDate }),
     placeholderData: keepPreviousData,
   });
 }

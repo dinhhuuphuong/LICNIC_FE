@@ -69,6 +69,22 @@ export function getActiveDoctorsForHome(options?: { limit?: number; page?: numbe
     userStatus: 'active',
     limit: options?.limit ?? 10,
     page: options?.page ?? 1,
+  }).catch((error) => {
+    if (error instanceof Error && error.message === 'Not Found') {
+      return {
+        message: 'Doctors endpoint not available',
+        error: null,
+        statusCode: 404,
+        data: {
+          items: [],
+          total: 0,
+          page: options?.page ?? 1,
+          limit: options?.limit ?? 10,
+        },
+      } satisfies GetDoctorsResponse;
+    }
+
+    throw error;
   });
 }
 

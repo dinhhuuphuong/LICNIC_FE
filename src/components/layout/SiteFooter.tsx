@@ -1,11 +1,50 @@
 import logoFooter from '@/assets/images/logo-footer.png';
 import { useLanguage } from '@/contexts/NgonNguContext';
+import { getClinicInfo, parseWorkingHours } from '@/services/clinicInfoService';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 export function SiteFooter() {
   const { language } = useLanguage();
   const currentYear = new Date().getFullYear();
   const isVi = language === 'vi';
+  const { data } = useQuery({
+    queryKey: ['clinic-info'],
+    queryFn: getClinicInfo,
+  });
+  const workingHoursByDay = parseWorkingHours(data?.data?.workingHours);
+  const weekdayWorkingRange = workingHoursByDay[1];
+  const saturdayWorkingRange = workingHoursByDay[6];
+  const sundayWorkingRange = workingHoursByDay[0];
+  const isWeekdayAndSaturdaySame =
+    weekdayWorkingRange.start === saturdayWorkingRange.start && weekdayWorkingRange.end === saturdayWorkingRange.end;
+  const isSaturdayAndSundaySame =
+    saturdayWorkingRange.start === sundayWorkingRange.start && saturdayWorkingRange.end === sundayWorkingRange.end;
+  const isAllWeekSame = isWeekdayAndSaturdaySame && isSaturdayAndSundaySame;
+
+  const firstHoursLineText = isVi
+    ? isAllWeekSame
+      ? `Mở cửa (T2 - CN): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`
+      : isWeekdayAndSaturdaySame
+        ? `Mở cửa (T2 - T7): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`
+        : `Mở cửa (T2 - T6): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`
+    : isAllWeekSame
+      ? `Opening hours (Mon - Sun): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`
+      : isWeekdayAndSaturdaySame
+        ? `Opening hours (Mon - Sat): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`
+        : `Opening hours (Mon - Fri): ${weekdayWorkingRange.start} - ${weekdayWorkingRange.end}`;
+
+  const secondHoursLineText = isVi
+    ? isAllWeekSame
+      ? null
+      : isSaturdayAndSundaySame
+        ? `Cuối tuần (T7 - CN): ${saturdayWorkingRange.start} - ${saturdayWorkingRange.end}`
+        : `T7: ${saturdayWorkingRange.start} - ${saturdayWorkingRange.end}; CN: ${sundayWorkingRange.start} - ${sundayWorkingRange.end}`
+    : isAllWeekSame
+      ? null
+      : isSaturdayAndSundaySame
+        ? `Weekend (Sat - Sun): ${saturdayWorkingRange.start} - ${saturdayWorkingRange.end}`
+        : `Sat: ${saturdayWorkingRange.start} - ${saturdayWorkingRange.end}; Sun: ${sundayWorkingRange.start} - ${sundayWorkingRange.end}`;
 
   const infoLinks = isVi
     ? ['Giới thiệu', 'Đội ngũ bác sĩ', 'Dịch vụ', 'Bảng giá', 'Sự kiện', 'Ưu đãi', 'Kiến thức', 'Tuyển dụng', 'Liên hệ']
@@ -44,16 +83,12 @@ export function SiteFooter() {
               src={logoFooter}
             />
             <ul className="mt-6 space-y-3 text-base leading-8 text-blue-50">
-              <li>
-                {isVi
-                  ? 'Địa chỉ: bo sung sau'
-                  : 'Address: update later'}
-              </li>
+              <li>{isVi ? `Địa chỉ: ${data?.data.address}` : `Address: ${data?.data.address}`}</li>
               <li>{isVi ? 'Hotline: 1900.8040 - 0329851079' : 'Hotline: 1900.8040 - 0329851079'}</li>
               <li>{isVi ? 'Điện thoại CSKH: 0862451679' : 'Customer care: 0862451679'}</li>
               <li>tantamdental@nhakhoatantam.com</li>
-              <li>{isVi ? 'Mở cửa: 08:00 AM - 19:30 PM' : 'Opening hours: 08:00 AM - 19:30 PM'}</li>
-              <li>{isVi ? 'Chủ nhật: 08:00 - 12h00' : 'Sunday: 08:00 - 12:00'}</li>
+              <li>{firstHoursLineText}</li>
+              {secondHoursLineText ? <li>{secondHoursLineText}</li> : null}
             </ul>
           </div>
 
@@ -62,7 +97,10 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-3">
               {infoLinks.map((item) => (
                 <li key={item}>
-                  <Link className="inline-flex items-center gap-2 text-lg text-blue-50 transition hover:text-white" to="/">
+                  <Link
+                    className="inline-flex items-center gap-2 text-lg text-blue-50 transition hover:text-white"
+                    to="/"
+                  >
                     <span>&#8250;</span>
                     <span>{item}</span>
                   </Link>
@@ -76,7 +114,10 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-3">
               {supportLinks.map((item) => (
                 <li key={item}>
-                  <Link className="inline-flex items-center gap-2 text-lg text-blue-50 transition hover:text-white" to="/">
+                  <Link
+                    className="inline-flex items-center gap-2 text-lg text-blue-50 transition hover:text-white"
+                    to="/"
+                  >
                     <span>&#8250;</span>
                     <span>{item}</span>
                   </Link>

@@ -68,6 +68,22 @@ export function getFeaturedServicesForHome(options?: { limit?: number; page?: nu
     status: true,
     limit: options?.limit ?? 10,
     page: options?.page ?? 1,
+  }).catch((error) => {
+    if (error instanceof Error && error.message === 'Not Found') {
+      return {
+        message: 'Services endpoint not available',
+        error: null,
+        statusCode: 404,
+        data: {
+          items: [],
+          total: 0,
+          page: options?.page ?? 1,
+          limit: options?.limit ?? 10,
+        },
+      } satisfies GetServicesResponse;
+    }
+
+    throw error;
   });
 }
 

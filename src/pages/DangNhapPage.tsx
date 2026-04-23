@@ -36,20 +36,25 @@ export function LoginPage() {
 
       const response = await login({ email, password });
 
-      // Persist tokens for later authenticated requests.
       window.localStorage.setItem('accessToken', response.data.accessToken);
       window.localStorage.setItem('refreshToken', response.data.refreshToken);
-
-      // Lưu thông tin user vào zustand (đồng thời có persist).
       setUser(response.data.user);
 
       setSuccess(isVi ? 'Đăng nhập thành công.' : 'Login successful.');
       navigate(safeReturnTo ?? ROUTES.home, { replace: true });
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      const isNetworkIssue =
+        !message || message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('Load failed');
+
       setError(
-        isVi
-          ? 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.'
-          : 'Login failed. Please check your email and password.',
+        isNetworkIssue
+          ? isVi
+            ? 'Không kết nối được tới máy chủ đăng nhập. Nếu bạn đang chạy local, hãy khởi động lại frontend sau khi cấu hình proxy.'
+            : 'Unable to reach the login server. If you are running locally, restart the frontend after configuring the proxy.'
+          : isVi
+            ? 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.'
+            : 'Login failed. Please check your email and password.'
       );
     } finally {
       setIsSubmitting(false);
@@ -78,7 +83,7 @@ export function LoginPage() {
           required
         />
 
-        <label className="mb-2! block text-sm font-semibold text-slate-700 mt-4" htmlFor="login-password">
+        <label className="mb-2! mt-4 block text-sm font-semibold text-slate-700" htmlFor="login-password">
           {isVi ? 'Mật khẩu' : 'Password'}
         </label>
         <input

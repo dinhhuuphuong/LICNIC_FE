@@ -34,23 +34,63 @@ export type RegisterResponse = Response<{
 const REGISTER_URL = '/auth/register';
 const REQUEST_OTP_URL = '/auth/register/request-otp';
 
-export async function register(payload: RegisterPayload) {
-    const formData = new FormData();
+function logAuthDebug(label: string, payload: Record<string, unknown>) {
+    if (!import.meta.env.DEV) return;
+    console.group(`[auth debug] ${label}`);
+    console.table(payload);
+    console.groupEnd();
+}
 
-    formData.append('name', payload.name);
-    formData.append('email', payload.email);
-    formData.append('password', payload.password);
-    formData.append('phone', payload.phone);
-    formData.append('roleId', String(payload.roleId));
-    formData.append('otp', payload.otp);
+export async function register(payload: RegisterPayload) {
+    logAuthDebug('register request', {
+        url: `${import.meta.env.VITE_ENDPOINT_API}${REGISTER_URL}`,
+        method: 'POST',
+        name: payload.name,
+        email: payload.email,
+        passwordLength: payload.password.length,
+        phone: payload.phone,
+        roleId: payload.roleId,
+        otp: payload.otp,
+        hasAvatar: Boolean(payload.avatar),
+        avatarName: payload.avatar?.name ?? null,
+        avatarType: payload.avatar?.type ?? null,
+        avatarSize: payload.avatar?.size ?? null,
+    });
 
     if (payload.avatar) {
+        const formData = new FormData();
+
+        formData.append('name', payload.name);
+        formData.append('email', payload.email);
+        formData.append('password', payload.password);
+        formData.append('phone', payload.phone);
+        formData.append('roleId', String(payload.roleId));
+        formData.append('otp', payload.otp);
         formData.append('avatar', payload.avatar);
+
+        return http<RegisterResponse>(REGISTER_URL, {
+            method: 'POST',
+            body: formData,
+            skipAuth: true,
+            skipRefresh: true,
+        });
     }
 
     return http<RegisterResponse>(REGISTER_URL, {
         method: 'POST',
-        body: formData,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: payload.name,
+            email: payload.email,
+            password: payload.password,
+            phone: payload.phone,
+            roleId: payload.roleId,
+            otp: payload.otp,
+        }),
+        skipAuth: true,
+        skipRefresh: true,
     });
 }
 
@@ -61,12 +101,20 @@ export type RequestOtpPayload = {
 export type RequestOtpResponse = unknown;
 
 export function requestOtp(payload: RequestOtpPayload) {
+    logAuthDebug('request otp', {
+        url: `${import.meta.env.VITE_ENDPOINT_API}${REQUEST_OTP_URL}`,
+        method: 'POST',
+        email: payload.email,
+    });
+
     return http<RequestOtpResponse>(REQUEST_OTP_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        skipAuth: true,
+        skipRefresh: true,
     });
 }
 
@@ -98,12 +146,21 @@ export type LoginResponse = Response<{
 const LOGIN_URL = '/auth/login';
 
 export function login(payload: LoginPayload) {
+    logAuthDebug('login request', {
+        url: `${import.meta.env.VITE_ENDPOINT_API}${LOGIN_URL}`,
+        method: 'POST',
+        email: payload.email,
+        passwordLength: payload.password.length,
+    });
+
     return http<LoginResponse>(LOGIN_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        skipAuth: true,
+        skipRefresh: true,
     });
 }
 

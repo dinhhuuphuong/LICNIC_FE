@@ -1,8 +1,9 @@
-import { Button, Col, DatePicker, Form, InputNumber, message, Modal, Row, TimePicker } from 'antd';
+import { Alert, Button, Col, DatePicker, Form, InputNumber, message, Modal, Row, TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import type { ReactElement } from 'react';
 import { cloneElement, useEffect, useMemo, useState } from 'react';
 
+import { getWorkingRangeByDay } from '@/services/clinicInfoService';
 import type {
   CreateDoctorWorkSchedulePayload,
   DoctorWorkSchedule,
@@ -12,6 +13,7 @@ import type {
 import DATE_FORMAT from '@/constants/date-format';
 import { useCreateDoctorWorkScheduleMutation } from '../hooks/mutations/useCreateDoctorWorkScheduleMutation';
 import { useUpdateDoctorWorkScheduleMutation } from '../hooks/mutations/useUpdateDoctorWorkScheduleMutation';
+import { useGetClinicInfoQuery } from '../hooks/queries/useGetClinicInfoQuery';
 import { useGetDoctorWorkScheduleDetailQuery } from '../hooks/queries/useGetDoctorWorkScheduleDetailQuery';
 import DoctorInfiniteSelect from './selects/DoctorInfiniteSelect';
 
@@ -57,6 +59,7 @@ export default function ModifyDoctorWorkSchedule({
 
   const createMutation = useCreateDoctorWorkScheduleMutation();
   const updateMutation = useUpdateDoctorWorkScheduleMutation();
+  const clinicInfoQuery = useGetClinicInfoQuery();
 
   const detailQuery = useGetDoctorWorkScheduleDetailQuery(scheduleId, open);
 
@@ -69,7 +72,7 @@ export default function ModifyDoctorWorkSchedule({
     const d = detailQuery.data?.data;
     return {
       doctorId: d?.doctorId ?? initialValues?.doctorId ?? undefined,
-      workDate: d?.workDate ?? initialValues?.workDate ?? undefined,
+      workDate: d?.workDate ?? initialValues?.workDate ?? dayjs().add(1, 'day'),
       startTime: d?.startTime ?? initialValues?.startTime ?? undefined,
       endTime: d?.endTime ?? initialValues?.endTime ?? undefined,
       maxPatients: d?.maxPatients ?? initialValues?.maxPatients ?? 20,
@@ -177,7 +180,12 @@ export default function ModifyDoctorWorkSchedule({
 
             <Col span={24}>
               <Form.Item name="workDate" label="Ngày" rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}>
-                <DatePicker format={DATE_FORMAT.DATE} placeholder="Chọn ngày" className="w-full" />
+                <DatePicker
+                  format={DATE_FORMAT.DATE}
+                  placeholder="Chọn ngày"
+                  className="w-full"
+                  minDate={dayjs().add(1, 'day')}
+                />
               </Form.Item>
             </Col>
 
@@ -185,7 +193,27 @@ export default function ModifyDoctorWorkSchedule({
               <Form.Item
                 name="startTime"
                 label="Giờ bắt đầu"
-                rules={[{ required: true, message: 'Vui lòng nhập giờ bắt đầu' }]}
+                dependencies={['workDate']}
+                rules={[
+                  { required: true, message: 'Vui lòng nhập giờ bắt đầu' },
+                  ({ getFieldValue }) => ({
+                    validator: async (_, value) => {
+                      const workDate = getFieldValue('workDate');
+                      const dayValue = dayjs(workDate);
+                      const selectedTime = timeValueToTotalMinutes(value);
+                      if (!dayValue.isValid() || selectedTime == null) return;
+
+                      const range = getWorkingRangeByDay(dayValue.day(), clinicInfoQuery.data?.data.workingHours);
+                      const rangeStart = timeValueToTotalMinutes(range.start);
+                      const rangeEnd = timeValueToTotalMinutes(range.end);
+                      if (rangeStart == null || rangeEnd == null) return;
+
+                      if (selectedTime < rangeStart || selectedTime >= rangeEnd) {
+                        throw new Error(`Giờ bắt đầu phải trong khung ${range.start}-${range.end}`);
+                      }
+                    },
+                  }),
+                ]}
               >
                 <TimePicker format={DATE_FORMAT.TIME} placeholder="Chọn giờ bắt đầu" className="w-full" />
               </Form.Item>
@@ -194,18 +222,29 @@ export default function ModifyDoctorWorkSchedule({
               <Form.Item
                 name="endTime"
                 label="Giờ kết thúc"
-                dependencies={['startTime']}
+                dependencies={['startTime', 'workDate']}
                 rules={[
                   { required: true, message: 'Vui lòng nhập giờ kết thúc' },
                   ({ getFieldValue }) => ({
                     validator: async (_, value) => {
+                      const workDate = getFieldValue('workDate');
+                      const dayValue = dayjs(workDate);
                       const start = getFieldValue('startTime');
                       const startMin = timeValueToTotalMinutes(start);
                       const endMin = timeValueToTotalMinutes(value);
 
-                      if (startMin == null || endMin == null) return;
+                      if (!dayValue.isValid() || startMin == null || endMin == null) return;
                       if (endMin <= startMin) {
                         throw new Error('Giờ kết thúc phải lớn hơn giờ bắt đầu');
+                      }
+
+                      const range = getWorkingRangeByDay(dayValue.day(), clinicInfoQuery.data?.data.workingHours);
+                      const rangeStart = timeValueToTotalMinutes(range.start);
+                      const rangeEnd = timeValueToTotalMinutes(range.end);
+                      if (rangeStart == null || rangeEnd == null) return;
+
+                      if (endMin > rangeEnd || endMin <= rangeStart) {
+                        throw new Error(`Giờ kết thúc phải trong khung ${range.start}-${range.end}`);
                       }
                     },
                   }),
@@ -234,6 +273,14 @@ export default function ModifyDoctorWorkSchedule({
             </Col>
           </Row>
         </Form>
+        {clinicInfoQuery.data?.data.workingHours ? (
+          <Alert
+            className="mt-2"
+            type="info"
+            message={`Khung giờ phòng khám: ${clinicInfoQuery.data.data.workingHours}`}
+            showIcon
+          />
+        ) : null}
       </Modal>
     </>
   );
