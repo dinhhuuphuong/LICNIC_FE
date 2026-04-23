@@ -7,7 +7,6 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getAppointments } from '@/services/appointmentService';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 function normalizeRoleName(roleName?: string | null) {
@@ -22,17 +21,12 @@ export function QuanLyDatLichLeTanPage() {
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Quản lý đặt lịch' : 'NHA KHOA TAN TAM | Appointment management');
 
-  const fromDate = dayjs().startOf('month').format('YYYY-MM-DD');
-  const toDate = dayjs().endOf('month').format('YYYY-MM-DD');
-
   const appointmentsQuery = useQuery({
-    queryKey: ['receptionistAppointments', fromDate, toDate],
+    queryKey: ['receptionistAppointments'],
     queryFn: () =>
       getAppointments({
         page: 1,
-        limit: 100,
-        fromDate,
-        toDate,
+        limit: 200,
       }),
     enabled: !!user && normalizeRoleName(user.role?.roleName) === ROLE.RECEPTIONIST.toLowerCase(),
   });
@@ -101,19 +95,13 @@ export function QuanLyDatLichLeTanPage() {
     <div className="mx-auto w-full max-w-[1360px]">
       <header className="mb-8">
         <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Quản lý đặt lịch' : 'Appointment management'}</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {isVi
-            ? `Danh sách lịch hẹn trong khoảng ${fromDate} đến ${toDate}.`
-            : `Appointments from ${fromDate} to ${toDate}.`}
-        </p>
+        <p className="mt-2 text-sm text-slate-600">{isVi ? 'Danh sách lịch khách hàng đã đặt.' : 'List of customer appointments.'}</p>
       </header>
 
       <div className="grid gap-4">
         {appointments.length === 0 ? (
           <PageCard>
-            <p className="text-sm text-slate-600">
-              {isVi ? 'Hiện chưa có lịch hẹn trong khoảng thời gian này.' : 'No appointments found for this period.'}
-            </p>
+            <p className="text-sm text-slate-600">{isVi ? 'Hiện chưa có lịch hẹn nào.' : 'No appointments found.'}</p>
           </PageCard>
         ) : (
           appointments.map((item) => (
@@ -132,9 +120,7 @@ export function QuanLyDatLichLeTanPage() {
                   <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
                     {isVi ? 'Trạng thái:' : 'Status:'} {item.status}
                   </span>
-                  <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">
-                    #{item.appointmentId}
-                  </span>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">#{item.appointmentId}</span>
                 </div>
               </div>
             </PageCard>

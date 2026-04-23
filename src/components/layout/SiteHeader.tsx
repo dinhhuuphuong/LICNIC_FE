@@ -1,8 +1,10 @@
 import logoTanTam from '@/assets/images/logoTanTam.jpg';
 import { HeaderAuthActions } from '@/components/layout/HeaderAuthActions';
 import { HeaderNotificationBell } from '@/components/notifications/HeaderNotificationBell';
-import { ROUTES } from '@/constants/routes';
+import { ROUTES, getServiceDetailRoute } from '@/constants/routes';
 import { useLanguage, type Language } from '@/contexts/NgonNguContext';
+import { getServiceCategories, type ServiceCategory } from '@/services/serviceCategoryService';
+import { getServices, type Service } from '@/services/serviceService';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
@@ -13,9 +15,15 @@ type TopMenuItem = {
   isActive?: boolean;
 };
 
+type ServiceMenuItem = {
+  label: string;
+  to: string;
+};
+
 type ServiceGroup = {
   title: string;
-  items: string[];
+  categoryId: number;
+  items: ServiceMenuItem[];
 };
 
 type SiteHeaderProps = {
@@ -45,6 +53,8 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const [isPriceMenuOpen, setIsPriceMenuOpen] = useState(false);
   const [isKnowledgeMenuOpen, setIsKnowledgeMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [serviceMenuStatus, setServiceMenuStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
 
   const aboutMenuRef = useRef<HTMLDivElement>(null);
   const serviceMenuRef = useRef<HTMLDivElement>(null);
@@ -103,57 +113,6 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
           },
         ];
 
-  const serviceGroups: ServiceGroup[] =
-    language === 'vi'
-      ? [
-          {
-            title: 'BỌC RĂNG SỨ',
-            items: ['Dán sứ Veneer', 'Inlay - Onlay', 'Bọc răng sứ là gì'],
-          },
-          {
-            title: 'TRỒNG RĂNG IMPLANT',
-            items: [
-              'Cấy ghép răng Implant',
-              'Implant toàn hàm',
-              'Implant All On 4',
-              'Implant All On 6',
-              'Trồng răng Implant là gì',
-            ],
-          },
-          {
-            title: 'NIỀNG RĂNG',
-            items: [
-              'Niềng răng Invisalign',
-              'Niềng mắc cài',
-              'Niềng mắc cài sứ',
-              'Niềng răng trẻ em',
-              'Niềng răng là gì',
-            ],
-          },
-          {
-            title: 'DỊCH VỤ KHÁC',
-            items: ['Tẩy trắng răng', 'Trám răng', 'Cạo vôi răng', 'Nhổ răng', 'Việt Kiều'],
-          },
-        ]
-      : [
-          {
-            title: 'PORCELAIN CROWNS',
-            items: ['Veneers', 'Inlay - Onlay', 'What is a Porcelain Crown?'],
-          },
-          {
-            title: 'IMPLANT',
-            items: ['Dental Implant', 'Full-Arch Implant', 'All-On-4 Implant', 'All-On-6 Implant', 'What is Implant?'],
-          },
-          {
-            title: 'ORTHODONTICS',
-            items: ['Invisalign', 'Metal Braces', 'Ceramic Braces', 'Braces for Kids', 'What is Orthodontics?'],
-          },
-          {
-            title: 'OTHER SERVICES',
-            items: ['Teeth Whitening', 'Dental Filling', 'Scaling', 'Tooth Extraction', 'Overseas Service'],
-          },
-        ];
-
   const text =
     language === 'vi'
       ? {
@@ -167,6 +126,9 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
           loginButton: 'Đăng nhập',
           registerButton: 'Đăng ký',
           bookButton: 'ĐẶT LỊCH',
+          loadingServices: 'Đang tải danh sách dịch vụ...',
+          serviceLoadError: 'Không tải được danh sách dịch vụ, vui lòng thử lại.',
+          serviceEmpty: 'Chưa có dịch vụ đang hoạt động.',
         }
       : {
           searchPlaceholder: 'Search dental information here...',
@@ -179,6 +141,9 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
           loginButton: 'Login',
           registerButton: 'Sign up',
           bookButton: 'BOOK NOW',
+          loadingServices: 'Loading services...',
+          serviceLoadError: 'Could not load services. Please try again.',
+          serviceEmpty: 'No active services yet.',
         };
 
   useEffect(() => {
@@ -213,6 +178,109 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isServiceMenuOpen) return;
+
+    let cancelled = false;
+
+    const fetchAllActiveServices = async () => {
+      const all: Service[] = [];
+      const limit = 100;
+      let page = 1;
+
+      for (;;) {
+        const res = await getServices({ status: true, page, limit });
+        const chunk = res.data.items ?? [];
+        all.push(...chunk);
+        const total = res.data.total ?? all.length;
+        if (all.length >= total || chunk.length === 0) break;
+        page += 1;
+        if (page > 20) break;
+      }
+
+      return all;
+    };
+
+    const fetchAllCategories = async () => {
+      const all: ServiceCategory[] = [];
+      const limit = 100;
+      let page = 1;
+
+      for (;;) {
+        const res = await getServiceCategories({ page, limit });
+        const chunk = res.data.items ?? [];
+        all.push(...chunk);
+        const total = res.data.total ?? all.length;
+        if (all.length >= total || chunk.length === 0) break;
+        page += 1;
+        if (page > 20) break;
+      }
+
+      return all;
+    };
+
+    setServiceMenuStatus('loading');
+
+    Promise.all([fetchAllCategories(), fetchAllActiveServices()])
+      .then(([categories, services]) => {
+        if (cancelled) return;
+
+        const sortedCategories = [...categories].sort((a, b) => a.categoryId - b.categoryId);
+        const servicesByCategoryId = new Map<number, Service[]>();
+
+        services.forEach((service) => {
+          const list = servicesByCategoryId.get(service.categoryId) ?? [];
+          list.push(service);
+          servicesByCategoryId.set(service.categoryId, list);
+        });
+
+        servicesByCategoryId.forEach((items) => {
+          items.sort((a, b) => a.serviceId - b.serviceId);
+        });
+
+        const groups: ServiceGroup[] = [];
+        sortedCategories.forEach((category) => {
+          const items = (servicesByCategoryId.get(category.categoryId) ?? []).map((service) => ({
+            label: service.serviceName,
+            to: getServiceDetailRoute(service.serviceId),
+          }));
+          if (items.length > 0) {
+            groups.push({
+              title: category.categoryName,
+              categoryId: category.categoryId,
+              items,
+            });
+          }
+        });
+
+        const knownCategoryIds = new Set(sortedCategories.map((category) => category.categoryId));
+        servicesByCategoryId.forEach((items, categoryId) => {
+          if (knownCategoryIds.has(categoryId) || items.length === 0) return;
+          groups.push({
+            title: language === 'vi' ? `Danh mục #${categoryId}` : `Category #${categoryId}`,
+            categoryId,
+            items: items.map((service) => ({
+              label: service.serviceName,
+              to: getServiceDetailRoute(service.serviceId),
+            })),
+          });
+        });
+
+        groups.sort((a, b) => a.categoryId - b.categoryId);
+        setServiceGroups(groups);
+        setServiceMenuStatus('loaded');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setServiceMenuStatus('error');
+        setServiceGroups([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isServiceMenuOpen, language]);
 
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">
@@ -359,9 +427,20 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
               <div
                 className={`absolute left-0 top-full z-20 w-[960px] rounded-2xl border border-slate-200 bg-white p-3 shadow-lg transition ${isServiceMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}
               >
-                <div className="grid grid-cols-4 gap-2">
+                {serviceMenuStatus === 'loading' ? (
+                  <p className="mb-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">{text.loadingServices}</p>
+                ) : null}
+                {serviceMenuStatus === 'error' ? (
+                  <p className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{text.serviceLoadError}</p>
+                ) : null}
+
+                {serviceMenuStatus === 'loaded' && serviceGroups.length === 0 ? (
+                  <p className="mb-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">{text.serviceEmpty}</p>
+                ) : null}
+
+                <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
                   {serviceGroups.map((group) => (
-                    <div key={group.title}>
+                    <div key={`${group.categoryId}-${group.title}`}>
                       <button
                         className="mb-1 block w-full rounded-lg px-3 py-3 text-left text-base font-extrabold text-slate-900 transition hover:bg-blue-600 hover:text-white"
                         type="button"
@@ -370,13 +449,14 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
                       </button>
                       <div className="space-y-1">
                         {group.items.map((item) => (
-                          <button
+                          <Link
                             className="block w-full rounded-lg px-3 py-2 text-left text-[15px] font-medium text-slate-700 transition hover:bg-blue-600 hover:text-white"
-                            key={item}
-                            type="button"
+                            key={item.to}
+                            to={item.to}
+                            onClick={() => setIsServiceMenuOpen(false)}
                           >
-                            {item}
-                          </button>
+                            {item.label}
+                          </Link>
                         ))}
                       </div>
                     </div>
