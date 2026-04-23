@@ -17,6 +17,11 @@ export type Response<T> = {
   data: T;
 };
 
+type HttpOptions = RequestInit & {
+  skipAuth?: boolean;
+  skipRefresh?: boolean;
+};
+
 let refreshPromise: Promise<boolean> | null = null;
 
 function isBrowser() {
@@ -82,12 +87,13 @@ async function refreshTokens(endpoint: string) {
   }
 }
 
-function ensureAuthorizationHeader(inputInit?: RequestInit, options?: { force?: boolean }): RequestInit {
+function ensureAuthorizationHeader(inputInit?: RequestInit, options?: { force?: boolean; skipAuth?: boolean }): RequestInit {
   if (!isBrowser()) return inputInit ?? {};
 
   const headers = new Headers(inputInit?.headers);
   const force = options?.force ?? false;
-  if (force || !headers.has('Authorization')) {
+  const skipAuth = options?.skipAuth ?? false;
+  if (!skipAuth && (force || !headers.has('Authorization'))) {
     const accessToken = getAccessToken();
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
   }
@@ -95,7 +101,20 @@ function ensureAuthorizationHeader(inputInit?: RequestInit, options?: { force?: 
   return { ...inputInit, headers };
 }
 
-export async function http<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+async function readErrorMessage(response: globalThis.Response) {
+  const fallbackMessage = `Request failed with status ${response.status}`;
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (!contentType.includes('application/json')) {
+    const text = await response.text().catch(() => '');
+    return text || fallbackMessage;
+  }
+
+  const error = (await response.json().catch(() => ({}))) as { message?: string };
+  return error.message ?? fallbackMessage;
+}
+
+export async function http<T>(input: RequestInfo | URL, init?: HttpOptions): Promise<T> {
   const endpoint = import.meta.env.VITE_ENDPOINT_API;
 
   let url = input;
@@ -106,7 +125,9 @@ export async function http<T>(input: RequestInfo | URL, init?: RequestInit): Pro
     url = `${endpoint}${input}`;
   }
 
-  const requestInit = ensureAuthorizationHeader(init);
+  const requestInit = ensureAuthorizationHeader(init, {
+    skipAuth: init?.skipAuth,
+  });
   const response = await fetch(url, requestInit);
 
   if (!response.ok) {
@@ -114,30 +135,30 @@ export async function http<T>(input: RequestInfo | URL, init?: RequestInit): Pro
     const requestUrlString = typeof url === 'string' ? url : url.toString();
     const isRefreshEndpoint = requestUrlString.includes('/auth/refresh');
 
-    if (response.status === 401 && !isRefreshEndpoint) {
+    if (response.status === 401 && !isRefreshEndpoint && !init?.skipRefresh) {
       const didRefresh = await refreshTokens(endpoint);
       if (didRefresh) {
         // Force overwrite Authorization header because `init` may still contain an expired token.
         const retriedInit = ensureAuthorizationHeader(init, {
           force: true,
+          skipAuth: init?.skipAuth,
         });
         const retriedResponse = await fetch(url, retriedInit);
         if (!retriedResponse.ok) {
-          throw new Error(`Request failed with status ${retriedResponse.status}`);
+          throw new Error(await readErrorMessage(retriedResponse));
         }
         return (await retriedResponse.json()) as T;
       }
     }
 
-    const error = await response.json();
-    throw new Error(error.message);
+    throw new Error(await readErrorMessage(response));
   }
 
   return (await response.json()) as T;
 }
 
 /** Giống `http` nhưng trả `null` khi server trả 404 (dùng cho GET `/patients/me` khi chưa có hồ sơ). */
-export async function httpAllow404<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T | null> {
+export async function httpAllow404<T>(input: RequestInfo | URL, init?: HttpOptions): Promise<T | null> {
   const endpoint = import.meta.env.VITE_ENDPOINT_API;
 
   let url = input;
@@ -148,7 +169,9 @@ export async function httpAllow404<T>(input: RequestInfo | URL, init?: RequestIn
     url = `${endpoint}${input}`;
   }
 
-  const requestInit = ensureAuthorizationHeader(init);
+  const requestInit = ensureAuthorizationHeader(init, {
+    skipAuth: init?.skipAuth,
+  });
   let response = await fetch(url, requestInit);
 
   if (response.status === 404) {
@@ -159,26 +182,25 @@ export async function httpAllow404<T>(input: RequestInfo | URL, init?: RequestIn
     const requestUrlString = typeof url === 'string' ? url : url.toString();
     const isRefreshEndpoint = requestUrlString.includes('/auth/refresh');
 
-    if (response.status === 401 && !isRefreshEndpoint) {
+    if (response.status === 401 && !isRefreshEndpoint && !init?.skipRefresh) {
       const didRefresh = await refreshTokens(endpoint);
       if (didRefresh) {
         const retriedInit = ensureAuthorizationHeader(init, {
           force: true,
+          skipAuth: init?.skipAuth,
         });
         response = await fetch(url, retriedInit);
         if (response.status === 404) {
           return null;
         }
         if (!response.ok) {
-          const errJson = (await response.json().catch(() => ({}))) as { message?: string };
-          throw new Error(errJson.message ?? `Request failed with status ${response.status}`);
+          throw new Error(await readErrorMessage(response));
         }
         return (await response.json()) as T;
       }
     }
 
-    const error = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(error.message ?? `Request failed with status ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return (await response.json()) as T;

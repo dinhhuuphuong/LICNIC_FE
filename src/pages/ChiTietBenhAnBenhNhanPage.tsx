@@ -1,3 +1,5 @@
+import { PageCard } from '@/components/common/PageCard';
+import { StatePanel } from '@/components/common/StatePanel';
 import { PatientPrescriptionList } from '@/components/patient/PatientPrescriptionList';
 import { PATIENT_ROLE_ID } from '@/constants/roleIds';
 import { ROUTES } from '@/constants/routes';
@@ -13,6 +15,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const RX_PAGE_SIZE = 50;
 const patientMeQueryKey = ['patients', 'me'] as const;
+const primaryActionClassName =
+  'inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white';
 
 function formatLongDate(iso: string | undefined, isVi: boolean): string {
   if (!iso) return '—';
@@ -90,56 +94,66 @@ export function ChiTietBenhAnBenhNhanPage() {
 
   if (!user) {
     return (
-      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
-        <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Cần đăng nhập' : 'Sign in required'}</h1>
-        <button
-          type="button"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white"
-          onClick={() => navigate(ROUTES.login)}
-        >
-          {isVi ? 'Đăng nhập' : 'Login'}
-        </button>
-      </section>
+      <StatePanel
+        centered
+        tone="warning"
+        className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
+        title={isVi ? 'Cần đăng nhập' : 'Sign in required'}
+        action={
+          <button type="button" className={primaryActionClassName} onClick={() => navigate(ROUTES.login)}>
+            {isVi ? 'Đăng nhập' : 'Login'}
+          </button>
+        }
+      />
     );
   }
 
   if (user.roleId !== PATIENT_ROLE_ID) {
     return (
-      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Không có quyền truy cập' : 'Access denied'}</h1>
-        <button
-          type="button"
-          className="mt-6 text-sm font-semibold text-blue-600 underline"
-          onClick={() => navigate(ROUTES.home)}
-        >
-          {isVi ? 'Về trang chủ' : 'Back to home'}
-        </button>
-      </section>
+      <StatePanel
+        centered
+        className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
+        title={isVi ? 'Không có quyền truy cập' : 'Access denied'}
+        action={
+          <button type="button" className="text-sm font-semibold text-blue-600 underline" onClick={() => navigate(ROUTES.home)}>
+            {isVi ? 'Về trang chủ' : 'Back to home'}
+          </button>
+        }
+      />
     );
   }
 
   if (!validId) {
     return (
-      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
-        <p className="font-semibold text-slate-800">{isVi ? 'Mã bệnh án không hợp lệ.' : 'Invalid record id.'}</p>
-        <Link to={ROUTES.patientMedicalRecords} className="mt-4 inline-block text-sm font-bold text-blue-700 underline">
-          {isVi ? '← Về danh sách' : '← Back to list'}
-        </Link>
-      </section>
+      <StatePanel
+        centered
+        tone="warning"
+        className="rounded-3xl p-8"
+        titleClassName="hidden"
+        description={isVi ? 'Mã bệnh án không hợp lệ.' : 'Invalid record id.'}
+        descriptionClassName="font-semibold text-slate-800"
+        action={
+          <Link to={ROUTES.patientMedicalRecords} className="inline-block text-sm font-bold text-blue-700 underline">
+            {isVi ? '← Về danh sách' : '← Back to list'}
+          </Link>
+        }
+      />
     );
   }
 
   if (!isPatientLoading && patient == null) {
     return (
-      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
-        <p className="text-slate-800">{isVi ? 'Cần hồ sơ bệnh nhân để xem chi tiết.' : 'Patient profile required.'}</p>
-        <Link
-          to={ROUTES.patientProfile}
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white"
-        >
-          {isVi ? 'Mở hồ sơ' : 'Open profile'}
-        </Link>
-      </section>
+      <StatePanel
+        centered
+        tone="warning"
+        titleClassName="hidden"
+        description={isVi ? 'Cần hồ sơ bệnh nhân để xem chi tiết.' : 'Patient profile required.'}
+        action={
+          <Link to={ROUTES.patientProfile} className={primaryActionClassName}>
+            {isVi ? 'Mở hồ sơ' : 'Open profile'}
+          </Link>
+        }
+      />
     );
   }
 
@@ -168,19 +182,17 @@ export function ChiTietBenhAnBenhNhanPage() {
           <div className="h-40 rounded-2xl bg-slate-100" />
         </div>
       ) : isRecordError ? (
-        <section className="rounded-3xl border border-red-200 bg-red-50 p-8">
-          <h1 className="text-lg font-bold text-red-900">
-            {isVi ? 'Không tải được bệnh án' : 'Could not load record'}
-          </h1>
-          <p className="mt-2 text-sm text-red-800">{recordError instanceof Error ? recordError.message : 'Error'}</p>
-          <button
-            type="button"
-            className="mt-4 text-sm font-semibold text-red-700 underline"
-            onClick={() => void refetchRecord()}
-          >
-            {isVi ? 'Thử lại' : 'Try again'}
-          </button>
-        </section>
+        <StatePanel
+          tone="danger"
+          className="rounded-3xl p-8"
+          title={isVi ? 'Không tải được bệnh án' : 'Could not load record'}
+          description={recordError instanceof Error ? recordError.message : 'Error'}
+          action={
+            <button type="button" className="text-sm font-semibold text-red-700 underline" onClick={() => void refetchRecord()}>
+              {isVi ? 'Thử lại' : 'Try again'}
+            </button>
+          }
+        />
       ) : recordRes ? (
         <>
           <header className="mb-8 border-b border-slate-200 pb-6">
@@ -207,25 +219,19 @@ export function ChiTietBenhAnBenhNhanPage() {
           </header>
 
           <div className="grid gap-8 lg:grid-cols-1">
-            <section
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-              aria-labelledby="dx-heading"
-            >
+            <PageCard aria-labelledby="dx-heading">
               <h2 id="dx-heading" className="text-lg font-bold text-slate-900">
                 {isVi ? 'Chẩn đoán' : 'Diagnosis'}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{recordRes.diagnosis}</p>
-            </section>
+            </PageCard>
 
-            <section
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-              aria-labelledby="tx-heading"
-            >
+            <PageCard aria-labelledby="tx-heading">
               <h2 id="tx-heading" className="text-lg font-bold text-slate-900">
                 {isVi ? 'Điều trị' : 'Treatment'}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{recordRes.treatment}</p>
-            </section>
+            </PageCard>
 
             {recordRes.note ? (
               <section
@@ -239,10 +245,7 @@ export function ChiTietBenhAnBenhNhanPage() {
               </section>
             ) : null}
 
-            <section
-              className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm"
-              aria-labelledby="rx-heading"
-            >
+            <PageCard tone="success" aria-labelledby="rx-heading">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <h2 id="rx-heading" className="text-lg font-bold text-slate-900">
                   {isVi ? 'Chi tiết đơn thuốc' : 'Prescription details'}
@@ -266,7 +269,7 @@ export function ChiTietBenhAnBenhNhanPage() {
               ) : (
                 <PatientPrescriptionList items={rxData?.items ?? []} isVi={isVi} />
               )}
-            </section>
+            </PageCard>
           </div>
         </>
       ) : null}

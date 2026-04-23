@@ -121,11 +121,13 @@ export function RegisterPage() {
 
       setSuccess(isVi ? 'Đăng ký thành công.' : 'Registration successful.');
       navigate(safeReturnTo ?? ROUTES.home, { replace: true });
-    } catch {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : null;
       setError(
-        isVi
-          ? 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.'
-          : 'Registration failed. Please check your information.',
+        errorMessage ??
+          (isVi
+            ? 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.'
+            : 'Registration failed. Please check your information.'),
       );
     } finally {
       setIsSubmitting(false);
@@ -147,8 +149,9 @@ export function RegisterPage() {
       await requestOtp({ email });
 
       setSuccess(isVi ? 'Đã gửi mã OTP đến email của bạn.' : 'OTP has been sent to your email.');
-    } catch {
-      setError(isVi ? 'Gửi mã OTP thất bại. Vui lòng thử lại.' : 'Failed to send OTP. Please try again.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : null;
+      setError(errorMessage ?? (isVi ? 'Gửi mã OTP thất bại. Vui lòng thử lại.' : 'Failed to send OTP. Please try again.'));
     } finally {
       setIsRequestingOtp(false);
     }
