@@ -155,10 +155,30 @@ export function updateDoctorWorkSchedule(scheduleId: number, payload: UpdateDoct
   });
 }
 
+export function updateDoctorWorkScheduleForDoctor(scheduleId: number, payload: UpdateDoctorWorkSchedulePayload) {
+  return http<UpdateDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/me/${scheduleId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 export type DeleteDoctorWorkScheduleResponse = Response<null>;
 
 export function deleteDoctorWorkSchedule(scheduleId: number) {
   return http<DeleteDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/${scheduleId}`, {
+    method: 'DELETE',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
+export function deleteMyDoctorWorkSchedule(scheduleId: number) {
+  return http<DeleteDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/me/${scheduleId}`, {
     method: 'DELETE',
     headers: {
       accept: '*/*',
