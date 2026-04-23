@@ -275,6 +275,12 @@ export function LichLamViecBacSiPage() {
                   ) : null}
                 </div>
               </div>
+              {schedule.status === 'rejected' && schedule.rejectionReason ? (
+                <div className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="font-semibold">{isVi ? 'Lý do từ chối:' : 'Rejection reason:'}</span>{' '}
+                  {schedule.rejectionReason}
+                </div>
+              ) : null}
               {schedule.status === 'pending' && schedule.createdByRoleId === ADMIN_ROLE_ID ? (
                 <div className="flex justify-end items-center gap-2">
                   <Button

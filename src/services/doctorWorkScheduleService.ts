@@ -23,6 +23,7 @@ export type DoctorWorkSchedule = {
    * Không có atTime thì thường là null/undefined.
    */
   appointmentStatus?: DoctorWorkScheduleAppointmentSlotStatus | null;
+  rejectionReason?: string | null;
   createdAt: string;
   deletedAt?: string | null;
 };
