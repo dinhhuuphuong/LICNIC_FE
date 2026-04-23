@@ -72,7 +72,7 @@ export function ServiceDetailContent({ service, isVi }: Props) {
       </div>
 
       <div className="space-y-4 bg-[#f4f8fc] p-5 md:space-y-5 md:p-8">
-        <DetailBlock title={isVi ? 'Dịch vụ là gì?' : 'What is this service?'} body={service.whatIs} />
+        <DetailBlock title={isVi ? 'Thông Tin Dịch Vụ' : 'Service Information'} body={service.whatIs} />
         <DetailBlock title={isVi ? 'Phương pháp thực hiện' : 'Method'} body={service.method} />
         <DetailBlock title={isVi ? 'Quy trình' : 'Process'} body={service.process} />
         <DetailBlock title={isVi ? 'Địa chỉ tin cậy' : 'Trusted address'} body={service.trustedAddress} />
