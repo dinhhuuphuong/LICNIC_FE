@@ -1,3 +1,4 @@
+import { StatePanel } from '@/components/common/StatePanel';
 import { PatientAppointmentCard } from '@/components/patient/PatientAppointmentCard';
 import { PatientCancelAppointmentModal } from '@/components/patient/PatientCancelAppointmentModal';
 import { PatientRescheduleModal } from '@/components/patient/PatientRescheduleModal';
@@ -13,9 +14,17 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const PAGE_SIZE = 8;
-
 const appointmentsQueryKeyRoot = ['appointments', 'patient'] as const;
 const patientMeQueryKey = ['patients', 'me'] as const;
+const toolbarLinkClassName =
+  'inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-bold shadow-sm transition';
+const neutralToolbarLinkClassName = `${toolbarLinkClassName} border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-800`;
+const successToolbarLinkClassName =
+  `${toolbarLinkClassName} border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-100`;
+const primaryActionClassName =
+  'inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white';
+const paginationButtonClassName =
+  'rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-40';
 
 export function LichHenBenhNhanPage() {
   const { language } = useLanguage();
@@ -73,37 +82,34 @@ export function LichHenBenhNhanPage() {
 
   if (!user) {
     return (
-      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
-        <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Cần đăng nhập' : 'Sign in required'}</h1>
-        <p className="mt-2 text-sm text-slate-700">
-          {isVi ? 'Vui lòng đăng nhập để xem lịch hẹn của bạn.' : 'Please sign in to view your appointments.'}
-        </p>
-        <button
-          type="button"
-          className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white"
-          onClick={() => navigate(ROUTES.login)}
-        >
-          {isVi ? 'Đăng nhập' : 'Login'}
-        </button>
-      </section>
+      <StatePanel
+        centered
+        tone="warning"
+        className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
+        title={isVi ? 'Cần đăng nhập' : 'Sign in required'}
+        description={isVi ? 'Vui lòng đăng nhập để xem lịch hẹn của bạn.' : 'Please sign in to view your appointments.'}
+        action={
+          <button type="button" className={primaryActionClassName} onClick={() => navigate(ROUTES.login)}>
+            {isVi ? 'Đăng nhập' : 'Login'}
+          </button>
+        }
+      />
     );
   }
 
   if (user.roleId !== PATIENT_ROLE_ID) {
     return (
-      <section className="mx-auto w-full max-w-[1360px] rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">{isVi ? 'Không có quyền truy cập' : 'Access denied'}</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          {isVi ? 'Trang này chỉ dành cho tài khoản bệnh nhân.' : 'This page is only available for patient accounts.'}
-        </p>
-        <button
-          type="button"
-          className="mt-6 text-sm font-semibold text-blue-600 underline"
-          onClick={() => navigate(ROUTES.home)}
-        >
-          {isVi ? 'Về trang chủ' : 'Back to home'}
-        </button>
-      </section>
+      <StatePanel
+        centered
+        className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
+        title={isVi ? 'Không có quyền truy cập' : 'Access denied'}
+        description={isVi ? 'Trang này chỉ dành cho tài khoản bệnh nhân.' : 'This page is only available for patient accounts.'}
+        action={
+          <button type="button" className="text-sm font-semibold text-blue-600 underline" onClick={() => navigate(ROUTES.home)}>
+            {isVi ? 'Về trang chủ' : 'Back to home'}
+          </button>
+        }
+      />
     );
   }
 
@@ -112,17 +118,17 @@ export function LichHenBenhNhanPage() {
 
   if (isPatientError) {
     return (
-      <section className="rounded-3xl border border-red-200 bg-red-50 p-8">
-        <h2 className="text-lg font-bold text-red-900">{isVi ? 'Không tải được hồ sơ' : 'Could not load profile'}</h2>
-        <p className="mt-2 text-sm text-red-800">{patientError instanceof Error ? patientError.message : 'Error'}</p>
-        <button
-          type="button"
-          className="mt-4 text-sm font-semibold text-red-700 underline"
-          onClick={() => void refetchPatient()}
-        >
-          {isVi ? 'Thử lại' : 'Try again'}
-        </button>
-      </section>
+      <StatePanel
+        tone="danger"
+        className="rounded-3xl p-8"
+        title={isVi ? 'Không tải được hồ sơ' : 'Could not load profile'}
+        description={patientError instanceof Error ? patientError.message : 'Error'}
+        action={
+          <button type="button" className="text-sm font-semibold text-red-700 underline" onClick={() => void refetchPatient()}>
+            {isVi ? 'Thử lại' : 'Try again'}
+          </button>
+        }
+      />
     );
   }
 
@@ -137,17 +143,17 @@ export function LichHenBenhNhanPage() {
               : 'You need a patient profile to view appointments by patient id.'}
           </p>
         </header>
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
-          <p className="text-slate-800">
-            {isVi ? 'Bạn chưa tạo hồ sơ bệnh nhân.' : 'You have not created a patient profile yet.'}
-          </p>
-          <Link
-            to={ROUTES.patientProfile}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white"
-          >
-            {isVi ? 'Tạo / mở hồ sơ' : 'Create or open profile'}
-          </Link>
-        </section>
+        <StatePanel
+          centered
+          tone="warning"
+          titleClassName="hidden"
+          description={isVi ? 'Bạn chưa tạo hồ sơ bệnh nhân.' : 'You have not created a patient profile yet.'}
+          action={
+            <Link to={ROUTES.patientProfile} className={primaryActionClassName}>
+              {isVi ? 'Tạo / mở hồ sơ' : 'Create or open profile'}
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -166,13 +172,13 @@ export function LichHenBenhNhanPage() {
         <div className="flex flex-wrap gap-2 self-start">
           <Link
             to={ROUTES.patientProfile}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-800"
+            className={neutralToolbarLinkClassName}
           >
             {isVi ? '← Hồ sơ bệnh nhân' : '← Patient profile'}
           </Link>
           <Link
             to={ROUTES.patientMedicalRecords}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 text-sm font-bold text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100"
+            className={successToolbarLinkClassName}
           >
             {isVi ? 'Bệnh án →' : 'Records →'}
           </Link>
@@ -208,26 +214,29 @@ export function LichHenBenhNhanPage() {
           ))}
         </div>
       ) : isError ? (
-        <section className="rounded-3xl border border-red-200 bg-red-50 p-8">
-          <h2 className="text-lg font-bold text-red-900">
-            {isVi ? 'Không tải được danh sách' : 'Could not load list'}
-          </h2>
-          <p className="mt-2 text-sm text-red-800">{error instanceof Error ? error.message : 'Error'}</p>
-          <button
-            type="button"
-            className="mt-4 text-sm font-semibold text-red-700 underline"
-            onClick={() => void refetch()}
-          >
-            {isVi ? 'Thử lại' : 'Try again'}
-          </button>
-        </section>
+        <StatePanel
+          tone="danger"
+          className="rounded-3xl p-8"
+          title={isVi ? 'Không tải được danh sách' : 'Could not load list'}
+          description={error instanceof Error ? error.message : 'Error'}
+          action={
+            <button type="button" className="text-sm font-semibold text-red-700 underline" onClick={() => void refetch()}>
+              {isVi ? 'Thử lại' : 'Try again'}
+            </button>
+          }
+        />
       ) : !data?.items.length ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center">
-          <p className="text-slate-700">{isVi ? 'Bạn chưa có lịch hẹn nào.' : 'You have no appointments yet.'}</p>
+        <StatePanel
+          centered
+          tone="muted"
+          className="p-12"
+          description={isVi ? 'Bạn chưa có lịch hẹn nào.' : 'You have no appointments yet.'}
+          descriptionClassName="text-slate-700"
+        >
           <p className="mt-2 text-sm text-slate-500">
             {isVi ? 'Đặt lịch từ trang dịch vụ để bắt đầu.' : 'Book from a service page to get started.'}
           </p>
-        </div>
+        </StatePanel>
       ) : (
         <>
           <ul className="space-y-4">
@@ -250,7 +259,7 @@ export function LichHenBenhNhanPage() {
             >
               <button
                 type="button"
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-40"
+                className={paginationButtonClassName}
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
@@ -261,7 +270,7 @@ export function LichHenBenhNhanPage() {
               </span>
               <button
                 type="button"
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-40"
+                className={paginationButtonClassName}
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >

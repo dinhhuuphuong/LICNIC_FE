@@ -13,14 +13,21 @@ type HeaderAuthActionsProps = {
 
 const DEFAULT_AVATAR_URL = '/imgs/default-avatar.jpg';
 
+function normalizeRoleName(roleName?: string | null) {
+  return roleName?.trim().toLowerCase() ?? '';
+}
+
 export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActionsProps) {
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const navigate = useNavigate();
   const { language } = useLanguage();
 
-  const isAdminRole = user?.role?.roleName === ROLE.ADMIN;
-  const isPatientRole = user?.roleId === PATIENT_ROLE_ID;
+  const normalizedRoleName = normalizeRoleName(user?.role?.roleName);
+  const isAdminRole = normalizedRoleName === ROLE.ADMIN.toLowerCase();
+  const isDoctorRole = normalizedRoleName === ROLE.DOCTOR.toLowerCase();
+  const isPatientRole = normalizedRoleName === ROLE.PATIENT.toLowerCase() || user?.roleId === PATIENT_ROLE_ID;
+  const isReceptionistRole = normalizedRoleName === ROLE.RECEPTIONIST.toLowerCase();
 
   const initialAvatarSrc = useMemo(() => {
     if (!user?.avatar) return DEFAULT_AVATAR_URL;
@@ -32,7 +39,6 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Nếu user đổi (log in/out) thì đóng popover để tránh UI cũ.
     setIsPopoverOpen(false);
   }, [user]);
 
@@ -65,9 +71,12 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const profileLabel = language === 'vi' ? 'Hồ sơ bệnh nhân' : 'My profile';
   const appointmentsLabel = language === 'vi' ? 'Lịch hẹn' : 'Appointments';
   const medicalRecordsLabel = language === 'vi' ? 'Bệnh án' : 'Medical records';
+  const doctorProfileLabel = language === 'vi' ? 'Thông tin cá nhân' : 'Profile';
+  const doctorSchedulesLabel = language === 'vi' ? 'Lịch làm việc' : 'Work schedules';
+  const receptionistAppointmentsLabel = language === 'vi' ? 'Quản lý đặt lịch' : 'Appointment management';
+  const receptionistCustomerCareLabel = language === 'vi' ? 'Chăm sóc khách hàng' : 'Customer care';
 
   const handleLogout = () => {
-    // Clear auth tokens first so future authenticated requests won't happen.
     window.localStorage.removeItem('accessToken');
     window.localStorage.removeItem('refreshToken');
     clearUser();
@@ -97,15 +106,15 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   return (
     <div ref={containerRef} className="relative">
       <button
-        className="inline-flex w-11 h-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:border-slate-300"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:border-slate-300"
         type="button"
         aria-label={user.name}
         aria-expanded={isPopoverOpen}
-        onClick={() => setIsPopoverOpen((v) => !v)}
+        onClick={() => setIsPopoverOpen((value) => !value)}
         title={user.name}
       >
         <img
-          className="shrink-0 h-10 w-10 rounded-full object-cover"
+          className="h-10 w-10 shrink-0 rounded-full object-cover"
           src={avatarSrc}
           alt={user.name}
           onError={() => setAvatarSrc(DEFAULT_AVATAR_URL)}
@@ -117,7 +126,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
           className="absolute right-0 top-full z-20 mt-2 min-w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg"
           role="menu"
           aria-label="User menu"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
         >
           <Link
             className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -127,6 +136,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
           >
             {homeLabel}
           </Link>
+
           {isPatientRole && (
             <>
               <Link
@@ -155,6 +165,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
               </Link>
             </>
           )}
+
           {isAdminRole && (
             <Link
               className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -165,6 +176,49 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
               {adminLabel}
             </Link>
           )}
+
+          {isDoctorRole && (
+            <>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.doctorProfile}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {doctorProfileLabel}
+              </Link>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.doctorWorkSchedules}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {doctorSchedulesLabel}
+              </Link>
+            </>
+          )}
+
+          {isReceptionistRole && (
+            <>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.receptionistAppointments}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {receptionistAppointmentsLabel}
+              </Link>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.receptionistCustomerCare}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {receptionistCustomerCareLabel}
+              </Link>
+            </>
+          )}
+
           <button
             className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
             type="button"

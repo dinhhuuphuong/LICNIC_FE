@@ -3,6 +3,7 @@ import { ROUTES } from '@/constants/routes';
 import featureRoutes from '@/modules';
 import { BenhAnBenhNhanPage } from '@/pages/BenhAnBenhNhanPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
+import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
@@ -17,7 +18,10 @@ import { NotFoundPage } from '@/pages/KhongTimThayPage';
 import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
+import { LichLamViecBacSiPage } from '@/pages/LichLamViecBacSiPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
+import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
+import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
 import { AboutPage } from '@/pages/VeTamDucSmilePage';
@@ -111,6 +115,22 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientMedicalRecords,
             element: <BenhAnBenhNhanPage />,
+          },
+          {
+            path: ROUTES.doctorProfile,
+            element: <ThongTinCaNhanBacSiPage />,
+          },
+          {
+            path: ROUTES.doctorWorkSchedules,
+            element: <LichLamViecBacSiPage />,
+          },
+          {
+            path: ROUTES.receptionistAppointments,
+            element: <QuanLyDatLichLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistCustomerCare,
+            element: <ChamSocKhachHangLeTanPage />,
           },
           {
             path: ROUTES.patientMedicalRecordDetail,
