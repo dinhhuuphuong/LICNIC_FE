@@ -1,7 +1,7 @@
-import { Button, Flex, Modal, Table, Tag, message } from 'antd';
+import { Button, Flex, Input, Modal, Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -9,7 +9,10 @@ import { SEARCH_PARAMS } from '@/constants/search-params';
 import type { DoctorWorkSchedule } from '@/services/doctorWorkScheduleService';
 
 import DATE_FORMAT from '@/constants/date-format';
+import { DOCTOR_ROLE_ID } from '@/constants/roleIds';
+import { useApproveDoctorWorkScheduleMutation } from '../hooks/mutations/useApproveDoctorWorkScheduleMutation';
 import { useDeleteDoctorWorkScheduleMutation } from '../hooks/mutations/useDeleteDoctorWorkScheduleMutation';
+import { useRejectDoctorWorkScheduleMutation } from '../hooks/mutations/useRejectDoctorWorkScheduleMutation';
 import { useGetDoctorWorkSchedulesQuery } from '../hooks/queries/useGetDoctorWorkSchedulesQuery';
 import ModifyDoctorWorkSchedule from './ModifyDoctorWorkSchedule';
 
@@ -35,6 +38,8 @@ export default function DoctorWorkSchedulesTable() {
   const total = data?.data.total ?? 0;
 
   const deleteMutation = useDeleteDoctorWorkScheduleMutation();
+  const approveMutation = useApproveDoctorWorkScheduleMutation();
+  const rejectMutation = useRejectDoctorWorkScheduleMutation();
 
   const handleDelete = useCallback(
     (record: DoctorWorkSchedule) => {
@@ -56,6 +61,70 @@ export default function DoctorWorkSchedulesTable() {
       });
     },
     [deleteMutation],
+  );
+
+  const handleApprove = useCallback(
+    (record: DoctorWorkSchedule) => {
+      Modal.confirm({
+        title: 'Xác nhận duyệt lịch làm việc',
+        content: `Bạn có chắc muốn đồng ý lịch #${record.scheduleId}?`,
+        okText: 'Đồng ý',
+        cancelText: 'Hủy',
+        onOk: async () => {
+          try {
+            const res = await approveMutation.mutateAsync(record.scheduleId);
+            message.success(res.message || 'Đã duyệt lịch làm việc');
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Duyệt lịch thất bại';
+            message.error(msg);
+          }
+        },
+      });
+    },
+    [approveMutation],
+  );
+
+  const handleReject = useCallback(
+    (record: DoctorWorkSchedule) => {
+      let reason = '';
+
+      Modal.confirm({
+        title: 'Từ chối lịch làm việc',
+        content: (
+          <Input.TextArea
+            autoFocus
+            rows={4}
+            placeholder="Nhập lý do từ chối"
+            onChange={(event) => {
+              reason = event.target.value;
+            }}
+          />
+        ),
+        okText: 'Từ chối',
+        cancelText: 'Hủy',
+        okButtonProps: { danger: true },
+        onOk: async () => {
+          const trimmedReason = reason.trim();
+          if (!trimmedReason) {
+            message.warning('Vui lòng nhập lý do từ chối');
+            throw new Error('Reject reason is required');
+          }
+
+          try {
+            const res = await rejectMutation.mutateAsync({
+              scheduleId: record.scheduleId,
+              payload: { reason: trimmedReason },
+            });
+            message.success(res.message || 'Đã từ chối lịch làm việc');
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Từ chối lịch thất bại';
+            message.error(msg);
+            throw e;
+          }
+        },
+      });
+    },
+    [rejectMutation],
   );
 
   const columns = useMemo<ColumnsType<DoctorWorkSchedule>>(
@@ -110,6 +179,26 @@ export default function DoctorWorkSchedulesTable() {
         fixed: 'right',
         render: (_, record) => (
           <Flex gap={8} justify="center" align="center">
+            <Button
+              disabled={
+                record.status !== 'pending' || approveMutation.isPending || record.createdByRoleId !== DOCTOR_ROLE_ID
+              }
+              loading={approveMutation.isPending}
+              variant="text"
+              color="green"
+              icon={<Check size={16} />}
+              onClick={() => handleApprove(record)}
+            />
+            <Button
+              disabled={
+                record.status !== 'pending' || rejectMutation.isPending || record.createdByRoleId !== DOCTOR_ROLE_ID
+              }
+              loading={rejectMutation.isPending}
+              variant="text"
+              color="red"
+              icon={<X size={16} />}
+              onClick={() => handleReject(record)}
+            />
             <ModifyDoctorWorkSchedule
               scheduleId={record.scheduleId}
               trigger={
@@ -133,7 +222,14 @@ export default function DoctorWorkSchedulesTable() {
         ),
       },
     ],
-    [deleteMutation.isPending, handleDelete],
+    [
+      approveMutation.isPending,
+      deleteMutation.isPending,
+      handleApprove,
+      handleDelete,
+      handleReject,
+      rejectMutation.isPending,
+    ],
   );
 
   return (

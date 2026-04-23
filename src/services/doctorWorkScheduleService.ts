@@ -176,6 +176,15 @@ export function approveDoctorWorkSchedule(scheduleId: number) {
   });
 }
 
+export function approveDoctorWorkScheduleByAdmin(scheduleId: number) {
+  return http<ApproveDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/admin/${scheduleId}/approve`, {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
 export type RejectDoctorWorkSchedulePayload = {
   reason: string;
 };
@@ -184,6 +193,17 @@ export type RejectDoctorWorkScheduleResponse = Response<DoctorWorkSchedule>;
 
 export function rejectDoctorWorkSchedule(scheduleId: number, payload: RejectDoctorWorkSchedulePayload) {
   return http<RejectDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/${scheduleId}/reject`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function rejectDoctorWorkScheduleByAdmin(scheduleId: number, payload: RejectDoctorWorkSchedulePayload) {
+  return http<RejectDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/admin/${scheduleId}/reject`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
