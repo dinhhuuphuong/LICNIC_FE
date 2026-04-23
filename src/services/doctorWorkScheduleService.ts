@@ -9,6 +9,7 @@ export type DoctorWorkScheduleAppointmentSlotStatus = 'Available' | 'Unavailable
 export type DoctorWorkSchedule = {
   scheduleId: number;
   doctorId: number;
+  createdByRoleId?: number;
   doctor?: Doctor;
   workDate: string; // YYYY-MM-DD
   startTime: string; // HH:mm:ss
@@ -113,6 +114,31 @@ export function createDoctorWorkSchedule(payload: CreateDoctorWorkSchedulePayloa
   });
 }
 
+export type CreateMyDoctorWorkScheduleBatchItemPayload = {
+  workDate: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  maxPatients: number;
+  slotDurationMinutes: number;
+};
+
+export type CreateMyDoctorWorkScheduleBatchPayload = {
+  items: CreateMyDoctorWorkScheduleBatchItemPayload[];
+};
+
+export type CreateMyDoctorWorkScheduleBatchResponse = Response<DoctorWorkSchedule[]>;
+
+export function createMyDoctorWorkSchedulesBatch(payload: CreateMyDoctorWorkScheduleBatchPayload) {
+  return http<CreateMyDoctorWorkScheduleBatchResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/me/batch`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 export type UpdateDoctorWorkSchedulePayload = Partial<CreateDoctorWorkSchedulePayload>;
 
 export type UpdateDoctorWorkScheduleResponse = Response<DoctorWorkSchedule>;
@@ -136,5 +162,33 @@ export function deleteDoctorWorkSchedule(scheduleId: number) {
     headers: {
       accept: '*/*',
     },
+  });
+}
+
+export type ApproveDoctorWorkScheduleResponse = Response<DoctorWorkSchedule>;
+
+export function approveDoctorWorkSchedule(scheduleId: number) {
+  return http<ApproveDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/${scheduleId}/approve`, {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
+export type RejectDoctorWorkSchedulePayload = {
+  reason: string;
+};
+
+export type RejectDoctorWorkScheduleResponse = Response<DoctorWorkSchedule>;
+
+export function rejectDoctorWorkSchedule(scheduleId: number, payload: RejectDoctorWorkSchedulePayload) {
+  return http<RejectDoctorWorkScheduleResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/${scheduleId}/reject`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
   });
 }

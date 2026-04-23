@@ -2,8 +2,8 @@ import { App } from '@/app/App';
 import { ROUTES } from '@/constants/routes';
 import featureRoutes from '@/modules';
 import { BenhAnBenhNhanPage } from '@/pages/BenhAnBenhNhanPage';
-import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
+import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
@@ -18,9 +18,10 @@ import { NotFoundPage } from '@/pages/KhongTimThayPage';
 import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
-import { LichLamViecBacSiPage } from '@/pages/LichLamViecBacSiPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
+import { LichLamViecBacSiPage } from '@/pages/LichLamViecBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
+import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
@@ -123,6 +124,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.doctorWorkSchedules,
             element: <LichLamViecBacSiPage />,
+          },
+          {
+            path: ROUTES.doctorWorkSchedulesCreate,
+            element: <TaoLichLamViecBacSiPage />,
           },
           {
             path: ROUTES.receptionistAppointments,

@@ -17,6 +17,7 @@ export const ROUTES = {
   patientMedicalRecords: '/benh-nhan/benh-an',
   doctorProfile: '/bac-si/thong-tin-ca-nhan',
   doctorWorkSchedules: '/bac-si/lich-lam-viec',
+  doctorWorkSchedulesCreate: '/bac-si/lich-lam-viec/tao-moi',
   receptionistAppointments: '/le-tan/quan-ly-dat-lich',
   receptionistCustomerCare: '/le-tan/cham-soc-khach-hang',
   /** Chi tiết bệnh án — dùng `getPatientMedicalRecordDetailRoute(recordId)`. */
