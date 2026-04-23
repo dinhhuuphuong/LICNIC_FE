@@ -3,6 +3,7 @@ import { ROUTES } from '@/constants/routes';
 import featureRoutes from '@/modules';
 import { BenhAnBenhNhanPage } from '@/pages/BenhAnBenhNhanPage';
 import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
+import { DoctorDetailPage } from '@/pages/ChiTietBacSiPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.aboutTeam,
             element: <AboutTeamPage />,
+          },
+          {
+            path: ROUTES.doctorPublicDetail,
+            element: <DoctorDetailPage />,
           },
           {
             path: ROUTES.aboutFacilities,

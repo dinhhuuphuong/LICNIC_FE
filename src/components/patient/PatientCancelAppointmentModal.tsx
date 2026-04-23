@@ -1,4 +1,5 @@
 import { cancelAppointment, type AppointmentListItem } from '@/services/appointmentService';
+import { formatYmdToDmy } from '@/utils/dateDisplay';
 import { useEffect, useState } from 'react';
 
 type PatientCancelAppointmentModalProps = {
@@ -78,7 +79,7 @@ export function PatientCancelAppointmentModal({
           {isVi ? 'Hủy lịch hẹn?' : 'Cancel this appointment?'}
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          {appointment.serviceName} · {appointment.appointmentDate}{' '}
+          {appointment.serviceName} · {formatYmdToDmy(appointment.appointmentDate)}{' '}
           {appointment.appointmentTime.length >= 5
             ? appointment.appointmentTime.slice(0, 5)
             : appointment.appointmentTime}

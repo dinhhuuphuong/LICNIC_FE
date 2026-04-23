@@ -77,3 +77,11 @@ export function updatePatientProfile(patientId: number, payload: UpdatePatientPa
     body: JSON.stringify(payload),
   });
 }
+
+export type GetPatientDetailResponse = Response<Patient>;
+
+export function getPatientProfile(patientId: number) {
+  return http<GetPatientDetailResponse>(`${PATIENTS_URL}/${patientId}`, {
+    headers: { accept: '*/*' },
+  });
+}
