@@ -3,9 +3,12 @@ import {
   loadServiceBookingDraft,
   saveServiceBookingDraft,
 } from '@/constants/bookingDraftStorage';
-import { ROUTES, getServiceDetailRoute } from '@/constants/routes';
+import { RECEPTIONIST_ROLE_ID } from '@/constants/roleIds';
+import { ROUTES, getDoctorPublicDetailRoute, getServiceDetailRoute } from '@/constants/routes';
 import { createAppointment } from '@/services/appointmentService';
+import { createNotificationBestEffort } from '@/services/notificationService';
 import { getDoctorWorkSchedulesFromStore, type DoctorWorkSchedule } from '@/services/doctorWorkScheduleService';
+import { getUsers } from '@/services/userService';
 import { useAuthStore } from '@/stores/authStore';
 import { toHhMmSs } from '@/utils/bookingTime';
 import { useCallback, useEffect, useState } from 'react';
@@ -125,6 +128,43 @@ export function ServiceBookingWizard({ serviceId, serviceName, isVi }: Props) {
   const canSelectScheduleRow = (s: DoctorWorkSchedule) =>
     isSlotAvailableForBooking(s) && s.appointmentStatus !== 'Unavailable';
 
+  const notifyReceptionistsNewAppointment = useCallback(
+    async (appointmentId: number, dateYmd: string, timeHhMmSs: string) => {
+      const receptionists: Array<{ userId: number }> = [];
+      const limit = 100;
+      let page = 1;
+
+      for (;;) {
+        const res = await getUsers({ page, limit, role: RECEPTIONIST_ROLE_ID });
+        const chunk = res.data.items ?? [];
+        receptionists.push(...chunk.map((u) => ({ userId: u.userId })));
+        const total = res.data.total ?? receptionists.length;
+        if (receptionists.length >= total || chunk.length === 0) break;
+        page += 1;
+        if (page > 20) break;
+      }
+
+      const hhmm = timeHhMmSs.length >= 5 ? timeHhMmSs.slice(0, 5) : timeHhMmSs;
+      const title = isVi ? 'Co lich hen moi duoc tao' : 'New appointment created';
+      const content = isVi
+        ? `Lich hen #${appointmentId} luc ${hhmm} ngay ${dateYmd} vua duoc tao boi patient.`
+        : `Appointment #${appointmentId} at ${hhmm} on ${dateYmd} was created by patient.`;
+
+      await Promise.allSettled(
+        receptionists.map((r) =>
+          createNotificationBestEffort({
+            userId: r.userId,
+            title,
+            content,
+            type: 'appointment_reminder',
+            redirectUrl: ROUTES.receptionistAppointments,
+          }),
+        ),
+      );
+    },
+    [isVi],
+  );
+
   const handleConfirm = async () => {
     setSubmitError(null);
     if (!appointmentTime || selectedScheduleId == null) {
@@ -146,13 +186,21 @@ export function ServiceBookingWizard({ serviceId, serviceName, isVi }: Props) {
 
     try {
       setSubmitting(true);
-      await createAppointment({
+      const created = await createAppointment({
         doctorId: row.doctorId,
         serviceId,
         appointmentDate: workDate,
         appointmentTime: toHhMmSs(`${appointmentTime}:00`),
         scheduleId: row.scheduleId,
       });
+      const createdAppointmentId = created.data?.appointmentId;
+      if (createdAppointmentId) {
+        try {
+          await notifyReceptionistsNewAppointment(createdAppointmentId, workDate, toHhMmSs(`${appointmentTime}:00`));
+        } catch {
+          // Notification should not block successful booking.
+        }
+      }
       clearServiceBookingDraft();
       setBookedSuccess(true);
       setSelectedScheduleId(null);
@@ -333,6 +381,16 @@ export function ServiceBookingWizard({ serviceId, serviceName, isVi }: Props) {
                         <div>
                           <p className="font-bold text-slate-900">{name}</p>
                           {spec ? <p className="mt-1 text-sm text-slate-600">{spec}</p> : null}
+                          <Link
+                            className="mt-1 inline-flex text-xs font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                            to={getDoctorPublicDetailRoute(s.doctorId)}
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {isVi ? 'Xem chi tiết bác sĩ' : 'View doctor details'}
+                          </Link>
                           <p className="mt-1 text-xs font-semibold text-slate-500">
                             {formatScheduleTimeRange(s.startTime, s.endTime, isVi)}
                           </p>

@@ -1,5 +1,6 @@
 import { appointmentStatusLabel, canPatientRescheduleOrCancel } from '@/components/patient/patientAppointments.shared';
 import type { AppointmentListItem } from '@/services/appointmentService';
+import { formatYmdToDmy } from '@/utils/dateDisplay';
 
 type PatientAppointmentCardProps = {
   item: AppointmentListItem;
@@ -18,6 +19,7 @@ function formatVnd(n: number): string {
 
 export function PatientAppointmentCard({ item, isVi, onReschedule, onCancel }: PatientAppointmentCardProps) {
   const timeShort = item.appointmentTime.length >= 5 ? item.appointmentTime.slice(0, 5) : item.appointmentTime;
+  const dateLabel = formatYmdToDmy(item.appointmentDate);
   const modifiable = canPatientRescheduleOrCancel(item.status);
 
   return (
@@ -52,7 +54,7 @@ export function PatientAppointmentCard({ item, isVi, onReschedule, onCancel }: P
       <dl className="mt-4 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
         <div>
           <dt className="font-semibold text-slate-500">{isVi ? 'Ngày' : 'Date'}</dt>
-          <dd>{item.appointmentDate}</dd>
+          <dd>{dateLabel}</dd>
         </div>
         <div>
           <dt className="font-semibold text-slate-500">{isVi ? 'Giờ' : 'Time'}</dt>

@@ -180,8 +180,6 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   }, []);
 
   useEffect(() => {
-    if (!isServiceMenuOpen) return;
-
     let cancelled = false;
 
     const fetchAllActiveServices = async () => {
@@ -280,7 +278,7 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
     return () => {
       cancelled = true;
     };
-  }, [isServiceMenuOpen, language]);
+  }, [language]);
 
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">

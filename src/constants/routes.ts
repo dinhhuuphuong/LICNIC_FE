@@ -2,6 +2,7 @@ export const ROUTES = {
   home: '/',
   about: '/gioi-thieu/ve-tam-duc-smile',
   aboutTeam: '/gioi-thieu/doi-ngu-bac-si',
+  doctorPublicDetail: '/gioi-thieu/doi-ngu-bac-si/:doctorId',
   aboutFacilities: '/gioi-thieu/co-so-vat-chat',
   aboutRecruitment: '/gioi-thieu/tuyen-dung',
   priceImplant: '/bang-gia/gia-trong-rang-implant',
@@ -40,6 +41,10 @@ export const ROUTES = {
 
 export function getServiceDetailRoute(serviceId: number) {
   return `/dich-vu/${serviceId}`;
+}
+
+export function getDoctorPublicDetailRoute(doctorId: number) {
+  return `/gioi-thieu/doi-ngu-bac-si/${doctorId}`;
 }
 
 export function getServiceBookingRoute(serviceId: number) {

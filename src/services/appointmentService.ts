@@ -60,6 +60,10 @@ export type CancelAppointmentPayload = {
   reason?: string;
 };
 
+export type StaffCancelAppointmentPayload = {
+  reason?: string;
+};
+
 export type CreateAppointmentPayload = {
   doctorId: number;
   serviceId: number;
@@ -117,6 +121,41 @@ export type CancelAppointmentResponse = Response<AppointmentEntity>;
 
 export function cancelAppointment(appointmentId: number, payload: CancelAppointmentPayload = {}) {
   return http<CancelAppointmentResponse>(`${APPOINTMENTS_URL}/${appointmentId}/cancel`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(Object.keys(payload).length ? payload : {}),
+  });
+}
+
+export type ConfirmAppointmentResponse = Response<AppointmentEntity>;
+
+export function confirmAppointment(appointmentId: number) {
+  return http<ConfirmAppointmentResponse>(`${APPOINTMENTS_URL}/${appointmentId}/confirm`, {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
+export type CheckInAppointmentResponse = Response<AppointmentEntity>;
+
+export function checkInAppointment(appointmentId: number) {
+  return http<CheckInAppointmentResponse>(`${APPOINTMENTS_URL}/${appointmentId}/check-in`, {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
+export type StaffCancelAppointmentResponse = Response<AppointmentEntity>;
+
+export function cancelAppointmentByStaff(appointmentId: number, payload: StaffCancelAppointmentPayload = {}) {
+  return http<StaffCancelAppointmentResponse>(`${APPOINTMENTS_URL}/${appointmentId}/cancel-by-staff`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
