@@ -85,3 +85,144 @@ export function markAllMyNotificationsRead() {
     headers: { accept: '*/*' },
   });
 }
+
+export type CreateNotificationPayload = {
+  userId?: number;
+  patientId?: number;
+  recipientUserId?: number;
+  title: string;
+  content: string;
+  type: NotificationType;
+  redirectUrl?: string;
+};
+
+export type CreateNotificationResponse = Response<NotificationItem>;
+
+type NotificationPostErrorDetail = {
+  status: number;
+  statusText: string;
+  responseBodyText: string;
+  responseBodyJson?: unknown;
+};
+
+class NotificationPostError extends Error {
+  detail: NotificationPostErrorDetail;
+
+  constructor(detail: NotificationPostErrorDetail) {
+    super(`POST /notifications failed: ${detail.status} ${detail.statusText}`);
+    this.name = 'NotificationPostError';
+    this.detail = detail;
+  }
+}
+
+let hasLoggedForbiddenNotificationPost = false;
+
+async function postNotificationRaw(payload: CreateNotificationPayload): Promise<CreateNotificationResponse> {
+  const endpoint = import.meta.env.VITE_ENDPOINT_API as string;
+  const url = `${endpoint}${NOTIFICATIONS_URL}`;
+
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    accept: '*/*',
+  });
+
+  if (typeof window !== 'undefined') {
+    const token = window.localStorage.getItem('accessToken');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  const rawText = await response.text().catch(() => '');
+  let parsedJson: unknown;
+  if (rawText) {
+    try {
+      parsedJson = JSON.parse(rawText) as unknown;
+    } catch {
+      parsedJson = undefined;
+    }
+  }
+
+  if (!response.ok) {
+    throw new NotificationPostError({
+      status: response.status,
+      statusText: response.statusText,
+      responseBodyText: rawText,
+      responseBodyJson: parsedJson,
+    });
+  }
+
+  if (parsedJson) return parsedJson as CreateNotificationResponse;
+  throw new NotificationPostError({
+    status: response.status,
+    statusText: response.statusText || 'Invalid success payload',
+    responseBodyText: rawText,
+  });
+}
+
+export function createNotification(payload: CreateNotificationPayload) {
+  return postNotificationRaw(payload);
+}
+
+export async function createNotificationBestEffort(payload: CreateNotificationPayload): Promise<boolean> {
+  const candidates: CreateNotificationPayload[] = [
+    payload,
+    {
+      ...payload,
+      recipientUserId: payload.userId,
+    },
+    {
+      ...payload,
+      type: 'system',
+    },
+    {
+      ...payload,
+      type: 'system',
+      recipientUserId: payload.userId,
+    },
+  ];
+
+  for (let i = 0; i < candidates.length; i += 1) {
+    const item = candidates[i];
+    try {
+      await createNotification(item);
+      return true;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        if (error instanceof NotificationPostError) {
+          console.error('[notifications] POST /notifications failed', {
+            attempt: i + 1,
+            payload: item,
+            status: error.detail.status,
+            statusText: error.detail.statusText,
+            responseBodyJson: error.detail.responseBodyJson,
+            responseBodyText: error.detail.responseBodyText,
+          });
+
+          // AuthZ/AuthN failed: retrying alternative payload shapes is pointless.
+          if (error.detail.status === 401 || error.detail.status === 403) {
+            if (!hasLoggedForbiddenNotificationPost) {
+              console.warn('[notifications] POST /notifications is forbidden for current role/token. Stop retrying.');
+              hasLoggedForbiddenNotificationPost = true;
+            }
+            return false;
+          }
+        } else {
+          console.error('[notifications] POST /notifications failed (unknown error)', {
+            attempt: i + 1,
+            payload: item,
+            error,
+          });
+        }
+      } else if (error instanceof NotificationPostError && (error.detail.status === 401 || error.detail.status === 403)) {
+        return false;
+      }
+    }
+  }
+
+  return false;
+}

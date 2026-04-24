@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouse
 import { useNavigate } from 'react-router-dom';
 
 const PAGE_LIMIT = 10;
+const NOTIFICATION_POLLING_MS = 15000;
 
 export function HeaderNotificationBell() {
   const user = useAuthStore((state) => state.user);
@@ -95,6 +96,21 @@ export function HeaderNotificationBell() {
     void loadPage(1, false);
     void refreshUnread();
   }, [isOpen, user, loadPage, refreshUnread]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const timer = window.setInterval(() => {
+      void refreshUnread();
+      if (isOpen) {
+        void loadPage(1, false);
+      }
+    }, NOTIFICATION_POLLING_MS);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [isOpen, loadPage, refreshUnread, user]);
 
   useEffect(() => {
     if (!isOpen) return;
