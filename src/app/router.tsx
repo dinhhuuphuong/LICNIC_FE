@@ -20,7 +20,6 @@ import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
-import { LichLamViecBacSiPage } from '@/pages/LichLamViecBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
@@ -31,6 +30,7 @@ import queryString from 'query-string';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { QueryParamProvider } from 'use-query-params';
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
+import LichLamViecBacSiPageV2 from '../pages/LichLamViecBacSiPageV2';
 
 const queryParamsLayoutElement = (
   <QueryParamProvider
@@ -128,7 +128,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.doctorWorkSchedules,
-            element: <LichLamViecBacSiPage />,
+            element: <LichLamViecBacSiPageV2 />,
           },
           {
             path: ROUTES.doctorWorkSchedulesCreate,

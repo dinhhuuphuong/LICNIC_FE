@@ -1,20 +1,75 @@
 import DATE_FORMAT from '@/constants/date-format';
 import { DatePicker, type DatePickerProps } from 'antd';
+import viVN from 'antd/es/date-picker/locale/vi_VN';
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
+import 'dayjs/locale/vi';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import { useEffect, useRef } from 'react';
 import { StringParam, useQueryParams, withDefault } from 'use-query-params';
+
+dayjs.extend(isoWeek);
+dayjs.extend(weekOfYear);
+dayjs.extend(updateLocale);
+dayjs.updateLocale('vi', { weekStart: 1 });
+dayjs.locale('vi');
 
 const getFormat = (mode: string) => {
   switch (mode) {
+    case 'day':
+      return DATE_FORMAT.DATE;
+    case 'week':
+      return 'WW/YYYY';
     case 'month':
-      return 'MM/YYYY';
+      return DATE_FORMAT.MONTH_YEAR;
     case 'year':
-      return 'YYYY';
+      return DATE_FORMAT.YEAR;
     case 'quarter':
       return '[Q]Q/YYYY';
     default:
-      return undefined;
+      return DATE_FORMAT.DATE;
   }
+};
+
+const getPlaceholder = (mode: string) => {
+  switch (mode) {
+    case 'day':
+      return 'Ngày/Tháng/Năm';
+    case 'week':
+      return 'Tuần/Năm';
+    case 'month':
+      return 'Tháng/Năm';
+    case 'year':
+      return 'Năm';
+    case 'quarter':
+      return 'Quý/Năm';
+    default:
+      return 'Ngày/Tháng/Năm';
+  }
+};
+
+const getPicker = (mode: string): DatePickerProps['picker'] => {
+  switch (mode) {
+    case 'week':
+      return 'week';
+    case 'month':
+      return 'month';
+    case 'year':
+      return 'year';
+    case 'quarter':
+      return 'quarter';
+    default:
+      return 'date';
+  }
+};
+
+const datePickerLocale = {
+  ...viVN,
+  lang: {
+    ...viVN.lang,
+    weekStart: 1,
+  },
 };
 
 const calculateDateRange = (date: dayjs.Dayjs, mode: string) => {
@@ -22,6 +77,11 @@ const calculateDateRange = (date: dayjs.Dayjs, mode: string) => {
   let toDate: dayjs.Dayjs;
 
   switch (mode) {
+    case 'week':
+      // Cố định tuần theo chuẩn VN: Thứ 2 -> Chủ nhật
+      fromDate = date.isoWeekday(1).startOf('day');
+      toDate = date.isoWeekday(7).endOf('day');
+      break;
     case 'month':
       fromDate = date.startOf('month');
       toDate = date.endOf('month');
@@ -66,16 +126,26 @@ const DatePickerParam = (props: DatePickerProps) => {
 
   const date = query.date ? dayjs(query.date) : defaultValue;
   const mode = query.dateMode || 'month';
+  const picker = getPicker(mode);
+  const prevModeRef = useRef(mode);
 
   // Tự động cập nhật fromDate và toDate khi mode hoặc date thay đổi
   useEffect(() => {
+    if (prevModeRef.current !== mode) {
+      const now = dayjs();
+      const { fromDate, toDate } = calculateDateRange(now, mode);
+      setQuery({ date: now.toISOString(), fromDate, toDate });
+      prevModeRef.current = mode;
+      return;
+    }
+
     const currentDate = query.date ? dayjs(query.date) : defaultValue;
     if (currentDate && currentDate.isValid()) {
-      const { fromDate, toDate } = calculateDateRange(currentDate, query.dateMode || 'month');
+      const { fromDate, toDate } = calculateDateRange(currentDate, mode);
       setQuery({ fromDate, toDate });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.dateMode, query.date]);
+  }, [mode, query.date]);
 
   const onDatePickerChange: DatePickerProps['onChange'] = (dateParam) => {
     const date = Array.isArray(dateParam) ? dateParam[0] : dateParam;
@@ -90,14 +160,14 @@ const DatePickerParam = (props: DatePickerProps) => {
 
   return (
     <DatePicker
-      mode={mode as DatePickerProps['mode']}
+      picker={picker}
+      locale={datePickerLocale}
       className="w-[150px]"
       allowClear={allowClear}
       value={date}
       format={getFormat(mode)}
-      placeholder="Tháng/Năm"
+      placeholder={getPlaceholder(mode)}
       onChange={onDatePickerChange}
-      onPanelChange={onDatePickerChange}
       cellRender={(current, info) => {
         if (info.type === 'month') {
           return <div className="ant-picker-cell-inner">T{dayjs(current).format('MM')}</div>;
