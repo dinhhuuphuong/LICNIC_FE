@@ -73,6 +73,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const medicalRecordsLabel = language === 'vi' ? 'Bệnh án' : 'Medical records';
   const doctorProfileLabel = language === 'vi' ? 'Thông tin cá nhân' : 'Profile';
   const doctorSchedulesLabel = language === 'vi' ? 'Lịch làm việc' : 'Work schedules';
+  const doctorAppointmentsLabel = language === 'vi' ? 'Quản lý đặt lịch' : 'Appointment management';
   const receptionistAppointmentsLabel = language === 'vi' ? 'Quản lý đặt lịch' : 'Appointment management';
   const receptionistCustomerCareLabel = language === 'vi' ? 'Chăm sóc khách hàng' : 'Customer care';
 
@@ -194,6 +195,14 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
                 onClick={() => setIsPopoverOpen(false)}
               >
                 {doctorSchedulesLabel}
+              </Link>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.doctorAppointments}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {doctorAppointmentsLabel}
               </Link>
             </>
           )}

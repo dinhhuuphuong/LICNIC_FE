@@ -20,6 +20,7 @@ import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
+import QuanLyDatLichBacSiPage from '@/pages/QuanLyDatLichBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
@@ -133,6 +134,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.doctorWorkSchedulesCreate,
             element: <TaoLichLamViecBacSiPage />,
+          },
+          {
+            path: ROUTES.doctorAppointments,
+            element: <QuanLyDatLichBacSiPage />,
           },
           {
             path: ROUTES.receptionistAppointments,

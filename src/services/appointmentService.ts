@@ -38,6 +38,9 @@ export type AppointmentListItem = {
 
 export type GetAppointmentsParams = {
   patientId?: number;
+  doctorId?: number;
+  serviceId?: number;
+  scheduleId?: number;
   page?: number;
   limit?: number;
   status?: string;
@@ -89,7 +92,6 @@ export function createAppointment(payload: CreateAppointmentPayload) {
 }
 
 export function getAppointments(params: GetAppointmentsParams = {}) {
-  const patientId = params.patientId;
   const page = params.page ?? 1;
   const limit = params.limit ?? 10;
   const queryParams = new URLSearchParams({
@@ -99,7 +101,10 @@ export function getAppointments(params: GetAppointmentsParams = {}) {
   if (params.status) queryParams.set('status', params.status);
   if (params.fromDate) queryParams.set('fromDate', params.fromDate);
   if (params.toDate) queryParams.set('toDate', params.toDate);
-  if (patientId) queryParams.set('patientId', String(patientId));
+  if (params.patientId) queryParams.set('patientId', String(params.patientId));
+  if (params.doctorId) queryParams.set('doctorId', String(params.doctorId));
+  if (params.serviceId) queryParams.set('serviceId', String(params.serviceId));
+  if (params.scheduleId) queryParams.set('scheduleId', String(params.scheduleId));
 
   return http<GetAppointmentsResponse>(`${APPOINTMENTS_URL}?${queryParams.toString()}`);
 }
