@@ -77,6 +77,10 @@ const calculateDateRange = (date: dayjs.Dayjs, mode: string) => {
   let toDate: dayjs.Dayjs;
 
   switch (mode) {
+    case 'day':
+      fromDate = date.startOf('day');
+      toDate = date.endOf('day');
+      break;
     case 'week':
       // Cố định tuần theo chuẩn VN: Thứ 2 -> Chủ nhật
       fromDate = date.isoWeekday(1).startOf('day');

@@ -1,21 +1,57 @@
+import SelectDateModeParam from '@/components/common/date-pickers/select-date-mode-param';
 import { PageCard } from '@/components/common/PageCard';
+import SelectParam from '@/components/common/selects/select-param';
 import { StatePanel } from '@/components/common/StatePanel';
 import { appointmentStatusLabel } from '@/components/patient/patientAppointments.shared';
 import ROLE from '@/constants/role';
 import { ROUTES } from '@/constants/routes';
+import { SEARCH_PARAMS } from '@/constants/search-params';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { cancelAppointmentByStaff, checkInAppointment, confirmAppointment, getAppointments, type AppointmentListItem } from '@/services/appointmentService';
+import {
+  cancelAppointmentByStaff,
+  checkInAppointment,
+  confirmAppointment,
+  getAppointments,
+  type AppointmentListItem,
+} from '@/services/appointmentService';
 import { createNotificationBestEffort } from '@/services/notificationService';
 import { getPatientProfile } from '@/services/patientService';
 import { useAuthStore } from '@/stores/authStore';
 import { formatYmdToDmy } from '@/utils/dateDisplay';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryParam } from 'use-query-params';
 
 function normalizeRoleName(roleName?: string | null) {
   return roleName?.trim().toLowerCase() ?? '';
+}
+
+const RECEPTIONIST_APPOINTMENT_STATUS_OPTIONS = [
+  { value: 'pending', labelVi: 'Chờ xác nhận', labelEn: 'Pending' },
+  { value: 'confirmed', labelVi: 'Đã xác nhận', labelEn: 'Confirmed' },
+  { value: 'completed', labelVi: 'Đã khám xong', labelEn: 'Completed' },
+  { value: 'cancelled', labelVi: 'Đã hủy', labelEn: 'Cancelled' },
+  { value: 'checked_in', labelVi: 'Đã check-in', labelEn: 'Checked in' },
+];
+
+function appointmentStatusBadgeClass(status?: string) {
+  switch (status) {
+    case 'pending':
+      return 'bg-amber-100 text-amber-800';
+    case 'confirmed':
+      return 'bg-sky-100 text-sky-800';
+    case 'checked_in':
+      return 'bg-indigo-100 text-indigo-800';
+    case 'completed':
+      return 'bg-emerald-100 text-emerald-800';
+    case 'cancelled':
+      return 'bg-rose-100 text-rose-800';
+    default:
+      return 'bg-slate-100 text-slate-700';
+  }
 }
 
 export function QuanLyDatLichLeTanPage() {
@@ -24,19 +60,23 @@ export function QuanLyDatLichLeTanPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter] = useQueryParam<string | undefined>('status');
+  const [fromDate] = useQueryParam<string | undefined>(SEARCH_PARAMS.FROM_DATE);
+  const [toDate] = useQueryParam<string | undefined>(SEARCH_PARAMS.TO_DATE);
   const [actionTarget, setActionTarget] = useState<{ id: number; type: 'confirm' | 'checkin' | 'reject' } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Quản lý đặt lịch' : 'NHA KHOA TAN TAM | Appointment management');
 
   const appointmentsQuery = useQuery({
-    queryKey: ['receptionistAppointments', statusFilter || 'all'],
+    queryKey: ['receptionistAppointments', statusFilter || 'all', fromDate || 'all', toDate || 'all'],
     queryFn: () =>
       getAppointments({
         page: 1,
         limit: 200,
         ...(statusFilter ? { status: statusFilter } : {}),
+        ...(fromDate ? { fromDate } : {}),
+        ...(toDate ? { toDate } : {}),
       }),
     enabled: !!user && normalizeRoleName(user.role?.roleName) === ROLE.RECEPTIONIST.toLowerCase(),
   });
@@ -68,9 +108,15 @@ export function QuanLyDatLichLeTanPage() {
         centered
         className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
         title={isVi ? 'Không có quyền truy cập' : 'Access denied'}
-        description={isVi ? 'Trang này chỉ dành cho tài khoản lễ tân.' : 'This page is only available for receptionist accounts.'}
+        description={
+          isVi ? 'Trang này chỉ dành cho tài khoản lễ tân.' : 'This page is only available for receptionist accounts.'
+        }
         action={
-          <button type="button" className="text-sm font-semibold text-blue-600 underline" onClick={() => navigate(ROUTES.home)}>
+          <button
+            type="button"
+            className="text-sm font-semibold text-blue-600 underline"
+            onClick={() => navigate(ROUTES.home)}
+          >
             {isVi ? 'Về trang chủ' : 'Back to home'}
           </button>
         }
@@ -163,7 +209,9 @@ export function QuanLyDatLichLeTanPage() {
   };
 
   const handleReject = async (appointment: AppointmentListItem) => {
-    const reason = window.prompt(isVi ? 'Nhập lý do từ chối lịch (có thể để trống):' : 'Enter cancellation reason (optional):');
+    const reason = window.prompt(
+      isVi ? 'Nhập lý do từ chối lịch (có thể để trống):' : 'Enter cancellation reason (optional):',
+    );
     if (reason === null) return;
 
     setActionError(null);
@@ -181,33 +229,34 @@ export function QuanLyDatLichLeTanPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1360px]">
-      <header className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Quản lý đặt lịch' : 'Appointment management'}</h1>
-        <p className="mt-2 text-sm text-slate-600">{isVi ? 'Danh sách lịch khách hàng đã đặt.' : 'List of customer appointments.'}</p>
-      </header>
+      <div className="flex gap-4 justify-between items-center">
+        <header className="mb-8">
+          <h1 className="text-3xl font-black text-slate-900">{isVi ? 'Quản lý đặt lịch' : 'Appointment management'}</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {isVi ? 'Danh sách lịch khách hàng đã đặt.' : 'List of customer appointments.'}
+          </p>
+        </header>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <label className="text-sm font-semibold text-slate-700" htmlFor="receptionist-appt-status-filter">
-          {isVi ? 'Trạng thái' : 'Status'}
-        </label>
-        <select
-          id="receptionist-appt-status-filter"
-          className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-blue-600"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">{isVi ? 'Tất cả' : 'All'}</option>
-          <option value="pending">{isVi ? 'Chờ xác nhận' : 'Pending'}</option>
-          <option value="confirmed">{isVi ? 'Đã xác nhận' : 'Confirmed'}</option>
-          <option value="completed">{isVi ? 'Đã khám xong' : 'Completed'}</option>
-          <option value="cancelled">{isVi ? 'Đã hủy' : 'Cancelled'}</option>
-          <option value="checked_in">{isVi ? 'Đã check-in' : 'Checked in'}</option>
-        </select>
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <SelectDateModeParam defaultValue={dayjs()} />
+          <SelectParam
+            allowClear
+            className="w-[150px]"
+            placeholder={isVi ? 'Trạng thái' : 'Status'}
+            param="status"
+            options={RECEPTIONIST_APPOINTMENT_STATUS_OPTIONS.map((option) => ({
+              value: option.value,
+              label: isVi ? option.labelVi : option.labelEn,
+            }))}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4">
         {actionError ? (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{actionError}</p>
+          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {actionError}
+          </p>
         ) : null}
 
         {appointments.length === 0 ? (
@@ -234,10 +283,14 @@ export function QuanLyDatLichLeTanPage() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 text-sm">
-                    <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
-                      {isVi ? 'Trạng thái:' : 'Status:'} {appointmentStatusLabel(item.status, isVi)}
+                    <span
+                      className={`rounded-full px-3 py-1 font-semibold ${appointmentStatusBadgeClass(item.status)}`}
+                    >
+                      {appointmentStatusLabel(item.status, isVi)}
                     </span>
-                    <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">#{item.appointmentId}</span>
+                    <span className="rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">
+                      #{item.appointmentId}
+                    </span>
                   </div>
                 </div>
 
@@ -249,7 +302,13 @@ export function QuanLyDatLichLeTanPage() {
                       onClick={() => void handleConfirm(item)}
                       disabled={!!actionTarget}
                     >
-                      {isActingCurrent && actionTarget?.type === 'confirm' ? (isVi ? 'Đang xác nhận...' : 'Confirming...') : isVi ? 'Chấp nhận' : 'Accept'}
+                      {isActingCurrent && actionTarget?.type === 'confirm'
+                        ? isVi
+                          ? 'Đang xác nhận...'
+                          : 'Confirming...'
+                        : isVi
+                          ? 'Chấp nhận'
+                          : 'Accept'}
                     </button>
                   ) : null}
 
@@ -260,7 +319,13 @@ export function QuanLyDatLichLeTanPage() {
                       onClick={() => void handleCheckIn(item.appointmentId)}
                       disabled={!!actionTarget}
                     >
-                      {isActingCurrent && actionTarget?.type === 'checkin' ? (isVi ? 'Đang check-in...' : 'Checking in...') : isVi ? 'Check-in' : 'Check in'}
+                      {isActingCurrent && actionTarget?.type === 'checkin'
+                        ? isVi
+                          ? 'Đang check-in...'
+                          : 'Checking in...'
+                        : isVi
+                          ? 'Check-in'
+                          : 'Check in'}
                     </button>
                   ) : null}
 
@@ -271,7 +336,13 @@ export function QuanLyDatLichLeTanPage() {
                       onClick={() => void handleReject(item)}
                       disabled={!!actionTarget}
                     >
-                      {isActingCurrent && actionTarget?.type === 'reject' ? (isVi ? 'Đang từ chối...' : 'Rejecting...') : isVi ? 'Từ chối' : 'Reject'}
+                      {isActingCurrent && actionTarget?.type === 'reject'
+                        ? isVi
+                          ? 'Đang từ chối...'
+                          : 'Rejecting...'
+                        : isVi
+                          ? 'Từ chối'
+                          : 'Reject'}
                     </button>
                   ) : null}
                 </div>
