@@ -75,6 +75,7 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
   const doctorSchedulesLabel = language === 'vi' ? 'Lịch làm việc' : 'Work schedules';
   const doctorAppointmentsLabel = language === 'vi' ? 'Quản lý đặt lịch' : 'Appointment management';
   const receptionistAppointmentsLabel = language === 'vi' ? 'Quản lý đặt lịch' : 'Appointment management';
+  const receptionistPaymentsLabel = language === 'vi' ? 'Quản lý thanh toán' : 'Payment management';
   const receptionistCustomerCareLabel = language === 'vi' ? 'Chăm sóc khách hàng' : 'Customer care';
 
   const handleLogout = () => {
@@ -216,6 +217,14 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
                 onClick={() => setIsPopoverOpen(false)}
               >
                 {receptionistAppointmentsLabel}
+              </Link>
+              <Link
+                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                to={ROUTES.receptionistPaymentsManage}
+                role="menuitem"
+                onClick={() => setIsPopoverOpen(false)}
+              >
+                {receptionistPaymentsLabel}
               </Link>
               <Link
                 className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"

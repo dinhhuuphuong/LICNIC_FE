@@ -6,6 +6,7 @@ import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
 import { DoctorDetailPage } from '@/pages/ChiTietBacSiPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
+import { ChiTietThanhToanLeTanPage } from '@/pages/ChiTietThanhToanLeTanPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
@@ -22,7 +23,11 @@ import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
 import QuanLyDatLichBacSiPage from '@/pages/QuanLyDatLichBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
+import { QuanLyHoSoBenhNhanBacSiPage } from '@/pages/QuanLyHoSoBenhNhanBacSiPage';
+import { QuanLyThanhToanLeTanPage } from '@/pages/QuanLyThanhToanLeTanPage';
+import { TaoBenhAnVaDonThuocPage } from '@/pages/TaoBenhAnVaDonThuocPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
+import { TaoThanhToanLeTanPage } from '@/pages/TaoThanhToanLeTanPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
@@ -140,12 +145,32 @@ export const router = createBrowserRouter([
             element: <QuanLyDatLichBacSiPage />,
           },
           {
+            path: ROUTES.doctorMedicalRecordsManage,
+            element: <QuanLyHoSoBenhNhanBacSiPage />,
+          },
+          {
+            path: ROUTES.doctorMedicalRecordCreate,
+            element: <TaoBenhAnVaDonThuocPage />,
+          },
+          {
             path: ROUTES.receptionistAppointments,
             element: <QuanLyDatLichLeTanPage />,
           },
           {
             path: ROUTES.receptionistCustomerCare,
             element: <ChamSocKhachHangLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistPaymentsManage,
+            element: <QuanLyThanhToanLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistPaymentCreate,
+            element: <TaoThanhToanLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistPaymentDetail,
+            element: <ChiTietThanhToanLeTanPage />,
           },
           {
             path: ROUTES.patientMedicalRecordDetail,

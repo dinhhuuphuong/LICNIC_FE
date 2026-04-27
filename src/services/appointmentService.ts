@@ -157,6 +157,17 @@ export function checkInAppointment(appointmentId: number) {
   });
 }
 
+export type CompleteAppointmentResponse = Response<AppointmentEntity>;
+
+export function completeAppointment(appointmentId: number) {
+  return http<CompleteAppointmentResponse>(`${APPOINTMENTS_URL}/${appointmentId}/complete`, {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
 export type StaffCancelAppointmentResponse = Response<AppointmentEntity>;
 
 export function cancelAppointmentByStaff(appointmentId: number, payload: StaffCancelAppointmentPayload = {}) {

@@ -20,8 +20,13 @@ export const ROUTES = {
   doctorWorkSchedules: '/bac-si/lich-lam-viec',
   doctorWorkSchedulesCreate: '/bac-si/lich-lam-viec/tao-moi',
   doctorAppointments: '/bac-si/quan-ly-dat-lich',
+  doctorMedicalRecordsManage: '/bac-si/benh-an/quan-ly',
+  doctorMedicalRecordCreate: '/bac-si/benh-an/tao-moi',
   receptionistAppointments: '/le-tan/quan-ly-dat-lich',
   receptionistCustomerCare: '/le-tan/cham-soc-khach-hang',
+  receptionistPaymentsManage: '/le-tan/quan-ly-thanh-toan',
+  receptionistPaymentCreate: '/le-tan/thanh-toan',
+  receptionistPaymentDetail: '/le-tan/thanh-toan/:paymentId',
   /** Chi tiết bệnh án — dùng `getPatientMedicalRecordDetailRoute(recordId)`. */
   patientMedicalRecordDetail: '/benh-nhan/benh-an/:recordId',
   /** Chi tiết dịch vụ — dùng `getServiceDetailRoute(id)` cho `Link`/`navigate` */
@@ -54,4 +59,8 @@ export function getServiceBookingRoute(serviceId: number) {
 
 export function getPatientMedicalRecordDetailRoute(recordId: number) {
   return `/benh-nhan/benh-an/${recordId}`;
+}
+
+export function getReceptionistPaymentDetailRoute(paymentId: number) {
+  return `/le-tan/thanh-toan/${paymentId}`;
 }
