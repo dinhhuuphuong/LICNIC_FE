@@ -17,6 +17,7 @@ export const ROUTES = {
   patientAppointments: '/benh-nhan/lich-hen',
   patientMedicalRecords: '/benh-nhan/benh-an',
   doctorProfile: '/bac-si/thong-tin-ca-nhan',
+  doctorDashboard: '/bac-si/dashboard',
   doctorWorkSchedules: '/bac-si/lich-lam-viec',
   doctorWorkSchedulesCreate: '/bac-si/lich-lam-viec/tao-moi',
   doctorAppointments: '/bac-si/quan-ly-dat-lich',

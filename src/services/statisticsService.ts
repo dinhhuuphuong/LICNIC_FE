@@ -1,6 +1,6 @@
 import { http, type Response } from '@/services/http';
 
-export type AppointmentGroupBy = 'day' | 'week' | 'month' | 'year';
+export type AppointmentGroupBy = 'day' | 'week' | 'month' | 'quarter' | 'year';
 
 export type AppointmentGroupedItem = {
   period: string;
@@ -260,4 +260,134 @@ export function getTopServicesByDoctorGrouped(params: GetTopServicesByDoctorGrou
   return http<GetTopServicesByDoctorGroupedResponse>(
     `${STATISTICS_URL}/top-services-by-doctor-grouped?${queryParams.toString()}`,
   );
+}
+
+export type DoctorWorkDaysGroupedItem = {
+  period: string;
+  doctorId: number;
+  doctorName: string;
+  workDays: number;
+};
+
+export type DoctorWorkDaysGroupedStatsData = {
+  items: DoctorWorkDaysGroupedItem[];
+  total: number;
+  page: number;
+  limit: number;
+  groupBy: string;
+};
+
+export type GetDoctorWorkDaysGroupedResponse = Response<DoctorWorkDaysGroupedStatsData>;
+
+export type GetDoctorWorkDaysGroupedParams = {
+  fromDate?: string;
+  toDate?: string;
+  groupBy?: Extract<AppointmentGroupBy, 'month' | 'quarter' | 'year'>;
+  page?: number;
+  limit?: number;
+};
+
+export function getDoctorWorkDaysGrouped(params: GetDoctorWorkDaysGroupedParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 100;
+  const groupBy = params.groupBy ?? 'month';
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    groupBy,
+  });
+
+  if (params.fromDate) queryParams.set('fromDate', params.fromDate);
+  if (params.toDate) queryParams.set('toDate', params.toDate);
+
+  return http<GetDoctorWorkDaysGroupedResponse>(
+    `${STATISTICS_URL}/doctor-work-days-grouped?${queryParams.toString()}`,
+  );
+}
+
+export type ExaminedPatientsGroupedItem = {
+  period: string;
+  doctorId: number;
+  doctorName: string;
+  patientCount: number;
+};
+
+export type ExaminedPatientsGroupedStatsData = {
+  items: ExaminedPatientsGroupedItem[];
+  total: number;
+  page: number;
+  limit: number;
+  groupBy: string;
+};
+
+export type GetExaminedPatientsGroupedResponse = Response<ExaminedPatientsGroupedStatsData>;
+
+export type GetExaminedPatientsGroupedParams = {
+  fromDate?: string;
+  toDate?: string;
+  groupBy?: Extract<AppointmentGroupBy, 'month' | 'quarter' | 'year'>;
+  page?: number;
+  limit?: number;
+};
+
+export function getExaminedPatientsGrouped(params: GetExaminedPatientsGroupedParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 100;
+  const groupBy = params.groupBy ?? 'month';
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    groupBy,
+  });
+
+  if (params.fromDate) queryParams.set('fromDate', params.fromDate);
+  if (params.toDate) queryParams.set('toDate', params.toDate);
+
+  return http<GetExaminedPatientsGroupedResponse>(
+    `${STATISTICS_URL}/examined-patients-grouped?${queryParams.toString()}`,
+  );
+}
+
+export type PrescriptionsGroupedItem = {
+  period: string;
+  doctorId: number;
+  doctorName: string;
+  prescriptionCount: number;
+};
+
+export type PrescriptionsGroupedStatsData = {
+  items: PrescriptionsGroupedItem[];
+  total: number;
+  page: number;
+  limit: number;
+  groupBy: string;
+};
+
+export type GetPrescriptionsGroupedResponse = Response<PrescriptionsGroupedStatsData>;
+
+export type GetPrescriptionsGroupedParams = {
+  fromDate?: string;
+  toDate?: string;
+  groupBy?: Extract<AppointmentGroupBy, 'month' | 'quarter' | 'year'>;
+  page?: number;
+  limit?: number;
+};
+
+export function getPrescriptionsGrouped(params: GetPrescriptionsGroupedParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 100;
+  const groupBy = params.groupBy ?? 'month';
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    groupBy,
+  });
+
+  if (params.fromDate) queryParams.set('fromDate', params.fromDate);
+  if (params.toDate) queryParams.set('toDate', params.toDate);
+
+  return http<GetPrescriptionsGroupedResponse>(`${STATISTICS_URL}/prescriptions-grouped?${queryParams.toString()}`);
 }

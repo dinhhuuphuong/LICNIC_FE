@@ -11,6 +11,7 @@ import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
 import { DatLichDichVuPage } from '@/pages/DatLichDichVuPage';
+import { DashboardBacSiPage } from '@/pages/DashboardBacSiPage';
 import { AboutTeamPage } from '@/pages/DoiNguBacSiPage';
 import { PricePorcelainPage } from '@/pages/GiaBocRangSuPage';
 import { PriceBracesPage } from '@/pages/GiaNiengRangPage';
@@ -127,6 +128,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientMedicalRecords,
             element: <BenhAnBenhNhanPage />,
+          },
+          {
+            path: ROUTES.doctorDashboard,
+            element: <DashboardBacSiPage />,
           },
           {
             path: ROUTES.doctorProfile,
