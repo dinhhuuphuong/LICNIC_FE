@@ -252,14 +252,7 @@ export function DoctorRecordPrescriptionsTable({
     setIsCreatingPrescription(false);
   };
 
-  const rawMedicines = medicinesQuery.data?.data;
-  const medicines: Medicine[] = Array.isArray(rawMedicines)
-    ? rawMedicines
-    : rawMedicines && 'items' in rawMedicines && Array.isArray(rawMedicines.items)
-      ? rawMedicines.items
-      : rawMedicines && 'medicineId' in rawMedicines
-        ? [rawMedicines]
-        : [];
+  const medicines: Medicine[] = medicinesQuery.data?.data.items ?? [];
 
   useEffect(() => {
     if (createRequestKey == null) return;

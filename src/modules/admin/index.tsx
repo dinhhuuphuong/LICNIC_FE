@@ -4,6 +4,7 @@ import BlogPostsManage from './features/blog-posts/pages/Manage';
 import Dashboard from './features/dashboard/pages/Dashboard';
 import DoctorWorkSchedulesManage from './features/doctor-work-schedules/pages/Manage';
 import DoctorsManage from './features/doctors/pages/Manage';
+import MedicinesManage from './features/medicines/pages/Manage';
 import PaymentDiscountsManage from './features/payment-discounts/pages/Manage';
 import ServiceCategoriesManage from './features/service-categories/pages/Manage';
 import ServicesManage from './features/services/pages/Manage';
@@ -29,6 +30,10 @@ const adminRoutes: RouteObject[] = [
   {
     path: ROUTES.adminServices,
     element: <ServicesManage />,
+  },
+  {
+    path: ROUTES.adminMedicines,
+    element: <MedicinesManage />,
   },
   {
     path: ROUTES.adminServiceCategories,

@@ -44,6 +44,7 @@ export const ROUTES = {
   adminDoctors: '/admin/doctors',
   adminDoctorWorkSchedules: '/admin/doctor-work-schedules',
   adminServices: '/admin/services',
+  adminMedicines: '/admin/medicines',
   adminServiceCategories: '/admin/service-categories',
   adminPaymentDiscounts: '/admin/payment-discounts',
   adminBlogPosts: '/admin/blog-posts',

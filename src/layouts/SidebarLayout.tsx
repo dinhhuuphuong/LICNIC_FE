@@ -8,6 +8,7 @@ import {
   FileText,
   LayoutDashboard,
   ListTree,
+  Pill,
   Stethoscope,
   Users,
 } from 'lucide-react';
@@ -42,6 +43,8 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
     selectedKey = ROUTES.adminServiceCategories;
   } else if (location.pathname.startsWith(ROUTES.adminServices)) {
     selectedKey = ROUTES.adminServices;
+  } else if (location.pathname.startsWith(ROUTES.adminMedicines)) {
+    selectedKey = ROUTES.adminMedicines;
   } else if (location.pathname.startsWith(ROUTES.adminPaymentDiscounts)) {
     selectedKey = ROUTES.adminPaymentDiscounts;
   } else if (location.pathname.startsWith(ROUTES.adminBlogPosts)) {
@@ -81,6 +84,11 @@ const SidebarLayout = (props: SidebarLayoutProps) => {
       key: ROUTES.adminServices,
       icon: <BriefcaseMedical size={16} />,
       label: 'Dịch vụ',
+    },
+    {
+      key: ROUTES.adminMedicines,
+      icon: <Pill size={16} />,
+      label: 'Thuốc',
     },
     {
       key: ROUTES.adminServiceCategories,
