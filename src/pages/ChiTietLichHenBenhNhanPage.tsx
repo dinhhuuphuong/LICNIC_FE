@@ -1,4 +1,5 @@
 import { StatePanel } from '@/components/common/StatePanel';
+import { PatientAppointmentReviewSection } from '@/components/patient/appointment/review/PatientAppointmentReviewSection';
 import { PatientAppointmentDetailHeader } from '@/components/patient/PatientAppointmentDetailHeader';
 import { PatientAppointmentDetailInfoCards } from '@/components/patient/PatientAppointmentDetailInfoCards';
 import { PatientAppointmentDetailNotes } from '@/components/patient/PatientAppointmentDetailNotes';
@@ -8,8 +9,10 @@ import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getAppointmentDetail } from '@/services/appointmentService';
 import { getMyPatientProfile } from '@/services/patientService';
+import { createReview, deleteReview, getPatientAppointmentReviews, updateReview } from '@/services/reviewService';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const patientMeQueryKey = ['patients', 'me'] as const;
@@ -24,6 +27,7 @@ export function ChiTietLichHenBenhNhanPage() {
   const isVi = language === 'vi';
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Chi tiết lịch hẹn' : 'NHA KHOA TẬN TÂM | Appointment detail');
 
@@ -47,6 +51,74 @@ export function ChiTietLichHenBenhNhanPage() {
     queryFn: async () => {
       const res = await getAppointmentDetail(appointmentId);
       return res.data;
+    },
+    enabled: !!user && user.roleId === PATIENT_ROLE_ID && patient != null && validId,
+  });
+
+  const deleteReviewMutation = useMutation({
+    mutationFn: async (reviewId: number) => {
+      setDeletingReviewId(reviewId);
+      await deleteReview(reviewId);
+    },
+    onSuccess: async () => {
+      await refetchReviews();
+    },
+    onError: (error) => {
+      const fallbackMessage = isVi
+        ? 'Xóa đánh giá thất bại. Vui lòng thử lại.'
+        : 'Failed to delete review. Please try again.';
+      window.alert(error instanceof Error ? error.message : fallbackMessage);
+    },
+    onSettled: () => {
+      setDeletingReviewId(null);
+    },
+  });
+
+  const createReviewMutation = useMutation({
+    mutationFn: async (payload: { rating: number; comment: string }) => {
+      await createReview({
+        appointmentId,
+        rating: payload.rating,
+        comment: payload.comment,
+      });
+    },
+    onSuccess: async () => {
+      await refetchReviews();
+    },
+    onError: (error) => {
+      const fallbackMessage = isVi
+        ? 'Gửi đánh giá thất bại. Vui lòng thử lại.'
+        : 'Failed to submit review. Please try again.';
+      window.alert(error instanceof Error ? error.message : fallbackMessage);
+    },
+  });
+
+  const updateReviewMutation = useMutation({
+    mutationFn: async ({ reviewId, payload }: { reviewId: number; payload: { rating: number; comment: string } }) => {
+      await updateReview(reviewId, payload);
+    },
+    onSuccess: async () => {
+      await refetchReviews();
+    },
+    onError: (error) => {
+      const fallbackMessage = isVi
+        ? 'Cập nhật đánh giá thất bại. Vui lòng thử lại.'
+        : 'Failed to update review. Please try again.';
+      window.alert(error instanceof Error ? error.message : fallbackMessage);
+    },
+  });
+
+  const {
+    data: reviews = [],
+    isLoading: isReviewsLoading,
+    isError: isReviewsError,
+    error: reviewsError,
+    refetch: refetchReviews,
+  } = useQuery({
+    queryKey: ['reviews', 'patient', 'appointment', appointmentId] as const,
+    queryFn: async () => {
+      const res = await getPatientAppointmentReviews(appointmentId);
+      return Array.isArray(res.data) ? res.data : [];
     },
     enabled: !!user && user.roleId === PATIENT_ROLE_ID && patient != null && validId,
   });
@@ -163,6 +235,23 @@ export function ChiTietLichHenBenhNhanPage() {
           <PatientAppointmentDetailHeader detail={detail} isVi={isVi} />
           <PatientAppointmentDetailInfoCards detail={detail} isVi={isVi} />
           <PatientAppointmentDetailNotes detail={detail} isVi={isVi} />
+          <PatientAppointmentReviewSection
+            appointmentId={appointmentId}
+            reviews={reviews}
+            isLoading={isReviewsLoading}
+            isError={isReviewsError}
+            errorMessage={reviewsError instanceof Error ? reviewsError.message : null}
+            onRetry={() => void refetchReviews()}
+            onCreateReview={(payload) => createReviewMutation.mutateAsync(payload)}
+            isCreatingReview={createReviewMutation.isPending}
+            onUpdateReview={(reviewId, payload) => updateReviewMutation.mutateAsync({ reviewId, payload })}
+            isUpdatingReview={updateReviewMutation.isPending}
+            onDeleteReview={(reviewId) => {
+              void deleteReviewMutation.mutateAsync(reviewId);
+            }}
+            deletingReviewId={deletingReviewId}
+            isVi={isVi}
+          />
         </>
       ) : null}
     </div>

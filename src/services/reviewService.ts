@@ -1,0 +1,75 @@
+import { http, type Response } from '@/services/http';
+
+export type ReviewUser = {
+  userId: number;
+  name: string;
+  avatar: string | null;
+};
+
+export type AppointmentReviewItem = {
+  reviewId: number;
+  patientId: number;
+  doctorId: number;
+  rating: number;
+  comment: string | null;
+  appointmentId: number;
+  status: string;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  patient: {
+    user: ReviewUser;
+  };
+  doctor: {
+    user: ReviewUser;
+  };
+};
+
+export type GetPatientAppointmentReviewsResponse = Response<AppointmentReviewItem[]>;
+export type DeleteReviewResponse = Response<null>;
+export type CreateReviewPayload = {
+  appointmentId: number;
+  rating: number;
+  comment: string;
+};
+export type CreateReviewResponse = Response<AppointmentReviewItem>;
+export type UpdateReviewPayload = {
+  rating: number;
+  comment: string;
+};
+export type UpdateReviewResponse = Response<AppointmentReviewItem>;
+
+export function getPatientAppointmentReviews(appointmentId: number) {
+  return http<GetPatientAppointmentReviewsResponse>(`/reviews/patient/appointments/${appointmentId}`);
+}
+
+export function createReview(payload: CreateReviewPayload) {
+  return http<CreateReviewResponse>('/reviews', {
+    method: 'POST',
+    headers: {
+      accept: '*/*',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateReview(reviewId: number, payload: UpdateReviewPayload) {
+  return http<UpdateReviewResponse>(`/reviews/${reviewId}`, {
+    method: 'PUT',
+    headers: {
+      accept: '*/*',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteReview(reviewId: number) {
+  return http<DeleteReviewResponse>(`/reviews/${reviewId}`, {
+    method: 'DELETE',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
