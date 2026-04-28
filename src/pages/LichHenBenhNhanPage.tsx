@@ -3,7 +3,7 @@ import { PatientAppointmentCard } from '@/components/patient/PatientAppointmentC
 import { PatientCancelAppointmentModal } from '@/components/patient/PatientCancelAppointmentModal';
 import { PatientRescheduleModal } from '@/components/patient/PatientRescheduleModal';
 import { PATIENT_ROLE_ID } from '@/constants/roleIds';
-import { ROUTES } from '@/constants/routes';
+import { getPatientAppointmentDetailRoute, ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getAppointments, type AppointmentListItem } from '@/services/appointmentService';
@@ -19,8 +19,7 @@ const patientMeQueryKey = ['patients', 'me'] as const;
 const toolbarLinkClassName =
   'inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-bold shadow-sm transition';
 const neutralToolbarLinkClassName = `${toolbarLinkClassName} border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-800`;
-const successToolbarLinkClassName =
-  `${toolbarLinkClassName} border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-100`;
+const successToolbarLinkClassName = `${toolbarLinkClassName} border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-100`;
 const primaryActionClassName =
   'inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white';
 const paginationButtonClassName =
@@ -103,9 +102,15 @@ export function LichHenBenhNhanPage() {
         centered
         className="mx-auto w-full max-w-[1360px] rounded-3xl p-8"
         title={isVi ? 'Không có quyền truy cập' : 'Access denied'}
-        description={isVi ? 'Trang này chỉ dành cho tài khoản bệnh nhân.' : 'This page is only available for patient accounts.'}
+        description={
+          isVi ? 'Trang này chỉ dành cho tài khoản bệnh nhân.' : 'This page is only available for patient accounts.'
+        }
         action={
-          <button type="button" className="text-sm font-semibold text-blue-600 underline" onClick={() => navigate(ROUTES.home)}>
+          <button
+            type="button"
+            className="text-sm font-semibold text-blue-600 underline"
+            onClick={() => navigate(ROUTES.home)}
+          >
             {isVi ? 'Về trang chủ' : 'Back to home'}
           </button>
         }
@@ -124,7 +129,11 @@ export function LichHenBenhNhanPage() {
         title={isVi ? 'Không tải được hồ sơ' : 'Could not load profile'}
         description={patientError instanceof Error ? patientError.message : 'Error'}
         action={
-          <button type="button" className="text-sm font-semibold text-red-700 underline" onClick={() => void refetchPatient()}>
+          <button
+            type="button"
+            className="text-sm font-semibold text-red-700 underline"
+            onClick={() => void refetchPatient()}
+          >
             {isVi ? 'Thử lại' : 'Try again'}
           </button>
         }
@@ -170,16 +179,10 @@ export function LichHenBenhNhanPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2 self-start">
-          <Link
-            to={ROUTES.patientProfile}
-            className={neutralToolbarLinkClassName}
-          >
+          <Link to={ROUTES.patientProfile} className={neutralToolbarLinkClassName}>
             {isVi ? '← Hồ sơ bệnh nhân' : '← Patient profile'}
           </Link>
-          <Link
-            to={ROUTES.patientMedicalRecords}
-            className={successToolbarLinkClassName}
-          >
+          <Link to={ROUTES.patientMedicalRecords} className={successToolbarLinkClassName}>
             {isVi ? 'Bệnh án →' : 'Records →'}
           </Link>
         </div>
@@ -220,7 +223,11 @@ export function LichHenBenhNhanPage() {
           title={isVi ? 'Không tải được danh sách' : 'Could not load list'}
           description={error instanceof Error ? error.message : 'Error'}
           action={
-            <button type="button" className="text-sm font-semibold text-red-700 underline" onClick={() => void refetch()}>
+            <button
+              type="button"
+              className="text-sm font-semibold text-red-700 underline"
+              onClick={() => void refetch()}
+            >
               {isVi ? 'Thử lại' : 'Try again'}
             </button>
           }
@@ -245,6 +252,7 @@ export function LichHenBenhNhanPage() {
                 <PatientAppointmentCard
                   item={item}
                   isVi={isVi}
+                  onViewDetail={(appt) => navigate(getPatientAppointmentDetailRoute(appt.appointmentId))}
                   onReschedule={setRescheduleTarget}
                   onCancel={setCancelTarget}
                 />

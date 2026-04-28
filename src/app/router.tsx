@@ -6,12 +6,13 @@ import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
 import { DoctorDetailPage } from '@/pages/ChiTietBacSiPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
+import { ChiTietLichHenBenhNhanPage } from '@/pages/ChiTietLichHenBenhNhanPage';
 import { ChiTietThanhToanLeTanPage } from '@/pages/ChiTietThanhToanLeTanPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
 import { LoginPage } from '@/pages/DangNhapPage';
-import { DatLichDichVuPage } from '@/pages/DatLichDichVuPage';
 import { DashboardBacSiPage } from '@/pages/DashboardBacSiPage';
+import { DatLichDichVuPage } from '@/pages/DatLichDichVuPage';
 import { AboutTeamPage } from '@/pages/DoiNguBacSiPage';
 import { PricePorcelainPage } from '@/pages/GiaBocRangSuPage';
 import { PriceBracesPage } from '@/pages/GiaNiengRangPage';
@@ -124,6 +125,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.patientAppointments,
             element: <LichHenBenhNhanPage />,
+          },
+          {
+            path: ROUTES.patientAppointmentDetail,
+            element: <ChiTietLichHenBenhNhanPage />,
           },
           {
             path: ROUTES.patientMedicalRecords,

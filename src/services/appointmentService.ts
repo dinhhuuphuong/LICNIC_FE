@@ -31,6 +31,29 @@ export type AppointmentListItem = {
   note: string;
   createdAt: string;
   checkedInAt: string | null;
+  respondedAt?: string | null;
+  cancelledBy: string | null;
+  cancellationReason: string | null;
+  updatedAt: string | null;
+};
+
+export type AppointmentDetailItem = {
+  appointmentId: number;
+  patientId: number;
+  patientName: string;
+  patientMedicalHistory: string;
+  doctorId: string;
+  doctorName: string;
+  serviceId: number;
+  serviceName: string;
+  serviceCost: number;
+  appointmentDate: string;
+  appointmentTime: string;
+  status: string;
+  note: string;
+  createdAt: string;
+  checkedInAt: string | null;
+  respondedAt: string | null;
   cancelledBy: string | null;
   cancellationReason: string | null;
   updatedAt: string | null;
@@ -107,6 +130,12 @@ export function getAppointments(params: GetAppointmentsParams = {}) {
   if (params.scheduleId) queryParams.set('scheduleId', String(params.scheduleId));
 
   return http<GetAppointmentsResponse>(`${APPOINTMENTS_URL}?${queryParams.toString()}`);
+}
+
+export type GetAppointmentDetailResponse = Response<AppointmentDetailItem>;
+
+export function getAppointmentDetail(appointmentId: number) {
+  return http<GetAppointmentDetailResponse>(`${APPOINTMENTS_URL}/${appointmentId}`);
 }
 
 export type UpdateAppointmentResponse = Response<AppointmentEntity>;

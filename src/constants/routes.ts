@@ -15,6 +15,7 @@ export const ROUTES = {
   register: '/dang-ky',
   patientProfile: '/benh-nhan/ho-so',
   patientAppointments: '/benh-nhan/lich-hen',
+  patientAppointmentDetail: '/benh-nhan/lich-hen/:appointmentId',
   patientMedicalRecords: '/benh-nhan/benh-an',
   doctorProfile: '/bac-si/thong-tin-ca-nhan',
   doctorDashboard: '/bac-si/dashboard',
@@ -60,6 +61,10 @@ export function getServiceBookingRoute(serviceId: number) {
 
 export function getPatientMedicalRecordDetailRoute(recordId: number) {
   return `/benh-nhan/benh-an/${recordId}`;
+}
+
+export function getPatientAppointmentDetailRoute(appointmentId: number) {
+  return `/benh-nhan/lich-hen/${appointmentId}`;
 }
 
 export function getReceptionistPaymentDetailRoute(paymentId: number) {

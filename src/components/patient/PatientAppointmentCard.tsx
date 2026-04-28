@@ -5,6 +5,7 @@ import { formatYmdToDmy } from '@/utils/dateDisplay';
 type PatientAppointmentCardProps = {
   item: AppointmentListItem;
   isVi: boolean;
+  onViewDetail: (item: AppointmentListItem) => void;
   onReschedule: (item: AppointmentListItem) => void;
   onCancel: (item: AppointmentListItem) => void;
 };
@@ -17,7 +18,13 @@ function formatVnd(n: number): string {
   }
 }
 
-export function PatientAppointmentCard({ item, isVi, onReschedule, onCancel }: PatientAppointmentCardProps) {
+export function PatientAppointmentCard({
+  item,
+  isVi,
+  onViewDetail,
+  onReschedule,
+  onCancel,
+}: PatientAppointmentCardProps) {
   const timeShort = item.appointmentTime.length >= 5 ? item.appointmentTime.slice(0, 5) : item.appointmentTime;
   const dateLabel = formatYmdToDmy(item.appointmentDate);
   const modifiable = canPatientRescheduleOrCancel(item.status);
@@ -84,24 +91,33 @@ export function PatientAppointmentCard({ item, isVi, onReschedule, onCancel }: P
         </p>
       ) : null}
 
-      {modifiable ? (
-        <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-          <button
-            type="button"
-            className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-blue-700 bg-white px-5 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
-            onClick={() => onReschedule(item)}
-          >
-            {isVi ? 'Đổi lịch' : 'Reschedule'}
-          </button>
-          <button
-            type="button"
-            className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-red-200 bg-white px-5 text-sm font-bold text-red-700 transition hover:bg-red-50"
-            onClick={() => onCancel(item)}
-          >
-            {isVi ? 'Hủy lịch' : 'Cancel'}
-          </button>
-        </div>
-      ) : null}
+      <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+        <button
+          type="button"
+          className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-emerald-200 bg-white px-5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
+          onClick={() => onViewDetail(item)}
+        >
+          {isVi ? 'Xem chi tiết' : 'View details'}
+        </button>
+        {modifiable ? (
+          <>
+            <button
+              type="button"
+              className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-blue-700 bg-white px-5 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
+              onClick={() => onReschedule(item)}
+            >
+              {isVi ? 'Đổi lịch' : 'Reschedule'}
+            </button>
+            <button
+              type="button"
+              className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-red-200 bg-white px-5 text-sm font-bold text-red-700 transition hover:bg-red-50"
+              onClick={() => onCancel(item)}
+            >
+              {isVi ? 'Hủy lịch' : 'Cancel'}
+            </button>
+          </>
+        ) : null}
+      </div>
     </article>
   );
 }
