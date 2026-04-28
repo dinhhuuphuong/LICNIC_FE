@@ -27,6 +27,8 @@ export const ROUTES = {
   receptionistAppointments: '/le-tan/quan-ly-dat-lich',
   receptionistCustomerCare: '/le-tan/cham-soc-khach-hang',
   receptionistPaymentsManage: '/le-tan/quan-ly-thanh-toan',
+  receptionistReviewsManage: '/le-tan/quan-ly-review',
+  receptionistReviewDetail: '/le-tan/quan-ly-review/:reviewId',
   receptionistPaymentCreate: '/le-tan/thanh-toan',
   receptionistPaymentDetail: '/le-tan/thanh-toan/:paymentId',
   /** Chi tiết bệnh án — dùng `getPatientMedicalRecordDetailRoute(recordId)`. */
@@ -69,4 +71,8 @@ export function getPatientAppointmentDetailRoute(appointmentId: number) {
 
 export function getReceptionistPaymentDetailRoute(paymentId: number) {
   return `/le-tan/thanh-toan/${paymentId}`;
+}
+
+export function getReceptionistReviewDetailRoute(reviewId: number) {
+  return `/le-tan/quan-ly-review/${reviewId}`;
 }

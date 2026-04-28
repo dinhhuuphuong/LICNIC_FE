@@ -7,6 +7,7 @@ import { DoctorDetailPage } from '@/pages/ChiTietBacSiPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
 import { ChiTietLichHenBenhNhanPage } from '@/pages/ChiTietLichHenBenhNhanPage';
+import { ChiTietReviewLeTanPage } from '@/pages/ChiTietReviewLeTanPage';
 import { ChiTietThanhToanLeTanPage } from '@/pages/ChiTietThanhToanLeTanPage';
 import { AboutFacilitiesPage } from '@/pages/CoSoVatChatPage';
 import { RegisterPage } from '@/pages/DangKyPage';
@@ -26,6 +27,7 @@ import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
 import QuanLyDatLichBacSiPage from '@/pages/QuanLyDatLichBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
 import { QuanLyHoSoBenhNhanBacSiPage } from '@/pages/QuanLyHoSoBenhNhanBacSiPage';
+import { QuanLyReviewLeTanPage } from '@/pages/QuanLyReviewLeTanPage';
 import { QuanLyThanhToanLeTanPage } from '@/pages/QuanLyThanhToanLeTanPage';
 import { TaoBenhAnVaDonThuocPage } from '@/pages/TaoBenhAnVaDonThuocPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
@@ -169,6 +171,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.receptionistCustomerCare,
             element: <ChamSocKhachHangLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistReviewsManage,
+            element: <QuanLyReviewLeTanPage />,
+          },
+          {
+            path: ROUTES.receptionistReviewDetail,
+            element: <ChiTietReviewLeTanPage />,
           },
           {
             path: ROUTES.receptionistPaymentsManage,
