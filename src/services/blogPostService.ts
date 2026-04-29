@@ -48,6 +48,13 @@ export type GetMyBlogPostsParams = {
   categoryId?: number;
 };
 
+export type GetPublicBlogPostsParams = {
+  limit?: number;
+  page?: number;
+  status?: BlogPostStatus;
+  categoryId?: number;
+};
+
 const BLOG_POSTS_URL = '/blog-posts';
 
 export function getBlogPostsManage(params: GetBlogPostsManageParams = {}) {
@@ -89,6 +96,25 @@ export function getMyBlogPosts(params: GetMyBlogPostsParams = {}) {
   }
 
   return http<GetBlogPostsManageResponse>(`${BLOG_POSTS_URL}/me?${queryParams.toString()}`);
+}
+
+export function getPublicBlogPosts(params: GetPublicBlogPostsParams = {}) {
+  const limit = params.limit ?? 10;
+  const page = params.page ?? 1;
+
+  const queryParams = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  });
+
+  if (params.status) {
+    queryParams.set('status', params.status);
+  }
+  if (params.categoryId !== undefined) {
+    queryParams.set('categoryId', String(params.categoryId));
+  }
+
+  return http<GetBlogPostsManageResponse>(`${BLOG_POSTS_URL}?${queryParams.toString()}`);
 }
 
 export type GetBlogPostDetailResponse = Response<BlogPost>;

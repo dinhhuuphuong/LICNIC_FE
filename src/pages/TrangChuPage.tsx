@@ -4,11 +4,19 @@ import camKetChinhHang from '@/assets/images/chinh-hang.svg';
 import camKetHoTro from '@/assets/images/ho-tro.svg';
 import camKetMinhBach from '@/assets/images/minh-bach.svg';
 import veChungToi from '@/assets/images/ve-chung-toi.webp';
-import { DoctorTeamAvatarGrid, DoctorTeamFeaturedPhoto } from '@/components/DoctorTeamAvatarGrid';
 import { FeaturedDentalServicesSection } from '@/components/FeaturedDentalServicesSection';
+import { HomeCommitmentsSection } from '@/components/home/HomeCommitmentsSection';
+import { HomeCustomerStoriesSection } from '@/components/home/HomeCustomerStoriesSection';
+import { HomeDoctorsSection } from '@/components/home/HomeDoctorsSection';
+import { HomeHeroSection } from '@/components/home/HomeHeroSection';
+import { HomeNewsSection } from '@/components/home/HomeNewsSection';
+import { HomeReasonsSection } from '@/components/home/HomeReasonsSection';
+import { HomeTechnologySection } from '@/components/home/HomeTechnologySection';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { getPublicBlogPosts, type BlogPost } from '@/services/blogPostService';
 import { getActiveDoctorsForHome, type Doctor } from '@/services/doctorService';
+import { getApprovedReviews, type ApprovedReviewItem } from '@/services/reviewService';
 import { useEffect, useMemo, useState } from 'react';
 
 type DoctorTeamDisplay = {
@@ -47,12 +55,80 @@ function mapDoctorToTeamDisplay(d: Doctor, isVi: boolean): DoctorTeamDisplay {
   };
 }
 
+type HomeNewsItem = {
+  postId: number;
+  title: string;
+  excerpt: string;
+  date: string;
+  thumbnail: string | null;
+  categoryName: string;
+};
+
+function stripHtml(value: string) {
+  return value
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatPostDate(dateIso: string) {
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function mapBlogPostToHomeNewsItem(post: BlogPost): HomeNewsItem {
+  const plainContent = stripHtml(post.content || '');
+  const excerptText = plainContent.slice(0, 150) + (plainContent.length > 150 ? '...' : '');
+  return {
+    postId: post.postId,
+    title: post.title,
+    excerpt: `<p>${excerptText}</p>`,
+    date: formatPostDate(post.createdAt),
+    thumbnail: post.thumbnail ?? null,
+    categoryName: post.category?.categoryName?.trim() || 'Khác',
+  };
+}
+
+type HomeCustomerStory = {
+  reviewId: number;
+  customer: string;
+  avatar: string | null;
+  headline: string;
+  excerpt: string;
+};
+
+function mapReviewToCustomerStory(review: ApprovedReviewItem): HomeCustomerStory {
+  return {
+    reviewId: review.reviewId,
+    customer: review.userName?.trim() || 'Khach hang',
+    avatar: review.userAvatar ?? null,
+    headline: review.serviceName?.trim() || 'Dich vu nha khoa',
+    excerpt: review.comment?.trim() || '',
+  };
+}
+
 export function HomePage() {
   const { language } = useLanguage();
   const [activeTechIndex, setActiveTechIndex] = useState(0);
   const [activeDoctorIndex, setActiveDoctorIndex] = useState(0);
   const [activeStoryPage, setActiveStoryPage] = useState(0);
   const [activeNewsTab, setActiveNewsTab] = useState(0);
+  const [newsFromApi, setNewsFromApi] = useState<BlogPost[]>([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  const [reviewsFromApi, setReviewsFromApi] = useState<ApprovedReviewItem[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   const isVi = language === 'vi';
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Trang chủ' : 'NHA KHOA TẬN TÂM | Home');
@@ -284,8 +360,6 @@ export function HomePage() {
         },
       ];
 
-  const activeTechnology = modernTechnologies[activeTechIndex];
-
   const [doctorsFromApi, setDoctorsFromApi] = useState<Doctor[]>([]);
   const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [doctorsError, setDoctorsError] = useState<string | null>(null);
@@ -314,6 +388,29 @@ export function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setReviewsLoading(true);
+        setReviewsError(null);
+        const res = await getApprovedReviews({ limit: 10, page: 1 });
+        if (cancelled) return;
+        setReviewsFromApi(res.data.items);
+        setActiveStoryPage(0);
+      } catch (e) {
+        if (cancelled) return;
+        setReviewsError(e instanceof Error ? e.message : 'Request failed');
+        setReviewsFromApi([]);
+      } finally {
+        if (!cancelled) setReviewsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const displayDoctors = useMemo(
     () => doctorsFromApi.map((d) => mapDoctorToTeamDisplay(d, isVi)),
     [doctorsFromApi, isVi],
@@ -323,6 +420,29 @@ export function HomePage() {
     if (displayDoctors.length === 0) return;
     setActiveDoctorIndex((i) => Math.min(i, displayDoctors.length - 1));
   }, [displayDoctors.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setNewsLoading(true);
+        setNewsError(null);
+        const res = await getPublicBlogPosts({ limit: 10, page: 1, status: 'published' });
+        if (cancelled) return;
+        setNewsFromApi(res.data.items);
+        setActiveNewsTab(0);
+      } catch (e) {
+        if (cancelled) return;
+        setNewsError(e instanceof Error ? e.message : 'Request failed');
+        setNewsFromApi([]);
+      } finally {
+        if (!cancelled) setNewsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const activeDoctor = displayDoctors[activeDoctorIndex];
   const avatarItems = useMemo(
@@ -382,605 +502,88 @@ export function HomePage() {
         },
       ];
 
-  const customerStories = isVi
-    ? [
-        {
-          customer: 'Thu Hoàng',
-          headline: 'Giải pháp Implant All On 4',
-          excerpt: 'Khách hàng Thu Hoàng phục hồi toàn hàm chắc khỏe, cải thiện ăn nhai và nụ cười rõ rệt.',
-        },
-        {
-          customer: 'Lan Chi',
-          headline: 'Implant trụ Hàn Quốc',
-          excerpt: 'Lan Chi tự tin hơn sau khi trồng răng Implant, phục hồi chức năng và thẩm mỹ hài hòa.',
-        },
-        {
-          customer: 'Hùng Thành',
-          headline: '24 răng sứ Jelenco Multilayer',
-          excerpt: 'Anh Hùng Thành có nụ cười trắng sáng, đều đẹp hơn sau phục hình răng sứ thẩm mỹ.',
-        },
-        {
-          customer: 'Ngọc Ánh',
-          headline: 'Niềng răng mắc cài sứ',
-          excerpt: 'Quá trình chỉnh nha giúp khớp cắn ổn định và cải thiện rõ đường nét khuôn miệng.',
-        },
-        {
-          customer: 'Bảo Trâm',
-          headline: 'Dán sứ Veneer',
-          excerpt: 'Bảo tồn răng thật tối đa, nâng tông nụ cười tự nhiên và hài hòa khuôn mặt.',
-        },
-        {
-          customer: 'Minh Quân',
-          headline: 'Điều trị tủy và bọc sứ',
-          excerpt: 'Khắc phục tình trạng đau nhức kéo dài, phục hồi chức năng răng bền vững.',
-        },
-        {
-          customer: 'Thảo Vy',
-          headline: 'Tẩy trắng răng công nghệ lạnh',
-          excerpt: 'Màu răng cải thiện rõ sau liệu trình ngắn, hạn chế ê buốt và an toàn men răng.',
-        },
-        {
-          customer: 'Gia Huy',
-          headline: 'Nhổ răng khôn không đau',
-          excerpt: 'Tiểu phẫu nhẹ nhàng, hồi phục nhanh với quy trình chăm sóc hậu phẫu chi tiết.',
-        },
-        {
-          customer: 'Mỹ Linh',
-          headline: 'Trám răng thẩm mỹ',
-          excerpt: 'Khôi phục hình thể răng sứt mẻ, cải thiện thẩm mỹ và giảm ê buốt khi ăn uống.',
-        },
-      ]
-    : [
-        {
-          customer: 'Thu Hoang',
-          headline: 'All On 4 Implant Solution',
-          excerpt: 'Full-arch rehabilitation improved chewing function and smile confidence.',
-        },
-        {
-          customer: 'Lan Chi',
-          headline: 'Korean Implant Fixture',
-          excerpt: 'Implant treatment restored both esthetics and oral function effectively.',
-        },
-        {
-          customer: 'Hung Thanh',
-          headline: '24 Jelenco Multilayer Crowns',
-          excerpt: 'Smile makeover achieved brighter and more natural-looking teeth.',
-        },
-        {
-          customer: 'Ngoc Anh',
-          headline: 'Ceramic Braces Treatment',
-          excerpt: 'Orthodontic correction improved bite alignment and facial balance.',
-        },
-        {
-          customer: 'Bao Tram',
-          headline: 'Veneer Smile Design',
-          excerpt: 'Conservative veneer approach enhanced smile harmony and confidence.',
-        },
-        {
-          customer: 'Minh Quan',
-          headline: 'Root Canal and Crown',
-          excerpt: 'Pain was relieved and tooth function was restored for long-term use.',
-        },
-        {
-          customer: 'Thao Vy',
-          headline: 'Cold-Light Whitening',
-          excerpt: 'Whiter teeth in a short treatment time with low post-op sensitivity.',
-        },
-        {
-          customer: 'Gia Huy',
-          headline: 'Gentle Wisdom Tooth Removal',
-          excerpt: 'Minimally invasive procedure with fast recovery and clear aftercare.',
-        },
-        {
-          customer: 'My Linh',
-          headline: 'Esthetic Composite Filling',
-          excerpt: 'Repaired chipped teeth and improved comfort during daily eating.',
-        },
-      ];
+  const customerStories = useMemo(() => reviewsFromApi.map(mapReviewToCustomerStory), [reviewsFromApi]);
 
   const storiesPerPage = 3;
-  const totalStoryPages = Math.ceil(customerStories.length / storiesPerPage);
+  const totalStoryPages = Math.max(1, Math.ceil(customerStories.length / storiesPerPage));
   const visibleStories = customerStories.slice(
     activeStoryPage * storiesPerPage,
     activeStoryPage * storiesPerPage + storiesPerPage,
   );
 
+  useEffect(() => {
+    setActiveStoryPage((prev) => Math.min(prev, totalStoryPages - 1));
+  }, [totalStoryPages]);
+
   const shiftStoryPage = (step: number) => {
     setActiveStoryPage((prev) => (prev + step + totalStoryPages) % totalStoryPages);
   };
 
-  const newsTabs = isVi ? ['Kiến thức', 'Sự kiện', 'Ưu đãi'] : ['Knowledge', 'Events', 'Promotions'];
-
-  const newsData = isVi
-    ? [
-        {
-          featured: [
-            {
-              title: 'Lễ ký kết hợp tác chiến lược và chuyển giao công nghệ Implant',
-              date: '05/02/2026',
-              excerpt:
-                'Nha khoa Tâm Đức Smile chính thức ký kết hợp tác chiến lược và chuyển giao công nghệ Implant với đối tác quốc tế.',
-            },
-            {
-              title: 'Chăm sóc nụ cười toàn diện với ưu đãi hấp dẫn trong tháng này',
-              date: '26/09/2025',
-              excerpt:
-                'Nhiều ưu đãi chuyên sâu cho trồng Implant, niềng răng và phục hình thẩm mỹ, giúp tối ưu chi phí điều trị.',
-            },
-          ],
-          side: [
-            'Niềng răng Invisalign - Khay trong suốt, chỉnh nha thẩm mỹ hiệu quả',
-            'Dán sứ Veneer là gì? Chi phí, ưu điểm và lưu ý quan trọng',
-            'Trồng răng Implant toàn hàm là gì? Chi phí và lộ trình',
-            'Implant All On 4 là gì? Ưu điểm và đối tượng phù hợp',
-            'Tẩy trắng răng công nghệ cao có an toàn không?',
-          ],
-        },
-        {
-          featured: [
-            {
-              title: 'Tâm Đức Smile khai trương khu điều trị công nghệ cao',
-              date: '12/01/2026',
-              excerpt:
-                'Không gian điều trị mới được trang bị hệ thống chẩn đoán hình ảnh hiện đại, nâng cao trải nghiệm khách hàng.',
-            },
-            {
-              title: 'Hội thảo chuyên đề Implant với chuyên gia quốc tế',
-              date: '28/11/2025',
-              excerpt:
-                'Đội ngũ bác sĩ cập nhật kỹ thuật cấy ghép Implant mới, tăng độ chính xác và an toàn trong điều trị.',
-            },
-          ],
-          side: [
-            'Tổng kết sự kiện tư vấn nụ cười tại chi nhánh Quận 7',
-            'Chuỗi workshop chăm sóc răng miệng cho doanh nghiệp',
-            'Tâm Đức Smile đồng hành cùng chương trình sức khỏe học đường',
-            'Ngày hội khám răng miễn phí cho cộng đồng',
-            'Talkshow “Niềng răng đúng cách” cùng bác sĩ chuyên môn',
-          ],
-        },
-        {
-          featured: [
-            {
-              title: 'Ưu đãi 30% cho gói niềng răng trong tháng',
-              date: '03/03/2026',
-              excerpt:
-                'Áp dụng cho khách hàng đăng ký mới, hỗ trợ trả góp linh hoạt và tặng kèm bộ chăm sóc răng miệng.',
-            },
-            {
-              title: 'Combo thăm khám và vệ sinh răng định kỳ giá tốt',
-              date: '18/02/2026',
-              excerpt: 'Gói ưu đãi giúp kiểm tra tổng quát, cạo vôi và tư vấn cá nhân hóa với mức chi phí tiết kiệm.',
-            },
-          ],
-          side: [
-            'Ưu đãi trồng Implant trọn gói, tiết kiệm đến 20%',
-            'Tặng gói scan 3D khi đăng ký niềng răng Invisalign',
-            'Combo tẩy trắng răng + trám thẩm mỹ ưu đãi đặc biệt',
-            'Giảm giá cho khách hàng tái khám đúng lịch',
-            'Voucher chăm sóc răng cho khách hàng mới',
-          ],
-        },
-      ]
-    : [
-        {
-          featured: [
-            {
-              title: 'Strategic Implant technology partnership ceremony',
-              date: '05/02/2026',
-              excerpt: 'Tam Duc Smile signed a strategic partnership to transfer advanced implant technologies.',
-            },
-            {
-              title: 'Comprehensive smile care with monthly promotions',
-              date: '26/09/2025',
-              excerpt: 'Special offers for implants, orthodontics, and esthetic restoration this month.',
-            },
-          ],
-          side: [
-            'Invisalign treatment overview and key benefits',
-            'What is Veneer? Cost, benefits, and notes',
-            'Full-arch implant: process and expected cost',
-            'All On 4: who should consider this method?',
-            'Is high-tech whitening safe for enamel?',
-          ],
-        },
-        {
-          featured: [
-            {
-              title: 'New high-tech treatment zone opening',
-              date: '12/01/2026',
-              excerpt: 'A new treatment area with modern diagnostics to improve patient care quality.',
-            },
-            {
-              title: 'International implant workshop with experts',
-              date: '28/11/2025',
-              excerpt: 'Doctors updated clinical implant protocols for safer and more accurate outcomes.',
-            },
-          ],
-          side: [
-            'Community oral health consultation event highlights',
-            'Corporate oral care workshop series',
-            'School oral health support program',
-            'Free dental screening day',
-            'Orthodontic talkshow with specialists',
-          ],
-        },
-        {
-          featured: [
-            {
-              title: '30% off selected orthodontic packages',
-              date: '03/03/2026',
-              excerpt: 'Flexible installment plans and additional care kits available for new registrations.',
-            },
-            {
-              title: 'Periodic check-up and cleaning combo deal',
-              date: '18/02/2026',
-              excerpt: 'Comprehensive oral exam and scaling package at a cost-saving rate.',
-            },
-          ],
-          side: [
-            'Implant package promotion up to 20% savings',
-            'Free 3D scan with Invisalign package registration',
-            'Whitening + esthetic filling combo offers',
-            'Discount for on-time follow-up visits',
-            'New customer oral care voucher',
-          ],
-        },
-      ];
-
-  const activeNews = newsData[activeNewsTab];
+  const mappedNews = useMemo(() => newsFromApi.map(mapBlogPostToHomeNewsItem), [newsFromApi]);
+  const newsCategoryTabs = useMemo(() => {
+    const tabs = mappedNews.reduce<string[]>((acc, item) => {
+      if (!acc.includes(item.categoryName)) acc.push(item.categoryName);
+      return acc;
+    }, []);
+    return tabs.slice(0, 3);
+  }, [mappedNews]);
+  const newsTabs = newsCategoryTabs.length > 0 ? newsCategoryTabs : [isVi ? 'Tin mới' : 'Latest'];
+  const activeTabName = newsTabs[Math.min(activeNewsTab, newsTabs.length - 1)];
+  const filteredNews =
+    newsCategoryTabs.length > 0 ? mappedNews.filter((item) => item.categoryName === activeTabName) : mappedNews;
+  const activeNews = {
+    featured: filteredNews.slice(0, 2),
+    side: filteredNews.slice(2),
+  };
 
   return (
     <section className="space-y-16">
-      <div className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden border-y border-slate-200 bg-white shadow-xl shadow-slate-200/80">
-        <img
-          alt={isVi ? 'Banner nha khoa' : 'Dental banner'}
-          className="h-[320px] w-full object-cover md:h-[400px] lg:h-[460px]"
-          src={bannerHome}
-        />
+      <HomeHeroSection bannerSrc={bannerHome} isVi={isVi} quickActions={quickActions} />
 
-        <div className="absolute bottom-4 left-1/2 w-full max-w-5xl -translate-x-1/2 px-4">
-          <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/70 md:grid-cols-3">
-            {quickActions.map((item) => (
-              <button
-                className="flex items-center gap-4 border-b border-slate-200 px-5 py-5 text-left transition hover:bg-sky-50 md:border-b-0 md:border-r last:border-b-0 md:last:border-r-0"
-                key={item.title}
-                type="button"
-              >
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-sky-200 bg-sky-50 text-xl">
-                  {item.icon}
-                </span>
-                <span>
-                  <strong className="block text-2xl font-bold text-blue-700">{item.title}</strong>
-                  <span className="text-sm text-slate-600">{item.description}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 md:p-8">
-        <p className="text-center text-sm font-medium text-blue-600">
-          {isVi ? 'Lý do khách hàng tin chọn' : 'Why customers choose us'}
-        </p>
-        <h2 className="mt-2 text-center text-4xl font-black text-blue-700 md:text-5xl">
-          {isVi ? 'NHA KHOA TẬN TÂM' : 'TAN TAM DENTAL'}
-        </h2>
-
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.1fr_1fr]">
-          <div className="space-y-6">
-            {leftReasons.map((item) => (
-              <article className="text-center lg:text-left" key={item.number}>
-                <span className="inline-grid h-14 w-14 place-items-center rounded-full bg-sky-100 text-2xl font-bold text-sky-700">
-                  {item.number}
-                </span>
-                <h3 className="mt-3 text-2xl font-bold text-blue-700">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
-              </article>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center">
-            <img alt={isVi ? 'Về chúng tôi' : 'About us'} className="w-full max-w-md" src={veChungToi} />
-          </div>
-
-          <div className="space-y-6">
-            {rightReasons.map((item) => (
-              <article className="text-center lg:text-left" key={item.number}>
-                <span className="inline-grid h-14 w-14 place-items-center rounded-full bg-sky-100 text-2xl font-bold text-sky-700">
-                  {item.number}
-                </span>
-                <h3 className="mt-3 text-2xl font-bold text-blue-700">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </div>
+      <HomeReasonsSection aboutImageSrc={veChungToi} isVi={isVi} leftReasons={leftReasons} rightReasons={rightReasons} />
 
       <FeaturedDentalServicesSection />
 
-      <div className="rounded-[30px] border border-slate-200 bg-[#f3f5f8] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8">
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Công nghệ hiện đại' : 'Modern Technology'}
-        </h2>
+      <HomeTechnologySection
+        activeTechIndex={activeTechIndex}
+        isVi={isVi}
+        onSelectTech={setActiveTechIndex}
+        technologies={modernTechnologies}
+      />
 
-        <div className="mx-auto mt-8 max-w-5xl overflow-x-auto">
-          <div className="inline-flex min-w-full rounded-xl border border-blue-600 bg-white p-1">
-            {modernTechnologies.map((technology, index) => {
-              const isActive = index === activeTechIndex;
-              return (
-                <button
-                  className={`rounded-lg px-5 py-3 text-sm font-bold transition md:text-base ${
-                    isActive ? 'bg-blue-700 text-white shadow' : 'text-slate-600 hover:bg-blue-50'
-                  }`}
-                  key={technology.title}
-                  onClick={() => setActiveTechIndex(index)}
-                  type="button"
-                >
-                  {technology.tabLabel}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <HomeDoctorsSection
+        activeDoctor={activeDoctor}
+        activeDoctorIndex={activeDoctorIndex}
+        avatarItems={avatarItems}
+        doctorsError={doctorsError}
+        doctorsLoading={doctorsLoading}
+        isVi={isVi}
+        onSelectDoctor={setActiveDoctorIndex}
+      />
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[86px_1fr_1fr]">
-          <div className="grid grid-cols-5 gap-3 lg:grid-cols-1">
-            {activeTechnology.thumbnails.map((thumb) => (
-              <button
-                key={thumb}
-                type="button"
-                className="group relative h-[78px] overflow-hidden rounded-xl border border-blue-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-              >
-                <span className="absolute inset-0 bg-linear-to-br from-slate-100 via-slate-200 to-slate-100" />
-                <span className="absolute inset-0 grid place-items-center px-2 text-center text-xs font-semibold text-slate-500 group-hover:text-slate-700">
-                  {thumb}
-                </span>
-              </button>
-            ))}
-          </div>
+      <HomeCommitmentsSection commitments={commitments} isVi={isVi} />
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="relative grid min-h-[420px] place-items-center overflow-hidden rounded-xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-              <div className="absolute inset-4 rounded-2xl border-2 border-dashed border-slate-300" />
-              <p className="relative z-10 px-6 text-center text-base font-semibold text-slate-500">
-                {isVi ? 'Ảnh công nghệ sẽ bổ sung sau' : 'Technology image will be added later'}
-              </p>
-            </div>
-          </div>
+      <HomeCustomerStoriesSection
+        activeStoryPage={activeStoryPage}
+        isVi={isVi}
+        onSelectStoryPage={setActiveStoryPage}
+        onShiftStoryPage={shiftStoryPage}
+        reviewsError={reviewsError}
+        reviewsLoading={reviewsLoading}
+        totalStoryPages={totalStoryPages}
+        visibleStories={visibleStories}
+      />
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-2xl font-black text-blue-700">{activeTechnology.title}</h3>
-            <p className="mt-3 text-base leading-7 text-slate-700">{activeTechnology.lead}</p>
-            <div className="mt-4 max-h-[315px] space-y-4 overflow-y-auto pr-2 text-base leading-8 text-slate-700">
-              {activeTechnology.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-
-              <p className="pt-1 text-xl font-black text-blue-700">{activeTechnology.highlightsTitle}</p>
-              <ul className="list-disc space-y-2 pl-6">
-                {activeTechnology.highlights.map((highlight) => (
-                  <li key={highlight}>{highlight}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-[30px] border border-slate-200 bg-[#eaf2fa] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8 md:py-12">
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Đội ngũ bác sĩ' : 'Doctor Team'}
-        </h2>
-
-        {doctorsLoading ? (
-          <p className="mt-8 text-center text-base text-slate-600">
-            {isVi ? 'Đang tải đội ngũ bác sĩ...' : 'Loading doctor team...'}
-          </p>
-        ) : doctorsError ? (
-          <p className="mt-8 text-center text-base text-red-600">{doctorsError}</p>
-        ) : !activeDoctor ? (
-          <p className="mt-8 text-center text-base text-slate-600">
-            {isVi ? 'Hiện chưa có dữ liệu bác sĩ.' : 'No doctor profiles available yet.'}
-          </p>
-        ) : (
-          <>
-            <div className="mt-8 grid gap-8 lg:grid-cols-[1.45fr_0.85fr]">
-              <div>
-                <div className="inline-block rounded-md bg-white px-4 py-3">
-                  <h3 className="text-2xl font-black text-blue-700 md:text-3xl">
-                    {activeDoctor.role} - {activeDoctor.name}
-                  </h3>
-                </div>
-
-                <ul className="mt-5 space-y-3 text-base leading-7 text-slate-700">
-                  {activeDoctor.summary.map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <span>-</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className="mt-6 inline-flex items-center rounded-xl bg-blue-700 px-6 py-3 text-base font-bold text-white! transition hover:bg-blue-800"
-                  type="button"
-                >
-                  {activeDoctor.cta}
-                </button>
-              </div>
-
-              <div className="mx-auto w-full max-w-[340px]">
-                <div className="grid h-[380px] place-items-center overflow-hidden rounded-[28px] border border-blue-200 bg-white shadow-sm md:h-[430px]">
-                  <DoctorTeamFeaturedPhoto avatarUrl={activeDoctor.avatar} name={activeDoctor.name} />
-                </div>
-              </div>
-            </div>
-
-            <DoctorTeamAvatarGrid activeIndex={activeDoctorIndex} items={avatarItems} onSelect={setActiveDoctorIndex} />
-          </>
-        )}
-      </div>
-
-      <div className="rounded-[30px] border border-slate-200 bg-white px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8 md:py-12">
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Cam kết của Nha Khoa Tâm Đức Smile' : 'Tam Duc Smile Commitments'}
-        </h2>
-        <p className="mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-700 md:text-lg">
-          {isVi
-            ? 'Tâm Đức Smile cam kết mang đến nụ cười rạng rỡ và trải nghiệm điều trị chất lượng cao, tận tâm, chuyên nghiệp. Sức khỏe răng miệng của Quý khách là ưu tiên hàng đầu, với dịch vụ vượt trội, an toàn, cùng sự hài lòng tối đa.'
-            : 'Tam Duc Smile is committed to delivering excellent dental care with dedication, professionalism, safety, and the highest level of patient satisfaction.'}
-        </p>
-
-        <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {commitments.map((item) => (
-            <article key={item.title} className="flex h-full flex-col">
-              <div className="flex h-16 items-center">
-                <img alt={item.title} className="h-16 w-16 object-contain" src={item.icon} />
-              </div>
-              <h3 className="mt-5 min-h-18 text-2xl font-black uppercase leading-tight text-blue-700">{item.title}</h3>
-              <p className="mt-3 text-base leading-8 text-slate-700 md:text-lg">{item.description}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-[30px] border border-slate-200 bg-[#eaf2fa] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8 md:py-12">
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Câu chuyện khách hàng' : 'Customer Stories'}
-        </h2>
-
-        <div className="relative mt-8">
-          <button
-            aria-label={isVi ? 'Nhóm trước' : 'Previous group'}
-            className="absolute -left-3 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-blue-500 text-2xl text-white shadow transition hover:bg-blue-600 lg:grid"
-            onClick={() => shiftStoryPage(-1)}
-            type="button"
-          >
-            &#8249;
-          </button>
-
-          <button
-            aria-label={isVi ? 'Nhóm tiếp theo' : 'Next group'}
-            className="absolute -right-3 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-blue-700 text-2xl text-white shadow transition hover:bg-blue-800 lg:grid"
-            onClick={() => shiftStoryPage(1)}
-            type="button"
-          >
-            &#8250;
-          </button>
-
-          <div className="grid gap-6 lg:grid-cols-3 lg:px-10">
-            {visibleStories.map((story) => (
-              <article
-                key={`${story.customer}-${story.headline}`}
-                className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60"
-              >
-                <div className="relative grid h-[280px] place-items-center overflow-hidden rounded-2xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-                  <div className="absolute inset-3 rounded-2xl border-2 border-dashed border-slate-300" />
-                  <p className="relative z-10 px-6 text-center text-sm font-semibold text-slate-500">
-                    {isVi ? 'Ảnh khách hàng sẽ bổ sung sau' : 'Customer image will be added later'}
-                  </p>
-                </div>
-
-                <h3 className="mt-5 text-2xl font-black text-blue-700">
-                  {isVi ? `Khách hàng: ${story.customer}` : `Customer: ${story.customer}`}
-                </h3>
-                <p className="mt-1 text-lg font-bold text-slate-800">{story.headline}</p>
-                <p className="mt-3 text-base leading-8 text-slate-700">{story.excerpt}</p>
-
-                <div className="pt-6 text-center">
-                  <button
-                    className="inline-flex items-center rounded-xl bg-blue-700 px-6 py-3 text-base font-bold text-white transition hover:bg-blue-800"
-                    type="button"
-                  >
-                    {isVi ? 'Xem chi tiết' : 'View details'}
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-6 flex items-center justify-center gap-2">
-            {Array.from({ length: totalStoryPages }).map((_, pageIndex) => (
-              <button
-                aria-label={`${isVi ? 'Đến nhóm' : 'Go to group'} ${pageIndex + 1}`}
-                className={`h-2.5 rounded-full transition ${
-                  pageIndex === activeStoryPage ? 'w-8 bg-blue-700' : 'w-2.5 bg-slate-400 hover:bg-slate-500'
-                }`}
-                key={pageIndex}
-                onClick={() => setActiveStoryPage(pageIndex)}
-                type="button"
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-[30px] border border-slate-200 bg-[#eaf2fa] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8 md:py-12">
-        <h2 className="text-center text-4xl font-black uppercase text-blue-700 md:text-5xl">
-          {isVi ? 'Tin tức - Ưu đãi' : 'News - Promotions'}
-        </h2>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.95fr_0.95fr]">
-          <div className="grid gap-6 md:grid-cols-2">
-            {activeNews.featured.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60"
-              >
-                <div className="relative grid h-[320px] place-items-center overflow-hidden rounded-2xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-                  <div className="absolute inset-3 rounded-2xl border-2 border-dashed border-slate-300" />
-                  <p className="relative z-10 px-6 text-center text-sm font-semibold text-slate-500">
-                    {isVi ? 'Ảnh tin tức sẽ bổ sung sau' : 'News image will be added later'}
-                  </p>
-                </div>
-
-                <h3 className="mt-4 text-2xl font-black leading-tight text-blue-700">{item.title}</h3>
-                <p className="mt-2 text-sm font-semibold text-slate-500">{item.date}</p>
-                <div className="mt-3 h-px w-10 bg-slate-300" />
-                <p className="mt-3 text-base leading-8 text-slate-700">{item.excerpt}</p>
-              </article>
-            ))}
-          </div>
-
-          <aside className="rounded-3xl bg-blue-700 p-4 text-white shadow-lg shadow-blue-700/30">
-            <div className="grid grid-cols-3 gap-2 rounded-xl bg-blue-800/80 p-1">
-              {newsTabs.map((tab, index) => (
-                <button
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition ${
-                    index === activeNewsTab ? 'bg-white text-blue-700' : 'text-white/90 hover:bg-blue-600'
-                  }`}
-                  key={tab}
-                  onClick={() => setActiveNewsTab(index)}
-                  type="button"
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-4 max-h-[580px] space-y-3 overflow-y-auto pr-1">
-              {activeNews.side.map((item) => (
-                <button
-                  className="grid w-full grid-cols-[108px_1fr] gap-3 rounded-xl p-2 text-left transition hover:bg-blue-600/70"
-                  key={item}
-                  type="button"
-                >
-                  <div className="grid h-[70px] place-items-center overflow-hidden rounded-lg bg-white/90 text-xs font-semibold text-slate-500">
-                    {isVi ? 'Ảnh nhỏ' : 'Thumb'}
-                  </div>
-                  <div className="self-center">
-                    <p className="line-clamp-2 text-2xl font-bold leading-tight">{item}</p>
-                    <div className="mt-2 h-px w-10 bg-white/35" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </aside>
-        </div>
-      </div>
+      <HomeNewsSection
+        activeNewsTab={activeNewsTab}
+        featuredNews={activeNews.featured}
+        isVi={isVi}
+        newsError={newsError}
+        newsLoading={newsLoading}
+        newsTabs={newsTabs}
+        onSelectNewsTab={setActiveNewsTab}
+        sideNews={activeNews.side}
+      />
     </section>
   );
 }

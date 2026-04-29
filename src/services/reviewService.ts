@@ -60,6 +60,21 @@ export type ReviewDetail = AppointmentReviewItem & {
   } | null;
 };
 export type GetReviewDetailResponse = Response<ReviewDetail>;
+export type ApprovedReviewItem = {
+  reviewId: number;
+  patientId: number;
+  userName: string;
+  userAvatar: string | null;
+  serviceId: number;
+  serviceName: string;
+  comment: string | null;
+  rating: number;
+};
+export type GetApprovedReviewsParams = {
+  page?: number;
+  limit?: number;
+};
+export type GetApprovedReviewsResponse = PaginationResponse<ApprovedReviewItem>;
 
 export function getPatientAppointmentReviews(appointmentId: number) {
   return http<GetPatientAppointmentReviewsResponse>(`/reviews/patient/appointments/${appointmentId}`);
@@ -138,6 +153,22 @@ export function rejectReview(reviewId: number, payload: RejectReviewPayload) {
 
 export function getReviewDetail(reviewId: number) {
   return http<GetReviewDetailResponse>(`/reviews/${reviewId}`, {
+    method: 'GET',
+    headers: {
+      accept: '*/*',
+    },
+  });
+}
+
+export function getApprovedReviews(params: GetApprovedReviewsParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  return http<GetApprovedReviewsResponse>(`/reviews/approved?${queryParams.toString()}`, {
     method: 'GET',
     headers: {
       accept: '*/*',
