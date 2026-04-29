@@ -24,6 +24,7 @@ import { KnowledgeImplantPage } from '@/pages/KienThucImplantPage';
 import { KnowledgeBracesPage } from '@/pages/KienThucNiengRangPage';
 import { KnowledgePorcelainPage } from '@/pages/KienThucRangSuPage';
 import { LichHenBenhNhanPage } from '@/pages/LichHenBenhNhanPage';
+import { QuanLyBaiVietBlogLeTanPage } from '@/pages/QuanLyBaiVietBlogLeTanPage';
 import QuanLyDatLichBacSiPage from '@/pages/QuanLyDatLichBacSiPage';
 import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
 import { QuanLyHoSoBenhNhanBacSiPage } from '@/pages/QuanLyHoSoBenhNhanBacSiPage';
@@ -171,6 +172,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.receptionistCustomerCare,
             element: <ChamSocKhachHangLeTanPage />,
+          },
+          {
+            path: ROUTES.blogPostsManage,
+            element: <QuanLyBaiVietBlogLeTanPage />,
           },
           {
             path: ROUTES.receptionistReviewsManage,

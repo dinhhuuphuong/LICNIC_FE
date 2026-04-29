@@ -28,6 +28,7 @@ export const ROUTES = {
   receptionistCustomerCare: '/le-tan/cham-soc-khach-hang',
   receptionistPaymentsManage: '/le-tan/quan-ly-thanh-toan',
   receptionistReviewsManage: '/le-tan/quan-ly-review',
+  blogPostsManage: '/quan-ly-bai-viet',
   receptionistReviewDetail: '/le-tan/quan-ly-review/:reviewId',
   receptionistPaymentCreate: '/le-tan/thanh-toan',
   receptionistPaymentDetail: '/le-tan/thanh-toan/:paymentId',

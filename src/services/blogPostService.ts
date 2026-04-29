@@ -41,6 +41,13 @@ export type GetBlogPostsManageParams = {
   authorId?: number;
 };
 
+export type GetMyBlogPostsParams = {
+  limit?: number;
+  page?: number;
+  status?: BlogPostStatus;
+  categoryId?: number;
+};
+
 const BLOG_POSTS_URL = '/blog-posts';
 
 export function getBlogPostsManage(params: GetBlogPostsManageParams = {}) {
@@ -63,6 +70,25 @@ export function getBlogPostsManage(params: GetBlogPostsManageParams = {}) {
   }
 
   return http<GetBlogPostsManageResponse>(`${BLOG_POSTS_URL}/manage?${queryParams.toString()}`);
+}
+
+export function getMyBlogPosts(params: GetMyBlogPostsParams = {}) {
+  const limit = params.limit ?? 10;
+  const page = params.page ?? 1;
+
+  const queryParams = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  });
+
+  if (params.status) {
+    queryParams.set('status', params.status);
+  }
+  if (params.categoryId !== undefined) {
+    queryParams.set('categoryId', String(params.categoryId));
+  }
+
+  return http<GetBlogPostsManageResponse>(`${BLOG_POSTS_URL}/me?${queryParams.toString()}`);
 }
 
 export type GetBlogPostDetailResponse = Response<BlogPost>;
@@ -116,26 +142,13 @@ function buildBlogPostFormData(payload: CreateBlogPostPayload | UpdateBlogPostPa
 }
 
 export function createBlogPost(payload: CreateBlogPostPayload) {
-  const { thumbnailFile, ...rest } = payload;
-
-  if (thumbnailFile) {
-    const formData = buildBlogPostFormData({ ...rest, thumbnailFile });
-    return http<CreateBlogPostResponse>(BLOG_POSTS_URL, {
-      method: 'POST',
-      headers: {
-        accept: '*/*',
-      },
-      body: formData,
-    });
-  }
-
+  const formData = buildBlogPostFormData(payload);
   return http<CreateBlogPostResponse>(BLOG_POSTS_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       accept: '*/*',
     },
-    body: JSON.stringify(rest),
+    body: formData,
   });
 }
 
@@ -147,26 +160,13 @@ export type UpdateBlogPostPayload = Partial<Omit<CreateBlogPostPayload, 'thumbna
 export type UpdateBlogPostResponse = Response<BlogPost>;
 
 export function updateBlogPost(postId: number, payload: UpdateBlogPostPayload) {
-  const { thumbnailFile, ...rest } = payload;
-
-  if (thumbnailFile) {
-    const formData = buildBlogPostFormData({ ...rest, thumbnailFile });
-    return http<UpdateBlogPostResponse>(`${BLOG_POSTS_URL}/${postId}`, {
-      method: 'PUT',
-      headers: {
-        accept: '*/*',
-      },
-      body: formData,
-    });
-  }
-
+  const formData = buildBlogPostFormData(payload);
   return http<UpdateBlogPostResponse>(`${BLOG_POSTS_URL}/${postId}`, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
       accept: '*/*',
     },
-    body: JSON.stringify(rest),
+    body: formData,
   });
 }
 
