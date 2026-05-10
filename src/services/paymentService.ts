@@ -50,6 +50,8 @@ export type PaymentEntity = {
 
 export type GetReceptionistPaymentsParams = {
   appointmentId?: number;
+  /** Lọc theo bác sĩ (lịch hẹn liên kết) — drill-down doanh thu theo bác sĩ */
+  doctorId?: number;
   paymentStatus?: 'pending' | 'paid' | 'failed' | 'cancelled';
   /** YYYY-MM-DD — khớp thống kê: ngày hiệu lực = COALESCE(paid_at, created_at) */
   paidDateFrom?: string;
@@ -90,6 +92,7 @@ export function getReceptionistPayments(params: GetReceptionistPaymentsParams = 
     limit: String(limit),
   });
   if (params.appointmentId) queryParams.set('appointmentId', String(params.appointmentId));
+  if (params.doctorId) queryParams.set('doctorId', String(params.doctorId));
   if (params.paymentStatus) queryParams.set('paymentStatus', params.paymentStatus);
   if (params.paidDateFrom) queryParams.set('paidDateFrom', params.paidDateFrom);
   if (params.paidDateTo) queryParams.set('paidDateTo', params.paidDateTo);
