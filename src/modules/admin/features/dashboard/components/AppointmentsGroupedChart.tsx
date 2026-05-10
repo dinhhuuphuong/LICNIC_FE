@@ -1,4 +1,6 @@
-import { Card, Empty, Flex, Spin, Typography } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { Card, Empty, Flex, Modal, Spin, Table, Typography } from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
   BarElement,
   CategoryScale,
@@ -11,14 +13,16 @@ import {
 } from 'chart.js';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 import DATE_FORMAT from '@/constants/date-format';
-import type { AppointmentGroupBy } from '@/services/statisticsService';
+import { getAppointments, type AppointmentListItem } from '@/services/appointmentService';
+import type { AppointmentGroupBy, AppointmentGroupedItem } from '@/services/statisticsService';
 
 import useDashboardParams from '../hooks/common/use-dashboard-params';
 import { useGetAppointmentsGroupedQuery } from '../hooks/queries/useGetAppointmentsGroupedQuery';
+import { revenuePeriodToPaidDateRange } from '../utils/revenue-period-to-paid-date-range';
 
 dayjs.extend(customParseFormat);
 
@@ -41,6 +45,16 @@ function formatPeriodLabel(period: string, groupBy: AppointmentGroupBy): string 
   }
 }
 
+const APPOINTMENT_STATUS_VI: Record<string, string> = {
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận',
+  completed: 'Hoàn thành',
+  cancelled: 'Đã hủy',
+  checked_in: 'Đã check-in',
+};
+
+const DETAIL_PAGE_SIZE = 10;
+
 export default function AppointmentsGroupedChart() {
   const params = useDashboardParams();
   const groupBy = params.groupBy;
@@ -48,6 +62,68 @@ export default function AppointmentsGroupedChart() {
   const { data, isFetching, isError, error } = useGetAppointmentsGroupedQuery(params);
 
   const items = useMemo(() => data?.data.items ?? [], [data]);
+
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBar, setSelectedBar] = useState<AppointmentGroupedItem | null>(null);
+  const [detailPage, setDetailPage] = useState(1);
+
+  const dateRange = useMemo(
+    () => (selectedBar ? revenuePeriodToPaidDateRange(selectedBar.period, groupBy) : null),
+    [selectedBar, groupBy],
+  );
+
+  const {
+    data: appointmentsRes,
+    isFetching: detailLoading,
+    isError: detailError,
+    error: detailErr,
+  } = useQuery({
+    queryKey: [
+      'adminDashboard',
+      'appointmentsGrouped',
+      'periodAppointments',
+      dateRange?.from,
+      dateRange?.to,
+      detailPage,
+    ],
+    queryFn: () =>
+      getAppointments({
+        fromDate: dateRange!.from,
+        toDate: dateRange!.to,
+        excludeCancelled: true,
+        page: detailPage,
+        limit: DETAIL_PAGE_SIZE,
+      }),
+    enabled: detailOpen && dateRange != null,
+  });
+
+  const rows = appointmentsRes?.data.items ?? [];
+  const total = appointmentsRes?.data.total ?? 0;
+
+  const detailColumns = useMemo<ColumnsType<AppointmentListItem>>(
+    () => [
+      { title: 'Mã lịch hẹn', dataIndex: 'appointmentId', key: 'appointmentId', width: 100 },
+      { title: 'Bệnh nhân', dataIndex: 'patientName', key: 'patientName', ellipsis: true },
+      { title: 'Bác sĩ', dataIndex: 'doctorName', key: 'doctorName', ellipsis: true },
+      { title: 'Dịch vụ', dataIndex: 'serviceName', key: 'serviceName', ellipsis: true },
+      {
+        title: 'Ngày khám',
+        dataIndex: 'appointmentDate',
+        key: 'appointmentDate',
+        width: 110,
+        render: (d: string) => (d ? dayjs(d).format(DATE_FORMAT.DATE) : '—'),
+      },
+      { title: 'Giờ', dataIndex: 'appointmentTime', key: 'appointmentTime', width: 90 },
+      {
+        title: 'Trạng thái',
+        dataIndex: 'status',
+        key: 'status',
+        width: 130,
+        render: (s: string) => APPOINTMENT_STATUS_VI[s] ?? s,
+      },
+    ],
+    [],
+  );
 
   const chartData = useMemo(() => {
     const labels = items.map((row) => formatPeriodLabel(row.period, groupBy));
@@ -77,6 +153,21 @@ export default function AppointmentsGroupedChart() {
           maxBarThickness: 50,
         },
       },
+      onClick: (_event, elements) => {
+        if (!elements.length) return;
+        const idx = elements[0].index;
+        const row = items[idx];
+        if (!row) return;
+        setSelectedBar(row);
+        setDetailPage(1);
+        setDetailOpen(true);
+      },
+      onHover: (_event, elements, chart) => {
+        const canvas = chart?.canvas;
+        if (canvas) {
+          canvas.style.cursor = elements.length ? 'pointer' : 'default';
+        }
+      },
       plugins: {
         legend: {
           display: true,
@@ -91,6 +182,11 @@ export default function AppointmentsGroupedChart() {
               const i = ctx[0]?.dataIndex;
               if (i === undefined) return '';
               return items[i]?.period ?? '';
+            },
+            label: (ctx) => {
+              const v = ctx.parsed.y;
+              if (v == null) return '';
+              return `${ctx.dataset.label ?? ''}: ${v}`;
             },
           },
         },
@@ -132,6 +228,51 @@ export default function AppointmentsGroupedChart() {
           )}
         </Spin>
       </Flex>
+
+      <Modal
+        title={
+          selectedBar
+            ? `Lịch khám trong kỳ: ${formatPeriodLabel(selectedBar.period, groupBy)} (${selectedBar.appointmentCount} lịch trên biểu đồ)`
+            : 'Chi tiết lịch khám'
+        }
+        open={detailOpen}
+        onCancel={() => {
+          setDetailOpen(false);
+          setSelectedBar(null);
+        }}
+        footer={null}
+        width={960}
+        destroyOnHidden
+      >
+        {detailError && (
+          <Typography.Text type="danger">
+            {(detailErr as Error)?.message ?? 'Không tải được danh sách lịch hẹn.'}
+          </Typography.Text>
+        )}
+        {!detailError && dateRange && (
+          <Typography.Paragraph type="secondary" className="mb-3!">
+            Ngày khám từ {dayjs(dateRange.from).format(DATE_FORMAT.DATE)} đến{' '}
+            {dayjs(dateRange.to).format(DATE_FORMAT.DATE)}, không gồm lịch đã hủy (giống thống kê).
+          </Typography.Paragraph>
+        )}
+        <Table<AppointmentListItem>
+          rowKey="appointmentId"
+          size="small"
+          loading={detailLoading}
+          columns={detailColumns}
+          dataSource={rows}
+          pagination={
+            {
+              current: detailPage,
+              pageSize: DETAIL_PAGE_SIZE,
+              total,
+              showSizeChanger: false,
+              onChange: (p: number) => setDetailPage(p),
+            } satisfies TablePaginationConfig
+          }
+          locale={{ emptyText: 'Không có lịch khám trong kỳ này.' }}
+        />
+      </Modal>
     </Card>
   );
 }

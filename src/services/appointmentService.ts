@@ -69,6 +69,8 @@ export type GetAppointmentsParams = {
   status?: string;
   fromDate?: string;
   toDate?: string;
+  /** Khớp thống kê: loại lịch đã hủy (không gửi nếu đã có status) */
+  excludeCancelled?: boolean;
 };
 
 export type GetAppointmentsResponse = PaginationResponse<AppointmentListItem>;
@@ -124,6 +126,7 @@ export function getAppointments(params: GetAppointmentsParams = {}) {
   if (params.status) queryParams.set('status', params.status);
   if (params.fromDate) queryParams.set('fromDate', params.fromDate);
   if (params.toDate) queryParams.set('toDate', params.toDate);
+  if (params.excludeCancelled) queryParams.set('excludeCancelled', 'true');
   if (params.patientId) queryParams.set('patientId', String(params.patientId));
   if (params.doctorId) queryParams.set('doctorId', String(params.doctorId));
   if (params.serviceId) queryParams.set('serviceId', String(params.serviceId));
