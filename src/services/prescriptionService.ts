@@ -99,6 +99,35 @@ export function listPrescriptionsByRecord(params: ListPrescriptionsByRecordParam
   });
 }
 
+export type GetPrescriptionsParams = {
+  recordId?: number;
+  doctorId?: number;
+  /** YYYY-MM-DD — DATE(created_at), khớp thống kê prescriptions-grouped */
+  createdFromDate?: string;
+  createdToDate?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type GetPrescriptionsResponse = PaginationResponse<RecordPrescription>;
+
+export function getPrescriptions(params: GetPrescriptionsParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (params.recordId != null) queryParams.set('recordId', String(params.recordId));
+  if (params.doctorId != null) queryParams.set('doctorId', String(params.doctorId));
+  if (params.createdFromDate) queryParams.set('createdFromDate', params.createdFromDate);
+  if (params.createdToDate) queryParams.set('createdToDate', params.createdToDate);
+
+  return http<GetPrescriptionsResponse>(`/prescriptions?${queryParams.toString()}`, {
+    headers: { accept: '*/*' },
+  });
+}
+
 export function getPrescriptionDetail(prescriptionId: number) {
   return http<GetPrescriptionDetailResponse>(`/prescriptions/${prescriptionId}`, {
     headers: { accept: '*/*' },

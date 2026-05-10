@@ -435,6 +435,10 @@ export function DashboardBacSiPage() {
           itemsLength={prescriptionsItems.length}
           chartData={prescriptionsChartData}
           chartOptions={prescriptionsChartOptions}
+          prescriptionsItems={prescriptionsItems}
+          groupBy={groupBy}
+          doctorId={prescriptionsItems[0]?.doctorId}
+          formatPeriodLabel={formatPeriod}
         />
       </div>
     </Flex>
