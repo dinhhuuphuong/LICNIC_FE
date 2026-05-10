@@ -1,5 +1,6 @@
 import { PageCard } from '@/components/common/PageCard';
 import { StatePanel } from '@/components/common/StatePanel';
+import { DoctorAppointmentCancelModal } from '@/components/DoctorAppointmentCancelModal';
 import { PatientAppointmentDetailHeader } from '@/components/patient/PatientAppointmentDetailHeader';
 import { PatientAppointmentDetailInfoCards } from '@/components/patient/PatientAppointmentDetailInfoCards';
 import { PatientAppointmentDetailNotes } from '@/components/patient/PatientAppointmentDetailNotes';
@@ -7,10 +8,16 @@ import ROLE from '@/constants/role';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { getAppointmentDetail } from '@/services/appointmentService';
+import {
+  cancelAppointmentByStaff,
+  confirmAppointment,
+  getAppointmentDetail,
+  type AppointmentDetailItem,
+} from '@/services/appointmentService';
 import { getDoctors } from '@/services/doctorService';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 function normalizeRoleName(roleName?: string | null) {
@@ -20,6 +27,18 @@ function normalizeRoleName(roleName?: string | null) {
 const primaryActionClassName =
   'inline-flex h-11 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-bold text-white';
 
+function getDoctorMedicalRecordsManageUrl(detail: AppointmentDetailItem) {
+  const searchParams = new URLSearchParams({
+    patientId: String(detail.patientId),
+    doctorId: String(detail.doctorId),
+    appointmentId: String(detail.appointmentId),
+    limit: '10',
+    page: '1',
+    fromAppointmentDetail: '1',
+  });
+  return `${ROUTES.doctorMedicalRecordsManage}?${searchParams.toString()}`;
+}
+
 export function ChiTietLichHenBacSiPage() {
   const { appointmentId: appointmentIdParam } = useParams<{ appointmentId: string }>();
   const appointmentId = Number(appointmentIdParam);
@@ -27,7 +46,12 @@ export function ChiTietLichHenBacSiPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const [actionTarget, setActionTarget] = useState<{ id: number; type: 'confirm' | 'cancel' } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [cancelModalTarget, setCancelModalTarget] = useState<AppointmentDetailItem | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Chi tiết lịch hẹn' : 'NHA KHOA TẬN TÂM | Appointment detail');
 
@@ -61,6 +85,61 @@ export function ChiTietLichHenBacSiPage() {
 
   const doctorIdMismatch =
     detail != null && doctorMeQuery.data != null && String(detail.doctorId) !== String(doctorMeQuery.data.doctorId);
+
+  const handleConfirm = async (targetAppointmentId: number) => {
+    setActionError(null);
+    setActionTarget({ id: targetAppointmentId, type: 'confirm' });
+    try {
+      await confirmAppointment(targetAppointmentId);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['appointments', 'doctor', 'detail', targetAppointmentId] }),
+        queryClient.invalidateQueries({ queryKey: ['doctorAppointments'] }),
+      ]);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : isVi ? 'Xác nhận lịch thất bại.' : 'Confirm failed.');
+    } finally {
+      setActionTarget(null);
+    }
+  };
+
+  const openCancelModal = (targetDetail: AppointmentDetailItem) => {
+    setActionError(null);
+    setCancelModalTarget(targetDetail);
+    setCancelReason('');
+  };
+
+  const closeCancelModal = () => {
+    if (actionTarget?.type === 'cancel') return;
+    setCancelModalTarget(null);
+    setCancelReason('');
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!cancelModalTarget) return;
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setActionError(isVi ? 'Vui lòng nhập lý do hủy lịch.' : 'Please enter a cancellation reason.');
+      return;
+    }
+
+    setActionError(null);
+    setActionTarget({ id: cancelModalTarget.appointmentId, type: 'cancel' });
+    try {
+      await cancelAppointmentByStaff(cancelModalTarget.appointmentId, { reason });
+      setCancelModalTarget(null);
+      setCancelReason('');
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['appointments', 'doctor', 'detail', cancelModalTarget.appointmentId],
+        }),
+        queryClient.invalidateQueries({ queryKey: ['doctorAppointments'] }),
+      ]);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : isVi ? 'Hủy lịch thất bại.' : 'Cancel failed.');
+    } finally {
+      setActionTarget(null);
+    }
+  };
 
   if (!user) {
     return (
@@ -164,6 +243,8 @@ export function ChiTietLichHenBacSiPage() {
     );
   }
 
+  const isCancelling = actionTarget?.type === 'cancel';
+
   return (
     <div className="mx-auto w-full max-w-[1360px]">
       <div className="mb-6">
@@ -174,6 +255,12 @@ export function ChiTietLichHenBacSiPage() {
           {isVi ? '← Lịch làm việc' : '← Work schedule'}
         </Link>
       </div>
+
+      {actionError ? (
+        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {actionError}
+        </p>
+      ) : null}
 
       {isDetailLoading ? (
         <div className="space-y-4 animate-pulse" aria-busy="true">
@@ -198,7 +285,53 @@ export function ChiTietLichHenBacSiPage() {
         />
       ) : detail ? (
         <>
-          <PatientAppointmentDetailHeader detail={detail} isVi={isVi} />
+          <PatientAppointmentDetailHeader
+            detail={detail}
+            isVi={isVi}
+            headerActions={
+              detail.status === 'pending' || detail.status === 'confirmed' || detail.status === 'checked_in' ? (
+                <>
+                  {detail.status === 'pending' ? (
+                    <button
+                      type="button"
+                      className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-emerald-600 bg-white px-5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={!!actionTarget}
+                      onClick={() => void handleConfirm(detail.appointmentId)}
+                    >
+                      {actionTarget?.id === detail.appointmentId && actionTarget.type === 'confirm'
+                        ? isVi
+                          ? 'Đang xác nhận...'
+                          : 'Confirming...'
+                        : isVi
+                          ? 'Xác nhận lịch'
+                          : 'Confirm appointment'}
+                    </button>
+                  ) : null}
+
+                  {detail.status === 'pending' || detail.status === 'confirmed' ? (
+                    <button
+                      type="button"
+                      className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-red-200 bg-white px-5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={!!actionTarget}
+                      onClick={() => openCancelModal(detail)}
+                    >
+                      {isVi ? 'Hủy lịch' : 'Cancel appointment'}
+                    </button>
+                  ) : null}
+
+                  {detail.status === 'checked_in' ? (
+                    <button
+                      type="button"
+                      className="inline-flex min-h-10 items-center justify-center rounded-full border-2 border-violet-600 bg-white px-5 text-sm font-bold text-violet-700 transition hover:bg-violet-50"
+                      onClick={() => navigate(getDoctorMedicalRecordsManageUrl(detail))}
+                    >
+                      {isVi ? 'Quản lý hồ sơ bệnh nhân' : 'Manage patient medical records'}
+                    </button>
+                  ) : null}
+                </>
+              ) : null
+            }
+          />
 
           <PageCard className="mt-6">
             <h2 className="text-lg font-bold text-slate-900">{isVi ? 'Bệnh nhân' : 'Patient'}</h2>
@@ -230,6 +363,18 @@ export function ChiTietLichHenBacSiPage() {
 
           <PatientAppointmentDetailNotes detail={detail} isVi={isVi} />
         </>
+      ) : null}
+
+      {cancelModalTarget ? (
+        <DoctorAppointmentCancelModal
+          isVi={isVi}
+          cancelModalTarget={cancelModalTarget}
+          cancelReason={cancelReason}
+          setCancelReason={setCancelReason}
+          isSubmitting={isCancelling}
+          onClose={closeCancelModal}
+          onSubmit={() => void handleCancelAppointment()}
+        />
       ) : null}
     </div>
   );

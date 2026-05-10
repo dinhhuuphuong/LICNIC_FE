@@ -1,8 +1,10 @@
 import type { AppointmentListItem } from '@/services/appointmentService';
 
+type CancelModalAppointment = Pick<AppointmentListItem, 'appointmentId' | 'patientName'>;
+
 type DoctorAppointmentCancelModalProps = {
   isVi: boolean;
-  cancelModalTarget: AppointmentListItem;
+  cancelModalTarget: CancelModalAppointment;
   cancelReason: string;
   setCancelReason: (value: string) => void;
   isSubmitting: boolean;

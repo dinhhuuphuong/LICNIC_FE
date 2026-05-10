@@ -57,6 +57,7 @@ export function QuanLyHoSoBenhNhanBacSiPage() {
   const patientId = toPositiveInt(searchParams.get('patientId'), 0);
   const doctorId = toPositiveInt(searchParams.get('doctorId'), 0);
   const appointmentId = toPositiveInt(searchParams.get('appointmentId'), 0);
+  const fromAppointmentDetail = searchParams.get('fromAppointmentDetail') === '1';
   const page = toPositiveInt(searchParams.get('page'), 1);
   const limit = toPositiveInt(searchParams.get('limit'), 10);
   const hasRequiredQuery = patientId > 0 && doctorId > 0 && appointmentId > 0;
@@ -293,7 +294,12 @@ export function QuanLyHoSoBenhNhanBacSiPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1360px] space-y-4">
-      <DoctorMedicalRecordsHeader isVi={isVi} appointmentId={appointmentId} patientId={patientId} />
+      <DoctorMedicalRecordsHeader
+        isVi={isVi}
+        appointmentId={appointmentId}
+        patientId={patientId}
+        fromAppointmentDetail={fromAppointmentDetail}
+      />
 
       <DoctorMedicalRecordsSummaryCard
         isVi={isVi}

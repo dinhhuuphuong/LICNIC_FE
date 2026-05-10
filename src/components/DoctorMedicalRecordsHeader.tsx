@@ -1,18 +1,29 @@
-import { ROUTES } from '@/constants/routes';
+import { ROUTES, getDoctorAppointmentDetailRoute } from '@/constants/routes';
 import { Link } from 'react-router-dom';
 
 type DoctorMedicalRecordsHeaderProps = {
   isVi: boolean;
   appointmentId: number;
   patientId: number;
+  /** Mở từ trang chi tiết lịch hẹn bác sĩ — nút quay lại dẫn về chi tiết lịch đó. */
+  fromAppointmentDetail?: boolean;
 };
 
-export function DoctorMedicalRecordsHeader({ isVi, appointmentId, patientId }: DoctorMedicalRecordsHeaderProps) {
+export function DoctorMedicalRecordsHeader({
+  isVi,
+  appointmentId,
+  patientId,
+  fromAppointmentDetail = false,
+}: DoctorMedicalRecordsHeaderProps) {
+  const backHref = fromAppointmentDetail ? getDoctorAppointmentDetailRoute(appointmentId) : ROUTES.doctorAppointments;
+  const backLabelVi = fromAppointmentDetail ? '← Quay lại chi tiết lịch hẹn' : '← Quay lại quản lý đặt lịch';
+  const backLabelEn = fromAppointmentDetail ? '← Back to appointment detail' : '← Back to appointments';
+
   return (
     <>
       <div>
-        <Link to={ROUTES.doctorAppointments} className="text-sm font-semibold text-blue-600 underline">
-          {isVi ? '← Quay lại quản lý đặt lịch' : '← Back to appointments'}
+        <Link to={backHref} className="text-sm font-semibold text-blue-600 underline">
+          {isVi ? backLabelVi : backLabelEn}
         </Link>
       </div>
 
