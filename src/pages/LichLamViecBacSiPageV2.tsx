@@ -31,7 +31,7 @@ type CalendarCell = {
   inCurrentMonth: boolean;
 };
 
-type CalendarMode = 'day' | 'week' | 'month' | 'year' | 'custom';
+type CalendarMode = 'day' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 function buildMonthCells(viewMonth: dayjs.Dayjs) {
   const firstDayOfMonth = viewMonth.startOf('month');
@@ -50,6 +50,7 @@ function getCalendarMode(dateMode?: string): CalendarMode {
     dateMode === 'day' ||
     dateMode === 'week' ||
     dateMode === 'month' ||
+    dateMode === 'quarter' ||
     dateMode === 'year' ||
     dateMode === 'custom'
   ) {
@@ -169,17 +170,21 @@ const LichLamViecBacSiPageV2 = () => {
         ? isVi
           ? 'Lịch làm việc theo tuần'
           : 'Weekly schedule'
-        : calendarMode === 'year'
+        : calendarMode === 'quarter'
           ? isVi
-            ? 'Lịch làm việc theo năm'
-            : 'Yearly schedule'
-          : calendarMode === 'custom'
+            ? 'Lịch làm việc theo quý'
+            : 'Quarterly schedule'
+          : calendarMode === 'year'
             ? isVi
-              ? 'Lịch làm việc theo khoảng ngày'
-              : 'Schedule by custom range'
-            : isVi
-              ? 'Lịch làm việc theo tháng'
-              : 'Monthly schedule';
+              ? 'Lịch làm việc theo năm'
+              : 'Yearly schedule'
+              : calendarMode === 'custom'
+                ? isVi
+                  ? 'Lịch làm việc theo khoảng ngày'
+                  : 'Schedule by custom range'
+                : isVi
+                  ? 'Lịch làm việc theo tháng'
+                  : 'Monthly schedule';
   const modeDescription =
     calendarMode === 'day'
       ? isVi
@@ -189,17 +194,21 @@ const LichLamViecBacSiPageV2 = () => {
         ? isVi
           ? 'Chọn ngày trong tuần để xem chi tiết.'
           : 'Select a day in week to see details.'
-        : calendarMode === 'year'
+        : calendarMode === 'quarter'
           ? isVi
-            ? 'Xem tổng quan số ca theo từng tháng trong năm.'
-            : 'See shift totals by month.'
-          : calendarMode === 'custom'
+            ? 'Chọn ngày trong quý để xem chi tiết.'
+            : 'Select a day in the quarter to see details.'
+          : calendarMode === 'year'
             ? isVi
-              ? 'Xem theo khoảng thời gian tự chọn.'
-              : 'View schedules in your custom date range.'
-            : isVi
-              ? 'Chọn ngày để xem danh sách ca làm việc.'
-              : 'Select a date to view work shifts.';
+              ? 'Xem tổng quan số ca theo từng tháng trong năm.'
+              : 'See shift totals by month.'
+            : calendarMode === 'custom'
+              ? isVi
+                ? 'Xem theo khoảng thời gian tự chọn.'
+                : 'View schedules in your custom date range.'
+              : isVi
+                ? 'Chọn ngày để xem danh sách ca làm việc.'
+                : 'Select a date to view work shifts.';
   const monthSummary = useMemo(() => {
     const summary = new Map<string, number>();
     for (const item of schedulesQuery.data?.data.items ?? []) {
@@ -339,7 +348,9 @@ const LichLamViecBacSiPageV2 = () => {
             />
           ) : (
             <DoctorScheduleCalendarGrid
-              calendarMode={calendarMode}
+              calendarMode={
+                calendarMode === 'month' ? 'month' : calendarMode === 'week' ? 'week' : 'custom'
+              }
               weekdayLabels={weekdayLabels}
               dates={calendarMode === 'month' ? monthCells.map((item) => item.date) : rangeDays}
               schedulesByDate={schedulesByDate}

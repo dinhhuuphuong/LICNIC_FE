@@ -16,6 +16,10 @@ const options = [
     value: 'month',
   },
   {
+    label: 'Quý',
+    value: 'quarter',
+  },
+  {
     label: 'Năm',
     value: 'year',
   },

@@ -40,6 +40,8 @@ export const SEARCH_PARAMS = {
   CLONE_ID: 'cloneId',
   EMPLOYEE_ID: 'employeeId',
   PERS_CODE: 'persCode',
+
+  VIEW_MODE: 'viewMode',
 };
 
 export const SEARCH_PARAM_VALUES = {
