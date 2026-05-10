@@ -233,3 +233,29 @@ export function rejectDoctorWorkScheduleByAdmin(scheduleId: number, payload: Rej
     body: JSON.stringify(payload),
   });
 }
+
+export type GenerateDoctorWorkSchedulesAdminPayload = {
+  fromDate: string;
+  toDate: string;
+  maxPatients?: number;
+  slotDurationMinutes?: number;
+};
+
+export type GenerateDoctorWorkSchedulesAdminResult = {
+  activeScheduleCountByDoctorBefore: Array<{ doctorId: number; count: number }>;
+  candidateSlotCount: number;
+  created: DoctorWorkSchedule[];
+};
+
+export type GenerateDoctorWorkSchedulesAdminResponse = Response<GenerateDoctorWorkSchedulesAdminResult>;
+
+export function generateDoctorWorkSchedulesAdmin(payload: GenerateDoctorWorkSchedulesAdminPayload) {
+  return http<GenerateDoctorWorkSchedulesAdminResponse>(`${DOCTOR_WORK_SCHEDULES_URL}/admin/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(payload),
+  });
+}

@@ -67,6 +67,7 @@ const ServiceCategoriesTable = () => {
         title: 'Mô tả',
         dataIndex: 'description',
         key: 'description',
+        width: 700,
       },
       {
         title: 'Ngày tạo',
