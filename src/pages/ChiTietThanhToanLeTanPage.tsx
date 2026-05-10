@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import {
   completeReceptionistPayment,
+  createMomoPayment,
   getReceptionistPaymentDetail,
   getReceptionistPaymentDiscounts,
   type ApplicablePaymentDiscount,
@@ -15,7 +16,7 @@ import { cn } from '@/utils/cn';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Flex, Select, Tag, Typography, message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 function normalizeRoleName(roleName?: string | null) {
   return roleName?.trim().toLowerCase() ?? '';
@@ -79,6 +80,7 @@ export function ChiTietThanhToanLeTanPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
@@ -180,7 +182,45 @@ export function ChiTietThanhToanLeTanPage() {
     },
   });
 
+  const momoPaymentMutation = useMutation({
+    mutationFn: async () => {
+      if (!payment) {
+        throw new Error(isVi ? 'Không tìm thấy thông tin thanh toán.' : 'Payment detail is unavailable.');
+      }
+      return createMomoPayment(payment.paymentId);
+    },
+    onSuccess: (res) => {
+      const payUrl = res.data?.payUrl;
+      if (!payUrl) {
+        message.error(isVi ? 'Không nhận được liên kết thanh toán MoMo.' : 'MoMo payment link was not returned.');
+        return;
+      }
+      window.location.assign(payUrl);
+    },
+    onError: (mutationError) => {
+      message.error(
+        mutationError instanceof Error
+          ? mutationError.message
+          : isVi
+            ? 'Không tạo được giao dịch MoMo.'
+            : 'Could not start MoMo payment.',
+      );
+    },
+  });
+
   const isPaid = payment?.paymentStatus?.trim().toLowerCase() === 'paid';
+
+  useEffect(() => {
+    if (!validPaymentId) return;
+    const urlStatus = searchParams.get('status');
+    if (urlStatus?.toLowerCase() !== 'success' || !isPaid) return;
+
+    message.success(isVi ? 'Thanh toán thành công.' : 'Payment completed successfully.');
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('status');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams, validPaymentId, isPaid, isVi]);
 
   if (!user) {
     return (
@@ -355,12 +395,22 @@ export function ChiTietThanhToanLeTanPage() {
           <Button onClick={() => navigate(ROUTES.receptionistAppointments)}>
             {isVi ? 'Về danh sách lịch hẹn' : 'Back to appointments'}
           </Button>
-          {payment ? (
+          {payment && payment.paymentMethod === 'cash' ? (
             <Button
               type="primary"
               loading={completePaymentMutation.isPending}
               disabled={isPaid}
               onClick={() => completePaymentMutation.mutate()}
+            >
+              {isPaid ? (isVi ? 'Đã thanh toán' : 'Paid') : isVi ? 'Thanh toán' : 'Complete payment'}
+            </Button>
+          ) : null}
+          {payment && payment.paymentMethod !== 'cash' ? (
+            <Button
+              type="primary"
+              loading={momoPaymentMutation.isPending}
+              disabled={isPaid}
+              onClick={() => momoPaymentMutation.mutate()}
             >
               {isPaid ? (isVi ? 'Đã thanh toán' : 'Paid') : isVi ? 'Thanh toán' : 'Complete payment'}
             </Button>

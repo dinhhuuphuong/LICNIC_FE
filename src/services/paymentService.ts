@@ -177,3 +177,22 @@ export function completeReceptionistPayment(paymentId: number, payload: Complete
     body: JSON.stringify(payload),
   });
 }
+
+export type CreateMomoPaymentData = {
+  payUrl: string;
+  orderId: string;
+  requestId: string;
+};
+
+export type CreateMomoPaymentResponse = Response<CreateMomoPaymentData>;
+
+export function createMomoPayment(paymentId: number) {
+  return http<CreateMomoPaymentResponse>(`${PAYMENTS_URL}/${paymentId}/momo/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify({}),
+  });
+}

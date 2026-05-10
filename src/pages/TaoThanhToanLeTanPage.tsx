@@ -159,7 +159,6 @@ export function TaoThanhToanLeTanPage() {
               <Select
                 options={[
                   { value: 'cash', label: isVi ? 'Tiền mặt' : 'Cash' },
-                  { value: 'bank', label: isVi ? 'Ngân hàng' : 'Bank' },
                   { value: 'online', label: isVi ? 'Trực tuyến' : 'Online' },
                 ]}
               />
