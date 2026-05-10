@@ -25,13 +25,19 @@ const options = [
   },
 ];
 
-const SelectModeParam = () => {
+interface SelectModeParamProps {
+  defaultValue?: string;
+}
+
+const SelectModeParam = (props: SelectModeParamProps) => {
+  const { defaultValue } = props;
+
   const [dateMode] = useQueryParam<string>(SEARCH_PARAMS.DATE_MODE);
 
   return (
     <SelectParam
       className="w-[102px]"
-      defaultValue={dateMode || 'month'}
+      defaultValue={dateMode || defaultValue || 'month'}
       options={options}
       param={SEARCH_PARAMS.DATE_MODE}
     />

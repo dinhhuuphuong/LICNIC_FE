@@ -1,4 +1,6 @@
-import { Card, Empty, Flex, Spin, Typography } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { Card, Empty, Flex, Modal, Spin, Table, Typography } from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
   BarElement,
   CategoryScale,
@@ -11,14 +13,16 @@ import {
 } from 'chart.js';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 import DATE_FORMAT from '@/constants/date-format';
-import type { AppointmentGroupBy } from '@/services/statisticsService';
+import { getReceptionistPayments, type PaymentEntity } from '@/services/paymentService';
+import type { AppointmentGroupBy, RevenueGroupedItem } from '@/services/statisticsService';
 
 import useDashboardParams from '../hooks/common/use-dashboard-params';
 import { useGetRevenueGroupedQuery } from '../hooks/queries/useGetRevenueGroupedQuery';
+import { revenuePeriodToPaidDateRange } from '../utils/revenue-period-to-paid-date-range';
 
 dayjs.extend(customParseFormat);
 
@@ -45,6 +49,14 @@ function formatPeriodLabel(period: string, groupBy: AppointmentGroupBy): string 
   }
 }
 
+const PAYMENT_METHOD_VI: Record<string, string> = {
+  cash: 'Tiền mặt',
+  bank: 'Chuyển khoản',
+  online: 'Trực tuyến',
+};
+
+const DETAIL_PAGE_SIZE = 10;
+
 export default function RevenueGroupedChart() {
   const params = useDashboardParams();
   const groupBy = params.groupBy;
@@ -52,6 +64,81 @@ export default function RevenueGroupedChart() {
   const { data, isFetching, isError, error } = useGetRevenueGroupedQuery(params);
 
   const items = useMemo(() => data?.data.items ?? [], [data]);
+
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedBar, setSelectedBar] = useState<RevenueGroupedItem | null>(null);
+  const [detailPage, setDetailPage] = useState(1);
+
+  const paidRange = useMemo(
+    () => (selectedBar ? revenuePeriodToPaidDateRange(selectedBar.period, groupBy) : null),
+    [selectedBar, groupBy],
+  );
+
+  const {
+    data: paymentsRes,
+    isFetching: detailLoading,
+    isError: detailError,
+    error: detailErr,
+  } = useQuery({
+    queryKey: ['adminDashboard', 'revenueGrouped', 'periodPayments', paidRange?.from, paidRange?.to, detailPage],
+    queryFn: () =>
+      getReceptionistPayments({
+        paymentStatus: 'paid',
+        paidDateFrom: paidRange!.from,
+        paidDateTo: paidRange!.to,
+        page: detailPage,
+        limit: DETAIL_PAGE_SIZE,
+      }),
+    enabled: detailOpen && paidRange != null,
+  });
+
+  const paymentRows = paymentsRes?.data.items ?? [];
+  const paymentTotal = paymentsRes?.data.total ?? 0;
+
+  const detailColumns = useMemo<ColumnsType<PaymentEntity>>(
+    () => [
+      {
+        title: 'Số hóa đơn',
+        dataIndex: 'invoiceNumber',
+        key: 'invoiceNumber',
+        render: (v: string | null) => v || '—',
+      },
+      {
+        title: 'Mã thanh toán',
+        dataIndex: 'paymentId',
+        key: 'paymentId',
+        width: 110,
+      },
+      {
+        title: 'Số tiền',
+        dataIndex: 'amount',
+        key: 'amount',
+        align: 'right',
+        render: (v: number | undefined) => (v != null ? formatVnd(v) : '—'),
+      },
+      {
+        title: 'Ngày thanh toán',
+        key: 'paidAt',
+        render: (_: unknown, row) => {
+          const raw = row.paidAt ?? row.createdAt;
+          return raw ? dayjs(raw).format(DATE_FORMAT.DATE_TIME) : '—';
+        },
+      },
+      {
+        title: 'Phương thức',
+        dataIndex: 'paymentMethod',
+        key: 'paymentMethod',
+        render: (m: string) => PAYMENT_METHOD_VI[m] ?? m,
+      },
+      {
+        title: 'Lịch hẹn',
+        dataIndex: 'appointmentId',
+        key: 'appointmentId',
+        width: 100,
+      },
+    ],
+    [],
+  );
 
   const chartData = useMemo(() => {
     const labels = items.map((row) => formatPeriodLabel(row.period, groupBy));
@@ -80,6 +167,21 @@ export default function RevenueGroupedChart() {
         bar: {
           maxBarThickness: 50,
         },
+      },
+      onClick: (_event, elements) => {
+        if (!elements.length) return;
+        const idx = elements[0].index;
+        const row = items[idx];
+        if (!row) return;
+        setSelectedBar(row);
+        setDetailPage(1);
+        setDetailOpen(true);
+      },
+      onHover: (_event, elements, chart) => {
+        const canvas = chart?.canvas;
+        if (canvas) {
+          canvas.style.cursor = elements.length ? 'pointer' : 'default';
+        }
       },
       plugins: {
         legend: {
@@ -141,6 +243,51 @@ export default function RevenueGroupedChart() {
           )}
         </Spin>
       </Flex>
+
+      <Modal
+        title={
+          selectedBar
+            ? `Thanh toán trong kỳ: ${formatPeriodLabel(selectedBar.period, groupBy)} (${formatVnd(selectedBar.revenue)})`
+            : 'Chi tiết thanh toán'
+        }
+        open={detailOpen}
+        onCancel={() => {
+          setDetailOpen(false);
+          setSelectedBar(null);
+        }}
+        footer={null}
+        width={900}
+        destroyOnHidden
+      >
+        {detailError && (
+          <Typography.Text type="danger">
+            {(detailErr as Error)?.message ?? 'Không tải được danh sách thanh toán.'}
+          </Typography.Text>
+        )}
+        {!detailError && paidRange && (
+          <Typography.Paragraph type="secondary" className="mb-3!">
+            Lọc theo ngày hiệu lực thanh toán từ {dayjs(paidRange.from).format(DATE_FORMAT.DATE)} đến{' '}
+            {dayjs(paidRange.to).format(DATE_FORMAT.DATE)} (đã thanh toán), khớp cách gom nhóm trên biểu đồ.
+          </Typography.Paragraph>
+        )}
+        <Table<PaymentEntity>
+          rowKey="paymentId"
+          size="small"
+          loading={detailLoading}
+          columns={detailColumns}
+          dataSource={paymentRows}
+          pagination={
+            {
+              current: detailPage,
+              pageSize: DETAIL_PAGE_SIZE,
+              total: paymentTotal,
+              showSizeChanger: false,
+              onChange: (p: number) => setDetailPage(p),
+            } satisfies TablePaginationConfig
+          }
+          locale={{ emptyText: 'Không có thanh toán trong kỳ này.' }}
+        />
+      </Modal>
     </Card>
   );
 }

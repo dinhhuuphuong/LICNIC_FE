@@ -20,7 +20,7 @@ const Dashboard = () => {
         </Typography.Title>
 
         <Flex gap={8} wrap>
-          <SelectModeParam />
+          <SelectModeParam defaultValue="day" />
           <RangePickerParam
             dbFormat={DATE_FORMAT.DB_DATE}
             defaultValue={[dayjs().startOf('month'), dayjs().endOf('month')]}
