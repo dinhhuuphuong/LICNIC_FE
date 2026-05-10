@@ -41,6 +41,8 @@ export type GetDoctorWorkSchedulesParams = {
   /** Cùng timeTo: lọc ca giao khoảng [timeFrom, timeTo) theo giờ ca */
   timeFrom?: string;
   timeTo?: string;
+  /** GET get-list store: lọc theo trạng thái ca */
+  status?: DoctorWorkScheduleStatus;
 };
 
 export type GetDoctorWorkSchedulesResponse = PaginationResponse<DoctorWorkSchedule>;
@@ -81,6 +83,7 @@ export function getDoctorWorkSchedulesFromStore(params: GetDoctorWorkSchedulesPa
   if (params.atTime) queryParams.set('atTime', params.atTime);
   if (params.timeFrom) queryParams.set('timeFrom', params.timeFrom);
   if (params.timeTo) queryParams.set('timeTo', params.timeTo);
+  if (params.status) queryParams.set('status', params.status);
 
   return http<GetDoctorWorkSchedulesFromStoreResponse>(
     `${DOCTOR_WORK_SCHEDULES_URL}/get-list?${queryParams.toString()}`,

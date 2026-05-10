@@ -409,6 +409,10 @@ export function DashboardBacSiPage() {
           itemsLength={workDaysItems.length}
           chartData={workDaysChartData}
           chartOptions={workDaysChartOptions}
+          workDaysItems={workDaysItems}
+          groupBy={groupBy}
+          doctorId={workDaysItems[0]?.doctorId}
+          formatPeriodLabel={formatPeriod}
         />
 
         <DoctorExaminedPatientsChartCard
