@@ -331,7 +331,12 @@ const LichLamViecBacSiPageV2 = () => {
               onSelectDate={setSelectedDate}
             />
           ) : calendarMode === 'day' ? (
-            <DoctorScheduleDayOverview isVi={isVi} selectedDate={selectedDate} schedules={selectedDateSchedules} />
+            <DoctorScheduleDayOverview
+              doctorId={doctorMeQuery.data.doctorId}
+              isVi={isVi}
+              selectedDate={selectedDate}
+              schedules={selectedDateSchedules}
+            />
           ) : (
             <DoctorScheduleCalendarGrid
               calendarMode={calendarMode}
@@ -350,13 +355,19 @@ const LichLamViecBacSiPageV2 = () => {
 
         {calendarMode === 'year' ? (
           <DoctorScheduleDayDetails
+            doctorId={doctorMeQuery.data.doctorId}
             isVi={isVi}
             selectedDate={selectedDate}
             schedules={selectedMonthSchedules}
             scope="month"
           />
         ) : calendarMode !== 'day' ? (
-          <DoctorScheduleDayDetails isVi={isVi} selectedDate={selectedDate} schedules={selectedDateSchedules} />
+          <DoctorScheduleDayDetails
+            doctorId={doctorMeQuery.data.doctorId}
+            isVi={isVi}
+            selectedDate={selectedDate}
+            schedules={selectedDateSchedules}
+          />
         ) : null}
       </div>
     </div>

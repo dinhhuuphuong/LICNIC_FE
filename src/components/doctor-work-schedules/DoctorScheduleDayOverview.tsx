@@ -1,9 +1,15 @@
 import DATE_FORMAT from '@/constants/date-format';
+import { getDoctorAppointmentDetailRoute } from '@/constants/routes';
+import { getAppointments } from '@/services/appointmentService';
 import type { DoctorWorkSchedule } from '@/services/doctorWorkScheduleService';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { useMemo } from 'react';
+import { DoctorScheduleAppointmentsSection } from './DoctorScheduleAppointmentsSection';
 import { DoctorScheduleRejectionReason } from './DoctorScheduleRejectionReason';
 
 type DoctorScheduleDayOverviewProps = {
+  doctorId: number;
   isVi: boolean;
   selectedDate: string;
   schedules: DoctorWorkSchedule[];
@@ -16,7 +22,33 @@ function getScheduleStatusStyle(status: DoctorWorkSchedule['status']) {
 }
 
 export function DoctorScheduleDayOverview(props: DoctorScheduleDayOverviewProps) {
-  const { isVi, selectedDate, schedules } = props;
+  const { doctorId, isVi, selectedDate, schedules } = props;
+
+  const appointmentsQuery = useQuery({
+    queryKey: ['doctorScheduleDayOverviewAppointments', doctorId, selectedDate],
+    queryFn: () =>
+      getAppointments({
+        doctorId,
+        fromDate: selectedDate,
+        toDate: selectedDate,
+        page: 1,
+        limit: 200,
+      }),
+    enabled: !!doctorId,
+  });
+
+  const sortedAppointments = useMemo(() => {
+    const items = appointmentsQuery.data?.data.items ?? [];
+    return [...items].sort((a, b) => {
+      const dateCmp = a.appointmentDate.localeCompare(b.appointmentDate);
+      if (dateCmp !== 0) return dateCmp;
+      return a.appointmentTime.localeCompare(b.appointmentTime);
+    });
+  }, [appointmentsQuery.data]);
+
+  const appointmentsSectionTitle = isVi ? 'Lịch hẹn' : 'Appointments';
+  const appointmentsLoadingLabel = isVi ? 'Đang tải lịch hẹn…' : 'Loading appointments…';
+  const appointmentsEmptyLabel = isVi ? 'Không có lịch hẹn trong ngày này.' : 'No appointments on this date.';
 
   return (
     <div className="p-4">
@@ -56,6 +88,18 @@ export function DoctorScheduleDayOverview(props: DoctorScheduleDayOverviewProps)
           </div>
         )}
       </div>
+
+      <DoctorScheduleAppointmentsSection
+        isVi={isVi}
+        isLoading={appointmentsQuery.isLoading}
+        isError={appointmentsQuery.isError}
+        error={appointmentsQuery.error}
+        appointments={sortedAppointments}
+        sectionTitle={appointmentsSectionTitle}
+        loadingLabel={appointmentsLoadingLabel}
+        emptyLabel={appointmentsEmptyLabel}
+        appointmentDetailHref={getDoctorAppointmentDetailRoute}
+      />
     </div>
   );
 }

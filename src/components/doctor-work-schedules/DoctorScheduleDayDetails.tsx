@@ -1,9 +1,15 @@
 import DATE_FORMAT from '@/constants/date-format';
+import { getDoctorAppointmentDetailRoute } from '@/constants/routes';
+import { getAppointments } from '@/services/appointmentService';
 import type { DoctorWorkSchedule } from '@/services/doctorWorkScheduleService';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { useMemo } from 'react';
+import { DoctorScheduleAppointmentsSection } from './DoctorScheduleAppointmentsSection';
 import { DoctorScheduleRejectionReason } from './DoctorScheduleRejectionReason';
 
 type DoctorScheduleDayDetailsProps = {
+  doctorId: number;
   isVi: boolean;
   selectedDate: string;
   schedules: DoctorWorkSchedule[];
@@ -18,8 +24,55 @@ function getScheduleStatusStyle(status: DoctorWorkSchedule['status']) {
 }
 
 export function DoctorScheduleDayDetails(props: DoctorScheduleDayDetailsProps) {
-  const { isVi, selectedDate, schedules, className, scope = 'day' } = props;
+  const { doctorId, isVi, selectedDate, schedules, className, scope = 'day' } = props;
   const isMonthScope = scope === 'month';
+  const appointmentRange = useMemo(() => {
+    const base = dayjs(selectedDate, DATE_FORMAT.DB_DATE);
+    if (!base.isValid()) {
+      return { fromDate: selectedDate, toDate: selectedDate };
+    }
+    if (isMonthScope) {
+      return {
+        fromDate: base.startOf('month').format(DATE_FORMAT.DB_DATE),
+        toDate: base.endOf('month').format(DATE_FORMAT.DB_DATE),
+      };
+    }
+    const d = base.format(DATE_FORMAT.DB_DATE);
+    return { fromDate: d, toDate: d };
+  }, [selectedDate, isMonthScope]);
+
+  const appointmentsQuery = useQuery({
+    queryKey: ['doctorScheduleSidebarAppointments', doctorId, appointmentRange.fromDate, appointmentRange.toDate],
+    queryFn: () =>
+      getAppointments({
+        doctorId,
+        fromDate: appointmentRange.fromDate,
+        toDate: appointmentRange.toDate,
+        page: 1,
+        limit: 200,
+      }),
+    enabled: !!doctorId,
+  });
+
+  const sortedAppointments = useMemo(() => {
+    const items = appointmentsQuery.data?.data.items ?? [];
+    return [...items].sort((a, b) => {
+      const dateCmp = a.appointmentDate.localeCompare(b.appointmentDate);
+      if (dateCmp !== 0) return dateCmp;
+      return a.appointmentTime.localeCompare(b.appointmentTime);
+    });
+  }, [appointmentsQuery.data]);
+
+  const appointmentsSectionTitle = isVi ? 'Lịch hẹn' : 'Appointments';
+  const appointmentsLoadingLabel = isVi ? 'Đang tải lịch hẹn…' : 'Loading appointments…';
+  const appointmentsEmptyLabel = isMonthScope
+    ? isVi
+      ? 'Không có lịch hẹn trong tháng này.'
+      : 'No appointments this month.'
+    : isVi
+      ? 'Không có lịch hẹn trong ngày này.'
+      : 'No appointments on this date.';
+
   const title = isMonthScope ? (isVi ? 'Chi tiết tháng' : 'Month details') : isVi ? 'Chi tiết ngày' : 'Day details';
   const selectedLabel = dayjs(selectedDate, DATE_FORMAT.DB_DATE).format(
     isMonthScope ? (isVi ? 'MM/YYYY' : 'MMM YYYY') : DATE_FORMAT.DATE,
@@ -76,6 +129,20 @@ export function DoctorScheduleDayDetails(props: DoctorScheduleDayDetailsProps) {
           ))}
         </div>
       )}
+
+      <DoctorScheduleAppointmentsSection
+        variant="details"
+        isVi={isVi}
+        isLoading={appointmentsQuery.isLoading}
+        isError={appointmentsQuery.isError}
+        error={appointmentsQuery.error}
+        appointments={sortedAppointments}
+        sectionTitle={appointmentsSectionTitle}
+        loadingLabel={appointmentsLoadingLabel}
+        emptyLabel={appointmentsEmptyLabel}
+        showAppointmentDate={isMonthScope}
+        appointmentDetailHref={getDoctorAppointmentDetailRoute}
+      />
     </div>
   );
 }

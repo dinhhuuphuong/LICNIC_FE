@@ -21,6 +21,22 @@ function getScheduleStatusStyle(status: DoctorWorkSchedule['status']) {
   return 'bg-amber-500';
 }
 
+/** Nền ô: xanh = đã chấp nhận, vàng = chờ xác nhận, trắng = trống; từ chối-only: nền đỏ nhạt. */
+function getDayCellBackgroundClasses(daySchedules: DoctorWorkSchedule[]) {
+  if (daySchedules.length === 0) {
+    return 'bg-white hover:bg-slate-50';
+  }
+  const hasPending = daySchedules.some((s) => s.status === 'pending');
+  const hasApproved = daySchedules.some((s) => s.status === 'approved');
+  if (hasPending) {
+    return 'bg-amber-50 hover:bg-amber-100';
+  }
+  if (hasApproved) {
+    return 'bg-emerald-50 hover:bg-emerald-100';
+  }
+  return 'bg-rose-50 hover:bg-rose-100';
+}
+
 export function DoctorScheduleCalendarDateCell(props: DoctorScheduleCalendarDateCellProps) {
   const { date, dateKey, daySchedules, calendarMode, isDisabled, isSelected, isToday, isVi, onSelect } = props;
 
@@ -35,10 +51,10 @@ export function DoctorScheduleCalendarDateCell(props: DoctorScheduleCalendarDate
       className={[
         'relative h-20 border-r border-b border-slate-300 p-1.5 text-left transition',
         'focus:outline-none focus:z-10 focus:shadow-[inset_0_0_0_2px_#93c5fd]',
-        isSelected && !isDisabled ? 'bg-red-50' : '',
+        isSelected && !isDisabled ? 'ring-2 ring-inset ring-blue-500 z-10' : '',
         isDisabled
           ? 'cursor-not-allowed bg-slate-100 text-slate-300'
-          : 'cursor-pointer bg-white hover:bg-slate-50 text-slate-900',
+          : ['cursor-pointer text-slate-900', getDayCellBackgroundClasses(daySchedules)].join(' '),
       ].join(' ')}
     >
       <span className="absolute right-1.5 top-0.5 text-lg font-semibold text-slate-400">

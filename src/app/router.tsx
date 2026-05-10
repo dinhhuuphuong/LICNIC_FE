@@ -6,6 +6,7 @@ import { ChamSocKhachHangLeTanPage } from '@/pages/ChamSocKhachHangLeTanPage';
 import { DoctorDetailPage } from '@/pages/ChiTietBacSiPage';
 import { ChiTietBenhAnBenhNhanPage } from '@/pages/ChiTietBenhAnBenhNhanPage';
 import { ServiceDetailPage } from '@/pages/ChiTietDichVuPage';
+import { ChiTietLichHenBacSiPage } from '@/pages/ChiTietLichHenBacSiPage';
 import { ChiTietLichHenBenhNhanPage } from '@/pages/ChiTietLichHenBenhNhanPage';
 import { ChiTietReviewLeTanPage } from '@/pages/ChiTietReviewLeTanPage';
 import { ChiTietThanhToanLeTanPage } from '@/pages/ChiTietThanhToanLeTanPage';
@@ -152,6 +153,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.doctorWorkSchedulesCreate,
             element: <TaoLichLamViecBacSiPage />,
+          },
+          {
+            path: ROUTES.doctorAppointmentDetail,
+            element: <ChiTietLichHenBacSiPage />,
           },
           {
             path: ROUTES.doctorAppointments,

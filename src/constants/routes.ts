@@ -21,6 +21,7 @@ export const ROUTES = {
   doctorDashboard: '/bac-si/dashboard',
   doctorWorkSchedules: '/bac-si/lich-lam-viec',
   doctorWorkSchedulesCreate: '/bac-si/lich-lam-viec/tao-moi',
+  doctorAppointmentDetail: '/bac-si/lich-hen/:appointmentId',
   doctorAppointments: '/bac-si/quan-ly-dat-lich',
   doctorMedicalRecordsManage: '/bac-si/benh-an/quan-ly',
   doctorMedicalRecordCreate: '/bac-si/benh-an/tao-moi',
@@ -69,6 +70,10 @@ export function getPatientMedicalRecordDetailRoute(recordId: number) {
 
 export function getPatientAppointmentDetailRoute(appointmentId: number) {
   return `/benh-nhan/lich-hen/${appointmentId}`;
+}
+
+export function getDoctorAppointmentDetailRoute(appointmentId: number) {
+  return `/bac-si/lich-hen/${appointmentId}`;
 }
 
 export function getReceptionistPaymentDetailRoute(paymentId: number) {
