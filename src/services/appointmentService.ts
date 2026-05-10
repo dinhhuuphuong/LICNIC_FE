@@ -67,6 +67,8 @@ export type GetAppointmentsParams = {
   page?: number;
   limit?: number;
   status?: string;
+  /** Nhiều trạng thái (bỏ qua nếu đã có status) — khớp thống kê examined patients */
+  statusIn?: string[];
   fromDate?: string;
   toDate?: string;
   /** Khớp thống kê: loại lịch đã hủy (không gửi nếu đã có status) */
@@ -124,6 +126,7 @@ export function getAppointments(params: GetAppointmentsParams = {}) {
     limit: String(limit),
   });
   if (params.status) queryParams.set('status', params.status);
+  if (params.statusIn?.length) queryParams.set('statusIn', params.statusIn.join(','));
   if (params.fromDate) queryParams.set('fromDate', params.fromDate);
   if (params.toDate) queryParams.set('toDate', params.toDate);
   if (params.excludeCancelled) queryParams.set('excludeCancelled', 'true');

@@ -422,6 +422,10 @@ export function DashboardBacSiPage() {
           itemsLength={examinedPatientsItems.length}
           chartData={examinedPatientsChartData}
           chartOptions={examinedPatientsChartOptions}
+          examinedPatientsItems={examinedPatientsItems}
+          groupBy={groupBy}
+          doctorId={examinedPatientsItems[0]?.doctorId}
+          formatPeriodLabel={formatPeriod}
         />
 
         <DoctorPrescriptionsChartCard
