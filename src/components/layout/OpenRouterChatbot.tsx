@@ -1,12 +1,10 @@
 import { useLanguage } from '@/contexts/NgonNguContext';
+import { askChatbotRag } from '@/services/chatbotRagService';
 import { useAuthStore } from '@/stores/authStore';
 import { Bot } from 'lucide-react';
-import Markdown from 'react-markdown';
-import type { Components } from 'react-markdown';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'google/gemini-2.5-flash-lite';
+import type { Components } from 'react-markdown';
+import Markdown from 'react-markdown';
 
 type ChatRole = 'user' | 'assistant';
 
@@ -44,11 +42,11 @@ const markdownComponents: Partial<Components> = {
     );
   },
   pre: ({ children }) => (
-    <pre className="my-2 max-w-full overflow-x-auto rounded-lg p-2.5 font-mono text-[0.85em] leading-relaxed">{children}</pre>
+    <pre className="my-2 max-w-full overflow-x-auto rounded-lg p-2.5 font-mono text-[0.85em] leading-relaxed">
+      {children}
+    </pre>
   ),
-  blockquote: ({ children }) => (
-    <blockquote className="my-2 border-l-2 pl-2 italic opacity-95">{children}</blockquote>
-  ),
+  blockquote: ({ children }) => <blockquote className="my-2 border-l-2 pl-2 italic opacity-95">{children}</blockquote>,
   h1: ({ children }) => <h1 className="mb-2 text-base font-bold">{children}</h1>,
   h2: ({ children }) => <h2 className="mb-2 text-sm font-bold">{children}</h2>,
   h3: ({ children }) => <h3 className="mb-1.5 text-sm font-semibold">{children}</h3>,
@@ -67,19 +65,6 @@ function ChatMessageMarkdown({ content, role }: { content: string; role: ChatRol
   );
 }
 
-function extractAssistantText(data: unknown): string | null {
-  if (!data || typeof data !== 'object') return null;
-  const choices = (data as { choices?: unknown }).choices;
-  if (!Array.isArray(choices) || choices.length === 0) return null;
-  const first = choices[0];
-  if (!first || typeof first !== 'object') return null;
-  const message = (first as { message?: unknown }).message;
-  if (!message || typeof message !== 'object') return null;
-  const content = (message as { content?: unknown }).content;
-  if (typeof content === 'string') return content;
-  return null;
-}
-
 export function OpenRouterChatbot() {
   const user = useAuthStore((s) => s.user);
   const { language } = useLanguage();
@@ -93,8 +78,6 @@ export function OpenRouterChatbot() {
   const listRef = useRef<HTMLDivElement>(null);
   const sendingLockRef = useRef(false);
 
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY?.trim();
-
   useEffect(() => {
     if (!isOpen) return;
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
@@ -103,12 +86,10 @@ export function OpenRouterChatbot() {
   const send = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || sendingLockRef.current) return;
-    if (!apiKey) {
-      setError(
-        isVi
-          ? 'Thiếu VITE_OPENROUTER_API_KEY trong file .env (khởi động lại dev server sau khi thêm).'
-          : 'Missing VITE_OPENROUTER_API_KEY in .env (restart the dev server after adding it).',
-      );
+
+    const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('accessToken') : null;
+    if (!accessToken) {
+      setError(isVi ? 'Bạn cần đăng nhập để dùng trợ lý.' : 'Please sign in to use the assistant.');
       return;
     }
 
@@ -120,36 +101,14 @@ export function OpenRouterChatbot() {
     setIsSending(true);
 
     try {
-      const response = await fetch(OPENROUTER_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
-        }),
-      });
+      const parsed = await askChatbotRag(trimmed);
 
-      const raw = await response.text();
-      let parsed: unknown = null;
-      try {
-        parsed = raw ? JSON.parse(raw) : null;
-      } catch {
-        parsed = null;
+      if (parsed.error != null && parsed.error !== '') {
+        throw new Error(typeof parsed.error === 'string' ? parsed.error : JSON.stringify(parsed.error));
       }
 
-      if (!response.ok) {
-        const msgFromApi =
-          parsed && typeof parsed === 'object' && 'error' in parsed
-            ? String((parsed as { error?: { message?: string } }).error?.message ?? '')
-            : '';
-        throw new Error(msgFromApi || (isVi ? `Lỗi API (${response.status})` : `API error (${response.status})`));
-      }
-
-      const assistantText = extractAssistantText(parsed);
-      if (!assistantText) {
+      const assistantText = parsed.data?.answer;
+      if (typeof assistantText !== 'string' || !assistantText.trim()) {
         throw new Error(isVi ? 'Phản hồi không hợp lệ từ máy chủ.' : 'Invalid response from server.');
       }
 
@@ -163,7 +122,7 @@ export function OpenRouterChatbot() {
       sendingLockRef.current = false;
       setIsSending(false);
     }
-  }, [apiKey, input, isVi, messages]);
+  }, [input, isVi, messages]);
 
   if (!user) return null;
 
