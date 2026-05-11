@@ -77,6 +77,8 @@ export function OpenRouterChatbot() {
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const sendingLockRef = useRef(false);
+  /** Session từ API; tin đầu không gửi, tin sau gửi lại giá trị `data.session` của lần gọi trước. */
+  const ragSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -101,7 +103,7 @@ export function OpenRouterChatbot() {
     setIsSending(true);
 
     try {
-      const parsed = await askChatbotRag(trimmed);
+      const parsed = await askChatbotRag(trimmed, ragSessionRef.current);
 
       if (parsed.error != null && parsed.error !== '') {
         throw new Error(typeof parsed.error === 'string' ? parsed.error : JSON.stringify(parsed.error));
@@ -110,6 +112,11 @@ export function OpenRouterChatbot() {
       const assistantText = parsed.data?.answer;
       if (typeof assistantText !== 'string' || !assistantText.trim()) {
         throw new Error(isVi ? 'Phản hồi không hợp lệ từ máy chủ.' : 'Invalid response from server.');
+      }
+
+      const nextSession = parsed.data?.session;
+      if (typeof nextSession === 'string' && nextSession.trim() !== '') {
+        ragSessionRef.current = nextSession.trim();
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: assistantText }]);
