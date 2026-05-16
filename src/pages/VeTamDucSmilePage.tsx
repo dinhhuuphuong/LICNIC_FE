@@ -8,23 +8,23 @@ export function AboutPage() {
   const { language } = useLanguage();
   const isVi = language === 'vi';
 
-  useDocumentTitle(isVi ? 'NHA KHOA TAN TAM | Ve Tam Duc Smile' : 'NHA KHOA TAN TAM | About Tam Duc Smile');
+  useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Về Tận Tâm Smile' : 'NHA KHOA TAN TAM | About Tan Tam Smile');
 
   const values = isVi
     ? [
         {
-          title: 'Tan tam dieu tri',
+          title: 'Tận tâm điều trị',
           description:
-            'Moi ke hoach cham soc duoc thiet ke theo tinh trang thuc te cua khach hang, uu tien an toan va hieu qua lau dai.',
+            'Mỗi kế hoạch chăm sóc được thiết kế theo tình trạng thực tế của khách hàng, ưu tiên an toàn và hiệu quả lâu dài.',
         },
         {
-          title: 'Minh bach chi phi',
-          description: 'Bao gia ro rang truoc dieu tri, tu van day du phuong an va cam ket khong phat sinh ngoai ke hoach.',
+          title: 'Minh bạch chi phí',
+          description: 'Báo giá rõ ràng trước điều trị, tư vấn đầy đủ phương án và cam kết không phát sinh ngoài kế hoạch.',
         },
         {
-          title: 'Lien tuc cap nhat',
+          title: 'Liên tục cập nhật',
           description:
-            'Doi ngu chuyen mon thuong xuyen cap nhat ky thuat moi de toi uu trai nghiem va chat luong ket qua dieu tri.',
+            'Đội ngũ chuyên môn thường xuyên cập nhật kỹ thuật mới để tối ưu trải nghiệm và chất lượng kết quả điều trị.',
         },
       ]
     : [
@@ -47,10 +47,10 @@ export function AboutPage() {
 
   const milestones = isVi
     ? [
-        { year: '2015', content: 'Khoi dau voi dinh huong xay dung he thong nha khoa lay chat luong dieu tri lam trong tam.' },
-        { year: '2019', content: 'Mo rong doi ngu bac si chuyen sau va chuan hoa quy trinh cham soc khach hang da diem cham.' },
-        { year: '2023', content: 'Tang cuong dau tu cong nghe chan doan, nang cao do chinh xac va trai nghiem dieu tri.' },
-        { year: '2026', content: 'Tiep tuc mo rong dich vu toan dien voi muc tieu dong hanh suc khoe rang mieng lau dai.' },
+        { year: '2015', content: 'Khởi đầu với định hướng xây dựng hệ thống nha khoa lấy chất lượng điều trị làm trọng tâm.' },
+        { year: '2019', content: 'Mở rộng đội ngũ bác sĩ chuyên sâu và chuẩn hóa quy trình chăm sóc khách hàng đa điểm chạm.' },
+        { year: '2023', content: 'Tăng cường đầu tư công nghệ chẩn đoán, nâng cao độ chính xác và trải nghiệm điều trị.' },
+        { year: '2026', content: 'Tiếp tục mở rộng dịch vụ toàn diện với mục tiêu đồng hành sức khỏe răng miệng lâu dài.' },
       ]
     : [
         { year: '2015', content: 'Started with a quality-first vision focused on reliable and responsible dental treatment.' },
@@ -62,37 +62,37 @@ export function AboutPage() {
   return (
     <section className="space-y-8 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-200/80 backdrop-blur md:p-8">
       <SectionTitle
-        eyebrow={isVi ? 'Gioi thieu' : 'About'}
-        title={isVi ? 'Ve Tam Duc Smile' : 'About Tam Duc Smile'}
+        eyebrow={isVi ? 'Giới thiệu' : 'About'}
+        title={isVi ? 'Về Tận Tâm Smile' : 'About Tan Tam Smile'}
         description={
           isVi
-            ? 'Chung toi theo duoi triet ly dieu tri tan tam, minh bach va ben vung de moi khach hang deu tu tin voi nu cuoi cua minh.'
+            ? 'Chúng tôi theo đuổi triết lý điều trị tận tâm, minh bạch và bền vững để mỗi khách hàng đều tự tin với nụ cười của mình.'
             : 'We pursue caring, transparent, and sustainable treatment principles so every patient can smile with confidence.'
         }
       />
 
       <div className="grid gap-4 md:grid-cols-2">
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Su menh' : 'Mission'}</h3>
+          <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Sứ mệnh' : 'Mission'}</h3>
           <p className="mt-3 text-sm leading-7 text-slate-600">
             {isVi
-              ? 'Mang lai giai phap nha khoa an toan, ca nhan hoa va de tiep can de moi khach hang chu dong cham soc suc khoe rang mieng lau dai.'
+              ? 'Mang lại giải pháp nha khoa an toàn, cá nhân hóa và dễ tiếp cận để mỗi khách hàng chủ động chăm sóc sức khỏe răng miệng lâu dài.'
               : 'Deliver safe, personalized, and accessible dental solutions so patients can maintain long-term oral health with confidence.'}
           </p>
         </article>
 
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Tam nhin' : 'Vision'}</h3>
+          <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Tầm nhìn' : 'Vision'}</h3>
           <p className="mt-3 text-sm leading-7 text-slate-600">
             {isVi
-              ? 'Tro thanh he thong nha khoa duoc khach hang tin tuong nho chat luong dieu tri on dinh, dich vu chuyen nghiep va trai nghiem nhat quan.'
+              ? 'Trở thành hệ thống nha khoa được khách hàng tin tưởng nhờ chất lượng điều trị ổn định, dịch vụ chuyên nghiệp và trải nghiệm nhất quán.'
               : 'Become a trusted dental system known for consistent treatment quality, professional service, and reliable patient experience.'}
           </p>
         </article>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Gia tri cot loi' : 'Core Values'}</h3>
+        <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Giá trị cốt lõi' : 'Core Values'}</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {values.map((value) => (
             <article key={value.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -104,7 +104,7 @@ export function AboutPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Cot moc phat trien' : 'Milestones'}</h3>
+        <h3 className="text-2xl font-black text-slate-900">{isVi ? 'Cột mốc phát triển' : 'Milestones'}</h3>
         <div className="mt-4 grid gap-3">
           {milestones.map((item) => (
             <div key={item.year} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[96px_1fr]">
@@ -116,10 +116,10 @@ export function AboutPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-blue-700 to-blue-800 p-5 text-white">
-        <h3 className="text-2xl font-black">{isVi ? 'Kham pha them ve chung toi' : 'Explore More'}</h3>
+        <h3 className="text-2xl font-black">{isVi ? 'Khám phá thêm về chúng tôi' : 'Explore More'}</h3>
         <p className="mt-2 text-sm leading-7 text-blue-100">
           {isVi
-            ? 'Xem doi ngu bac si va co so vat chat de hieu ro hon ve nang luc chuyen mon cung nhu quy trinh dieu tri tai Tam Duc Smile.'
+            ? 'Xem đội ngũ bác sĩ và cơ sở vật chất để hiểu rõ hơn về năng lực chuyên môn cũng như quy trình điều trị tại Tận Tâm Smile.'
             : 'Visit our doctor team and facilities pages to understand our capabilities and treatment environment in more detail.'}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
@@ -127,13 +127,13 @@ export function AboutPage() {
             to={ROUTES.aboutTeam}
             className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
           >
-            {isVi ? 'Doi ngu bac si' : 'Our Doctors'}
+            {isVi ? 'Đội ngũ bác sĩ' : 'Our Doctors'}
           </Link>
           <Link
             to={ROUTES.aboutFacilities}
             className="inline-flex items-center justify-center rounded-full border border-white/40 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
           >
-            {isVi ? 'Co so vat chat' : 'Facilities'}
+            {isVi ? 'Cơ sở vật chất' : 'Facilities'}
           </Link>
         </div>
       </div>

@@ -75,6 +75,10 @@ export const router = createBrowserRouter([
             element: <AboutPage />,
           },
           {
+            path: ROUTES.aboutLegacy,
+            element: <AboutPage />,
+          },
+          {
             path: ROUTES.aboutTeam,
             element: <AboutTeamPage />,
           },

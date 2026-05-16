@@ -19,16 +19,16 @@ export function DoctorDetailPage() {
 
   useDocumentTitle(
     doctor
-      ? `NHA KHOA TAN TAM | ${doctor.user.name}`
+      ? `NHA KHOA TẬN TÂM | ${doctor.user.name}`
       : isVi
-        ? 'NHA KHOA TAN TAM | Chi tiet bac si'
+        ? 'NHA KHOA TẬN TÂM | Chi tiết bác sĩ'
         : 'NHA KHOA TAN TAM | Doctor detail',
   );
 
   useEffect(() => {
     if (!validId) {
       setLoadState('error');
-      setLoadError(isVi ? 'Ma bac si khong hop le.' : 'Invalid doctor id.');
+      setLoadError(isVi ? 'Mã bác sĩ không hợp lệ.' : 'Invalid doctor id.');
       return;
     }
 
@@ -68,11 +68,11 @@ export function DoctorDetailPage() {
       <StatePanel
         tone="danger"
         className="mx-auto w-full max-w-[1080px] rounded-3xl p-8"
-        title={isVi ? 'Khong tai duoc thong tin bac si' : 'Could not load doctor information'}
+        title={isVi ? 'Không tải được thông tin bác sĩ' : 'Could not load doctor information'}
         description={loadError ?? 'Error'}
         action={
           <Link className="text-sm font-semibold text-blue-600 underline" to={ROUTES.aboutTeam}>
-            {isVi ? 'Ve doi ngu bac si' : 'Back to doctor team'}
+            {isVi ? 'Về đội ngũ bác sĩ' : 'Back to doctor team'}
           </Link>
         }
       />
@@ -91,23 +91,23 @@ export function DoctorDetailPage() {
         </div>
 
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">{isVi ? 'Ho so bac si' : 'Doctor profile'}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">{isVi ? 'Hồ sơ bác sĩ' : 'Doctor profile'}</p>
           <h1 className="mt-1 text-3xl font-black text-slate-900">{doctor.user.name}</h1>
-          <p className="mt-2 text-sm font-semibold text-slate-600">{doctor.specialization || (isVi ? 'Bac si nha khoa' : 'Dentist')}</p>
+          <p className="mt-2 text-sm font-semibold text-slate-600">{doctor.specialization || (isVi ? 'Bác sĩ nha khoa' : 'Dentist')}</p>
           <p className="mt-1 text-sm text-slate-500">
-            {isVi ? 'Kinh nghiem:' : 'Experience:'} {doctor.experienceYears} {isVi ? 'nam' : 'years'}
+            {isVi ? 'Kinh nghiệm:' : 'Experience:'} {doctor.experienceYears} {isVi ? 'năm' : 'years'}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            {isVi ? 'Phi tu van:' : 'Consultation fee:'} {doctor.consultationFee}
+            {isVi ? 'Phí tư vấn:' : 'Consultation fee:'} {doctor.consultationFee}
           </p>
 
           <div className="mt-5 whitespace-pre-line rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-            {doctor.description?.trim() || (isVi ? 'Thong tin dang duoc cap nhat.' : 'Information is being updated.')}
+            {doctor.description?.trim() || (isVi ? 'Thông tin đang được cập nhật.' : 'Information is being updated.')}
           </div>
 
           <div className="mt-5">
             <Link className="text-sm font-semibold text-blue-700 underline" to={ROUTES.aboutTeam}>
-              {isVi ? 'Ve danh sach doi ngu bac si' : 'Back to doctor team'}
+              {isVi ? 'Về danh sách đội ngũ bác sĩ' : 'Back to doctor team'}
             </Link>
           </div>
         </div>

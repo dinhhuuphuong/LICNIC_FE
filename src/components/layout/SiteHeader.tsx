@@ -72,13 +72,13 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const aboutSubItems =
     language === 'vi'
       ? [
-          { label: 'Về Tâm Đức Smile', to: ROUTES.about },
+          { label: 'Về Tận Tâm Smile', to: ROUTES.about },
           { label: 'Đội ngũ Bác sĩ', to: ROUTES.aboutTeam },
           { label: 'Cơ sở vật chất', to: ROUTES.aboutFacilities },
           { label: 'Tuyển dụng', to: ROUTES.aboutRecruitment },
         ]
       : [
-          { label: 'About Tam Duc Smile', to: ROUTES.about },
+          { label: 'About Tan Tam Smile', to: ROUTES.about },
           { label: 'Our Doctors', to: ROUTES.aboutTeam },
           { label: 'Facilities', to: ROUTES.aboutFacilities },
           { label: 'Recruitment', to: ROUTES.aboutRecruitment },
@@ -285,7 +285,7 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
       <div className="mx-auto w-full max-w-[1360px] px-4">
         <div className="flex flex-wrap items-center gap-4 py-3 lg:flex-nowrap">
           <Link className="shrink-0" to={ROUTES.home}>
-            <img alt="Tam Duc Smile" className="h-20 w-auto" src={logoTanTam} />
+            <img alt="Tan Tam Smile" className="h-20 w-auto" src={logoTanTam} />
           </Link>
 
           <form className="relative w-full lg:max-w-[760px]" onSubmit={(event) => event.preventDefault()}>

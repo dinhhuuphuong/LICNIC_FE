@@ -15,8 +15,8 @@ export function AboutRecruitmentPage() {
         title={isVi ? 'Tuyển dụng' : 'Recruitment'}
         description={
           isVi
-            ? 'Thông tin vị trí đang tuyển, quyền lợi và môi trường làm việc tại Tâm Đức Smile.'
-            : 'Open positions, benefits, and working environment at Tam Duc Smile.'
+            ? 'Thông tin vị trí đang tuyển, quyền lợi và môi trường làm việc tại Tận Tâm Smile.'
+            : 'Open positions, benefits, and working environment at Tan Tam Smile.'
         }
       />
     </section>

@@ -3,6 +3,10 @@ import camKetChatLuong from '@/assets/images/chat-luong.svg';
 import camKetChinhHang from '@/assets/images/chinh-hang.svg';
 import camKetHoTro from '@/assets/images/ho-tro.svg';
 import camKetMinhBach from '@/assets/images/minh-bach.svg';
+import ctConeBeamImage from '@/assets/images/technology/ct-cone-beam-3d.svg';
+import iteroElementImage from '@/assets/images/technology/itero-element-5d.svg';
+import osstemChairImage from '@/assets/images/technology/osstem-chair.svg';
+import ultrasonicScalerImage from '@/assets/images/technology/ultrasonic-scaler.svg';
 import veChungToi from '@/assets/images/ve-chung-toi.webp';
 import { FeaturedDentalServicesSection } from '@/components/FeaturedDentalServicesSection';
 import { HomeCommitmentsSection } from '@/components/home/HomeCommitmentsSection';
@@ -27,6 +31,10 @@ type DoctorTeamDisplay = {
   summary: string[];
   cta: string;
 };
+
+function technologyThumbnails(labels: string[], imageSrc: string) {
+  return labels.map((label) => ({ label, imageSrc }));
+}
 
 function mapDoctorToTeamDisplay(d: Doctor, isVi: boolean): DoctorTeamDisplay {
   const role = d.specialization?.trim() ? d.specialization : isVi ? 'Bác sĩ' : 'Dentist';
@@ -195,7 +203,7 @@ export function HomePage() {
           number: '02',
           title: 'Trusted dental system',
           description:
-            'Tam Duc Smile has multiple branches nationwide, making it easier for patients to access quality care and book appointments.',
+            'Tan Tam Smile has multiple branches nationwide, making it easier for patients to access quality care and book appointments.',
         },
         {
           number: '03',
@@ -219,7 +227,7 @@ export function HomePage() {
           number: '06',
           title: 'Customer trust',
           description:
-            '15,000+ satisfied customers and thousands of positive reviews on Google & Facebook reinforce trust in Tam Duc Smile.',
+            '15,000+ satisfied customers and thousands of positive reviews on Google & Facebook reinforce trust in Tan Tam Smile.',
         },
       ];
 
@@ -242,7 +250,11 @@ export function HomePage() {
             'Mô phỏng dịch chuyển răng trước khi điều trị.',
             'Lưu trữ hồ sơ scan số hóa, dễ theo dõi tiến triển.',
           ],
-          thumbnails: ['Tổng quan máy', 'Bác sĩ thao tác', 'Màn hình mô phỏng', 'Đầu quét 5D', 'Ca lâm sàng'],
+          imageSrc: iteroElementImage,
+          thumbnails: technologyThumbnails(
+            ['Tổng quan máy', 'Bác sĩ thao tác', 'Màn hình mô phỏng', 'Đầu quét 5D', 'Ca lâm sàng'],
+            iteroElementImage,
+          ),
         },
         {
           tabLabel: 'Máy CT Cone Beam 3D',
@@ -258,7 +270,11 @@ export function HomePage() {
             'Giảm thiểu rủi ro khi điều trị xâm lấn.',
             'Rút ngắn thời gian chẩn đoán và lập kế hoạch.',
           ],
-          thumbnails: ['Máy CT', 'Quy trình chụp', 'Kết quả phim', 'Phân tích 3D', 'Ứng dụng Implant'],
+          imageSrc: ctConeBeamImage,
+          thumbnails: technologyThumbnails(
+            ['Máy CT', 'Quy trình chụp', 'Kết quả phim', 'Phân tích 3D', 'Ứng dụng Implant'],
+            ctConeBeamImage,
+          ),
         },
         {
           tabLabel: 'Máy Cạo Vôi Răng Siêu Âm',
@@ -274,7 +290,11 @@ export function HomePage() {
             'Rút ngắn thời gian vệ sinh răng định kỳ.',
             'Giảm nguy cơ viêm nướu và chảy máu chân răng.',
           ],
-          thumbnails: ['Thiết bị siêu âm', 'Đầu tip chuyên dụng', 'Làm sạch nướu', 'Trước điều trị', 'Sau điều trị'],
+          imageSrc: ultrasonicScalerImage,
+          thumbnails: technologyThumbnails(
+            ['Thiết bị siêu âm', 'Đầu tip chuyên dụng', 'Làm sạch nướu', 'Trước điều trị', 'Sau điều trị'],
+            ultrasonicScalerImage,
+          ),
         },
         {
           tabLabel: 'Ghế Osstem Cao Cấp',
@@ -290,7 +310,11 @@ export function HomePage() {
             'Tăng trải nghiệm thoải mái trong phiên điều trị dài.',
             'Tích hợp hệ thống hỗ trợ thao tác hiệu quả.',
           ],
-          thumbnails: ['Ghế điều trị', 'Khu vực điều khiển', 'Đèn chiếu sáng', 'Không gian phòng', 'Thiết kế vô khuẩn'],
+          imageSrc: osstemChairImage,
+          thumbnails: technologyThumbnails(
+            ['Ghế điều trị', 'Khu vực điều khiển', 'Đèn chiếu sáng', 'Không gian phòng', 'Thiết kế vô khuẩn'],
+            osstemChairImage,
+          ),
         },
       ]
     : [
@@ -308,7 +332,11 @@ export function HomePage() {
             'Pre-treatment tooth movement simulation.',
             'Digital records for long-term progress tracking.',
           ],
-          thumbnails: ['Machine overview', 'Doctor workflow', 'Simulation screen', 'Scanner tip', 'Clinical case'],
+          imageSrc: iteroElementImage,
+          thumbnails: technologyThumbnails(
+            ['Machine overview', 'Doctor workflow', 'Simulation screen', 'Scanner tip', 'Clinical case'],
+            iteroElementImage,
+          ),
         },
         {
           tabLabel: 'CT Cone Beam 3D',
@@ -324,7 +352,11 @@ export function HomePage() {
             'Lower risk in invasive procedures.',
             'Faster diagnosis and treatment planning.',
           ],
-          thumbnails: ['CT machine', 'Scanning process', 'Image output', '3D analysis', 'Implant use case'],
+          imageSrc: ctConeBeamImage,
+          thumbnails: technologyThumbnails(
+            ['CT machine', 'Scanning process', 'Image output', '3D analysis', 'Implant use case'],
+            ctConeBeamImage,
+          ),
         },
         {
           tabLabel: 'Ultrasonic Scaler',
@@ -340,7 +372,11 @@ export function HomePage() {
             'Faster routine hygiene appointments.',
             'Reduced risk of gingivitis and bleeding gums.',
           ],
-          thumbnails: ['Ultrasonic unit', 'Specialized tips', 'Gum cleaning', 'Before', 'After'],
+          imageSrc: ultrasonicScalerImage,
+          thumbnails: technologyThumbnails(
+            ['Ultrasonic unit', 'Specialized tips', 'Gum cleaning', 'Before', 'After'],
+            ultrasonicScalerImage,
+          ),
         },
         {
           tabLabel: 'Premium Osstem Chair',
@@ -356,7 +392,11 @@ export function HomePage() {
             'Improved comfort in longer sessions.',
             'Integrated support system for efficient workflow.',
           ],
-          thumbnails: ['Treatment chair', 'Control module', 'LED lighting', 'Room setup', 'Sterile design'],
+          imageSrc: osstemChairImage,
+          thumbnails: technologyThumbnails(
+            ['Treatment chair', 'Control module', 'LED lighting', 'Room setup', 'Sterile design'],
+            osstemChairImage,
+          ),
         },
       ];
 

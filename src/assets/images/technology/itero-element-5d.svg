@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" role="img" aria-label="iTero Element 5D placeholder">
+  <rect width="960" height="720" fill="#eef6ff"/>
+  <circle cx="480" cy="360" r="300" fill="#ffffff" opacity=".72"/>
+  <path d="M270 560h420" stroke="#bfdbfe" stroke-width="24" stroke-linecap="round"/>
+  <rect x="340" y="118" width="280" height="190" rx="24" fill="#ffffff" stroke="#2563eb" stroke-width="10"/>
+  <rect x="372" y="148" width="216" height="126" rx="14" fill="#dbeafe"/>
+  <path d="M405 213c34-42 76-42 150 0" fill="none" stroke="#ef4444" stroke-width="8" stroke-linecap="round"/>
+  <path d="M405 231c42 28 93 28 150 0" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+  <path d="M480 308v210" stroke="#64748b" stroke-width="22" stroke-linecap="round"/>
+  <path d="M420 528h120" stroke="#64748b" stroke-width="18" stroke-linecap="round"/>
+  <path d="M410 580l70-52 70 52" fill="none" stroke="#64748b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="395" cy="598" r="18" fill="#2563eb"/>
+  <circle cx="565" cy="598" r="18" fill="#2563eb"/>
+  <text x="480" y="665" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#1d4ed8">iTero Element 5D</text>
+</svg>
