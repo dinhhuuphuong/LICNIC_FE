@@ -82,11 +82,12 @@ export function HomeTechnologySection({
               }`}
               onClick={() => setActiveImageIndex(index)}
             >
-              <img alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" src={thumb.imageSrc} />
-              <span className="absolute inset-0 bg-white/60 transition group-hover:bg-white/45" />
-              <span className="absolute inset-0 grid place-items-center px-2 text-center text-xs font-bold text-slate-700">
-                {thumb.label}
-              </span>
+              <img
+                alt={thumb.label}
+                className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
+                src={thumb.imageSrc}
+                title={thumb.label}
+              />
             </button>
             );
           })}

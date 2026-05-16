@@ -1,12 +1,28 @@
-import bannerHome from '@/assets/images/banner.png';
+import bannerHome from '@/assets/images/banner_new.png';
 import camKetChatLuong from '@/assets/images/chat-luong.svg';
 import camKetChinhHang from '@/assets/images/chinh-hang.svg';
 import camKetHoTro from '@/assets/images/ho-tro.svg';
 import camKetMinhBach from '@/assets/images/minh-bach.svg';
-import ctConeBeamImage from '@/assets/images/technology/ct-cone-beam-3d.svg';
-import iteroElementImage from '@/assets/images/technology/itero-element-5d.svg';
-import osstemChairImage from '@/assets/images/technology/osstem-chair.svg';
-import ultrasonicScalerImage from '@/assets/images/technology/ultrasonic-scaler.svg';
+import scalerImage1 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-1.png';
+import scalerImage2 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-2.jpg';
+import scalerImage3 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-3.jpg';
+import scalerImage4 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-4.jpg';
+import scalerImage5 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-5.jpg';
+import ctConeBeamImage1 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-1.png';
+import ctConeBeamImage2 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-2.jpg';
+import ctConeBeamImage3 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-3.jpg';
+import ctConeBeamImage4 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-4.jpg';
+import ctConeBeamImage5 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-5.jpg';
+import iteroImage1 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-1.png';
+import iteroImage2 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-2.jpg';
+import iteroImage3 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-3-.png';
+import iteroImage4 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-4.jpg';
+import iteroImage5 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-5.png';
+import osstemImage1 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-1.png';
+import osstemImage2 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-2.png';
+import osstemImage3 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-3.png';
+import osstemImage4 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-4.jpg';
+import osstemImage5 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-5.jpg';
 import veChungToi from '@/assets/images/ve-chung-toi.webp';
 import { FeaturedDentalServicesSection } from '@/components/FeaturedDentalServicesSection';
 import { HomeCommitmentsSection } from '@/components/home/HomeCommitmentsSection';
@@ -32,8 +48,8 @@ type DoctorTeamDisplay = {
   cta: string;
 };
 
-function technologyThumbnails(labels: string[], imageSrc: string) {
-  return labels.map((label) => ({ label, imageSrc }));
+function technologyThumbnails(labels: string[], imageSources: string[]) {
+  return labels.map((label, index) => ({ label, imageSrc: imageSources[index] ?? imageSources[0] }));
 }
 
 function mapDoctorToTeamDisplay(d: Doctor, isVi: boolean): DoctorTeamDisplay {
@@ -250,10 +266,10 @@ export function HomePage() {
             'Mô phỏng dịch chuyển răng trước khi điều trị.',
             'Lưu trữ hồ sơ scan số hóa, dễ theo dõi tiến triển.',
           ],
-          imageSrc: iteroElementImage,
+          imageSrc: iteroImage1,
           thumbnails: technologyThumbnails(
             ['Tổng quan máy', 'Bác sĩ thao tác', 'Màn hình mô phỏng', 'Đầu quét 5D', 'Ca lâm sàng'],
-            iteroElementImage,
+            [iteroImage1, iteroImage2, iteroImage3, iteroImage4, iteroImage5],
           ),
         },
         {
@@ -270,10 +286,10 @@ export function HomePage() {
             'Giảm thiểu rủi ro khi điều trị xâm lấn.',
             'Rút ngắn thời gian chẩn đoán và lập kế hoạch.',
           ],
-          imageSrc: ctConeBeamImage,
+          imageSrc: ctConeBeamImage1,
           thumbnails: technologyThumbnails(
             ['Máy CT', 'Quy trình chụp', 'Kết quả phim', 'Phân tích 3D', 'Ứng dụng Implant'],
-            ctConeBeamImage,
+            [ctConeBeamImage1, ctConeBeamImage2, ctConeBeamImage3, ctConeBeamImage4, ctConeBeamImage5],
           ),
         },
         {
@@ -290,10 +306,10 @@ export function HomePage() {
             'Rút ngắn thời gian vệ sinh răng định kỳ.',
             'Giảm nguy cơ viêm nướu và chảy máu chân răng.',
           ],
-          imageSrc: ultrasonicScalerImage,
+          imageSrc: scalerImage1,
           thumbnails: technologyThumbnails(
             ['Thiết bị siêu âm', 'Đầu tip chuyên dụng', 'Làm sạch nướu', 'Trước điều trị', 'Sau điều trị'],
-            ultrasonicScalerImage,
+            [scalerImage1, scalerImage2, scalerImage3, scalerImage4, scalerImage5],
           ),
         },
         {
@@ -310,10 +326,10 @@ export function HomePage() {
             'Tăng trải nghiệm thoải mái trong phiên điều trị dài.',
             'Tích hợp hệ thống hỗ trợ thao tác hiệu quả.',
           ],
-          imageSrc: osstemChairImage,
+          imageSrc: osstemImage1,
           thumbnails: technologyThumbnails(
             ['Ghế điều trị', 'Khu vực điều khiển', 'Đèn chiếu sáng', 'Không gian phòng', 'Thiết kế vô khuẩn'],
-            osstemChairImage,
+            [osstemImage1, osstemImage2, osstemImage3, osstemImage4, osstemImage5],
           ),
         },
       ]
@@ -332,10 +348,10 @@ export function HomePage() {
             'Pre-treatment tooth movement simulation.',
             'Digital records for long-term progress tracking.',
           ],
-          imageSrc: iteroElementImage,
+          imageSrc: iteroImage1,
           thumbnails: technologyThumbnails(
             ['Machine overview', 'Doctor workflow', 'Simulation screen', 'Scanner tip', 'Clinical case'],
-            iteroElementImage,
+            [iteroImage1, iteroImage2, iteroImage3, iteroImage4, iteroImage5],
           ),
         },
         {
@@ -352,10 +368,10 @@ export function HomePage() {
             'Lower risk in invasive procedures.',
             'Faster diagnosis and treatment planning.',
           ],
-          imageSrc: ctConeBeamImage,
+          imageSrc: ctConeBeamImage1,
           thumbnails: technologyThumbnails(
             ['CT machine', 'Scanning process', 'Image output', '3D analysis', 'Implant use case'],
-            ctConeBeamImage,
+            [ctConeBeamImage1, ctConeBeamImage2, ctConeBeamImage3, ctConeBeamImage4, ctConeBeamImage5],
           ),
         },
         {
@@ -372,10 +388,10 @@ export function HomePage() {
             'Faster routine hygiene appointments.',
             'Reduced risk of gingivitis and bleeding gums.',
           ],
-          imageSrc: ultrasonicScalerImage,
+          imageSrc: scalerImage1,
           thumbnails: technologyThumbnails(
             ['Ultrasonic unit', 'Specialized tips', 'Gum cleaning', 'Before', 'After'],
-            ultrasonicScalerImage,
+            [scalerImage1, scalerImage2, scalerImage3, scalerImage4, scalerImage5],
           ),
         },
         {
@@ -392,10 +408,10 @@ export function HomePage() {
             'Improved comfort in longer sessions.',
             'Integrated support system for efficient workflow.',
           ],
-          imageSrc: osstemChairImage,
+          imageSrc: osstemImage1,
           thumbnails: technologyThumbnails(
             ['Treatment chair', 'Control module', 'LED lighting', 'Room setup', 'Sterile design'],
-            osstemChairImage,
+            [osstemImage1, osstemImage2, osstemImage3, osstemImage4, osstemImage5],
           ),
         },
       ];
@@ -582,7 +598,9 @@ export function HomePage() {
 
       <HomeReasonsSection aboutImageSrc={veChungToi} isVi={isVi} leftReasons={leftReasons} rightReasons={rightReasons} />
 
-      <FeaturedDentalServicesSection />
+      <div id="dich-vu" className="scroll-mt-32">
+        <FeaturedDentalServicesSection />
+      </div>
 
       <HomeTechnologySection
         activeTechIndex={activeTechIndex}
@@ -614,16 +632,18 @@ export function HomePage() {
         visibleStories={visibleStories}
       />
 
-      <HomeNewsSection
-        activeNewsTab={activeNewsTab}
-        featuredNews={activeNews.featured}
-        isVi={isVi}
-        newsError={newsError}
-        newsLoading={newsLoading}
-        newsTabs={newsTabs}
-        onSelectNewsTab={setActiveNewsTab}
-        sideNews={activeNews.side}
-      />
+      <div id="tin-tuc-uu-dai" className="scroll-mt-32">
+        <HomeNewsSection
+          activeNewsTab={activeNewsTab}
+          featuredNews={activeNews.featured}
+          isVi={isVi}
+          newsError={newsError}
+          newsLoading={newsLoading}
+          newsTabs={newsTabs}
+          onSelectNewsTab={setActiveNewsTab}
+          sideNews={activeNews.side}
+        />
+      </div>
     </section>
   );
 }
