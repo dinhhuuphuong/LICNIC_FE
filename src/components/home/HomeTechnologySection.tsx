@@ -1,3 +1,10 @@
+import { useEffect, useState } from 'react';
+
+type TechnologyThumbnail = {
+  label: string;
+  imageSrc: string;
+};
+
 type TechnologyItem = {
   tabLabel: string;
   title: string;
@@ -5,7 +12,8 @@ type TechnologyItem = {
   paragraphs: string[];
   highlightsTitle: string;
   highlights: string[];
-  thumbnails: string[];
+  imageSrc: string;
+  thumbnails: TechnologyThumbnail[];
 };
 
 type HomeTechnologySectionProps = {
@@ -22,8 +30,18 @@ export function HomeTechnologySection({
   onSelectTech,
 }: HomeTechnologySectionProps) {
   const activeTechnology = technologies[activeTechIndex];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [activeTechIndex]);
 
   if (!activeTechnology) return null;
+
+  const activeImage = activeTechnology.thumbnails[activeImageIndex] ?? {
+    label: activeTechnology.title,
+    imageSrc: activeTechnology.imageSrc,
+  };
 
   return (
     <div className="rounded-[30px] border border-slate-200 bg-[#f3f5f8] px-4 py-10 shadow-xl shadow-slate-200/70 md:px-8">
@@ -32,12 +50,12 @@ export function HomeTechnologySection({
       </h2>
 
       <div className="mx-auto mt-8 max-w-5xl overflow-x-auto">
-        <div className="inline-flex min-w-full rounded-xl border border-blue-600 bg-white p-1">
+        <div className="grid min-w-[760px] grid-cols-4 rounded-xl border border-blue-600 bg-white p-1">
           {technologies.map((technology, index) => {
             const isActive = index === activeTechIndex;
             return (
               <button
-                className={`rounded-lg px-5 py-3 text-sm font-bold transition md:text-base ${
+                className={`w-full rounded-lg px-5 py-3 text-center text-sm font-bold transition md:text-base ${
                   isActive ? 'bg-blue-700 text-white shadow' : 'text-slate-600 hover:bg-blue-50'
                 }`}
                 key={technology.title}
@@ -53,26 +71,35 @@ export function HomeTechnologySection({
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[86px_1fr_1fr]">
         <div className="grid grid-cols-5 gap-3 lg:grid-cols-1">
-          {activeTechnology.thumbnails.map((thumb) => (
+          {activeTechnology.thumbnails.map((thumb, index) => {
+            const isActiveImage = index === activeImageIndex;
+            return (
             <button
-              key={thumb}
+              key={`${thumb.label}-${thumb.imageSrc}`}
               type="button"
-              className="group relative h-[78px] overflow-hidden rounded-xl border border-blue-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow"
+              className={`group relative h-[78px] overflow-hidden rounded-xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
+                isActiveImage ? 'border-blue-600 ring-2 ring-blue-100' : 'border-blue-200'
+              }`}
+              onClick={() => setActiveImageIndex(index)}
             >
-              <span className="absolute inset-0 bg-linear-to-br from-slate-100 via-slate-200 to-slate-100" />
-              <span className="absolute inset-0 grid place-items-center px-2 text-center text-xs font-semibold text-slate-500 group-hover:text-slate-700">
-                {thumb}
-              </span>
+              <img
+                alt={thumb.label}
+                className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
+                src={thumb.imageSrc}
+                title={thumb.label}
+              />
             </button>
-          ))}
+            );
+          })}
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="relative grid min-h-[420px] place-items-center overflow-hidden rounded-xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
-            <div className="absolute inset-4 rounded-2xl border-2 border-dashed border-slate-300" />
-            <p className="relative z-10 px-6 text-center text-base font-semibold text-slate-500">
-              {isVi ? 'Ảnh công nghệ sẽ bổ sung sau' : 'Technology image will be added later'}
-            </p>
+          <div className="relative min-h-[420px] overflow-hidden rounded-xl bg-linear-to-br from-slate-100 via-slate-200 to-slate-100">
+            <img
+              alt={activeImage.label}
+              className="absolute inset-0 h-full w-full object-contain p-4"
+              src={activeImage.imageSrc}
+            />
           </div>
         </div>
 

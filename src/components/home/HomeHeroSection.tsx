@@ -13,11 +13,13 @@ type HomeHeroSectionProps = {
 export function HomeHeroSection({ isVi, bannerSrc, quickActions }: HomeHeroSectionProps) {
   return (
     <div className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden border-y border-slate-200 bg-white shadow-xl shadow-slate-200/80">
-      <img
-        alt={isVi ? 'Banner nha khoa' : 'Dental banner'}
-        className="h-[320px] w-full object-cover md:h-[400px] lg:h-[460px]"
-        src={bannerSrc}
-      />
+      <div className="aspect-[1536/824] w-full overflow-hidden">
+        <img
+          alt={isVi ? 'Banner nha khoa' : 'Dental banner'}
+          className="h-full w-full object-cover object-top"
+          src={bannerSrc}
+        />
+      </div>
 
       <div className="absolute bottom-4 left-1/2 w-full max-w-5xl -translate-x-1/2 px-4">
         <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/70 md:grid-cols-3">

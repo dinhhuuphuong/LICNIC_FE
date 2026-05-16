@@ -1,6 +1,7 @@
 export const ROUTES = {
   home: '/',
-  about: '/gioi-thieu/ve-tam-duc-smile',
+  about: '/gioi-thieu/ve-tan-tam-smile',
+  aboutLegacy: '/gioi-thieu/ve-tam-duc-smile',
   aboutTeam: '/gioi-thieu/doi-ngu-bac-si',
   doctorPublicDetail: '/gioi-thieu/doi-ngu-bac-si/:doctorId',
   aboutFacilities: '/gioi-thieu/co-so-vat-chat',

@@ -36,7 +36,6 @@ import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { TaoThanhToanLeTanPage } from '@/pages/TaoThanhToanLeTanPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
 import { HomePage } from '@/pages/TrangChuPage';
-import { AboutRecruitmentPage } from '@/pages/TuyenDungPage';
 import { AboutPage } from '@/pages/VeTamDucSmilePage';
 import queryString from 'query-string';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
@@ -75,6 +74,10 @@ export const router = createBrowserRouter([
             element: <AboutPage />,
           },
           {
+            path: ROUTES.aboutLegacy,
+            element: <AboutPage />,
+          },
+          {
             path: ROUTES.aboutTeam,
             element: <AboutTeamPage />,
           },
@@ -85,10 +88,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.aboutFacilities,
             element: <AboutFacilitiesPage />,
-          },
-          {
-            path: ROUTES.aboutRecruitment,
-            element: <AboutRecruitmentPage />,
           },
           {
             path: ROUTES.priceImplant,

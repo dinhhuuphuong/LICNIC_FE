@@ -1,8 +1,23 @@
-import logoFooter from '@/assets/images/logo-footer.png';
+import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { getClinicInfo, parseWorkingHours } from '@/services/clinicInfoService';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+
+function FooterBrandLogo() {
+  return (
+    <div className="inline-flex text-white">
+      <div>
+        <p className="text-3xl font-black leading-none tracking-wide">NHA KHOA TẬN TÂM</p>
+        <div className="mx-auto mt-2 flex w-fit items-center justify-center gap-3 text-sm font-semibold text-blue-100">
+          <span className="h-px w-12 bg-blue-100" />
+          <span>Sứ Mệnh Từ Tâm</span>
+          <span className="h-px w-12 bg-blue-100" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function SiteFooter() {
   const { language } = useLanguage();
@@ -47,8 +62,26 @@ export function SiteFooter() {
         : `Sat: ${saturdayWorkingRange.start} - ${saturdayWorkingRange.end}; Sun: ${sundayWorkingRange.start} - ${sundayWorkingRange.end}`;
 
   const infoLinks = isVi
-    ? ['Giới thiệu', 'Đội ngũ bác sĩ', 'Dịch vụ', 'Bảng giá', 'Sự kiện', 'Ưu đãi', 'Kiến thức', 'Tuyển dụng', 'Liên hệ']
-    : ['About', 'Doctors', 'Services', 'Pricing', 'Events', 'Promotions', 'Knowledge', 'Recruitment', 'Contact'];
+    ? [
+        { label: 'Giới thiệu', to: ROUTES.about },
+        { label: 'Đội ngũ bác sĩ', to: ROUTES.aboutTeam },
+        { label: 'Dịch vụ', to: '/#dich-vu' },
+        { label: 'Bảng giá', to: ROUTES.priceImplant },
+        { label: 'Sự kiện', to: '/#tin-tuc-uu-dai' },
+        { label: 'Ưu đãi', to: '/#tin-tuc-uu-dai' },
+        { label: 'Kiến thức', to: ROUTES.knowledgeImplant },
+        { label: 'Liên hệ', to: '#lien-he' },
+      ]
+    : [
+        { label: 'About', to: ROUTES.about },
+        { label: 'Doctors', to: ROUTES.aboutTeam },
+        { label: 'Services', to: '/#dich-vu' },
+        { label: 'Pricing', to: ROUTES.priceImplant },
+        { label: 'Events', to: '/#tin-tuc-uu-dai' },
+        { label: 'Promotions', to: '/#tin-tuc-uu-dai' },
+        { label: 'Knowledge', to: ROUTES.knowledgeImplant },
+        { label: 'Contact', to: '#lien-he' },
+      ];
 
   const supportLinks = isVi
     ? [
@@ -73,15 +106,11 @@ export function SiteFooter() {
       ];
 
   return (
-    <footer className="border-t border-blue-600 bg-blue-700 text-white">
+    <footer id="lien-he" className="border-t border-blue-600 bg-blue-700 text-white">
       <div className="mx-auto w-full max-w-[1360px] px-4 py-10 md:px-6 md:py-12">
         <div className="grid gap-8 lg:grid-cols-[1.35fr_0.95fr_0.95fr_1.1fr]">
           <div>
-            <img
-              alt="Tận Tâm"
-              className="h-20 w-auto origin-left scale-110 md:h-24 [image-rendering:-webkit-optimize-contrast]"
-              src={logoFooter}
-            />
+            <FooterBrandLogo />
             <ul className="mt-6 space-y-3 text-base leading-8 text-blue-50">
               <li>{isVi ? `Địa chỉ: ${data?.data.address}` : `Address: ${data?.data.address}`}</li>
               <li>{isVi ? 'Hotline: 1900.8040 - 0329851079' : 'Hotline: 1900.8040 - 0329851079'}</li>
@@ -96,13 +125,13 @@ export function SiteFooter() {
             <h3 className="border-b border-blue-400 pb-3 text-2xl font-black">{isVi ? 'Thông tin' : 'Information'}</h3>
             <ul className="mt-4 space-y-3">
               {infoLinks.map((item) => (
-                <li key={item}>
+                <li key={item.label}>
                   <Link
                     className="inline-flex items-center gap-2 text-lg text-blue-50 transition hover:text-white"
-                    to="/"
+                    to={item.to}
                   >
                     <span>&#8250;</span>
-                    <span>{item}</span>
+                    <span>{item.label}</span>
                   </Link>
                 </li>
               ))}

@@ -1,8 +1,28 @@
-import bannerHome from '@/assets/images/banner.png';
+import bannerHome from '@/assets/images/banner_new.png';
 import camKetChatLuong from '@/assets/images/chat-luong.svg';
 import camKetChinhHang from '@/assets/images/chinh-hang.svg';
 import camKetHoTro from '@/assets/images/ho-tro.svg';
 import camKetMinhBach from '@/assets/images/minh-bach.svg';
+import scalerImage1 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-1.png';
+import scalerImage2 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-2.jpg';
+import scalerImage3 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-3.jpg';
+import scalerImage4 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-4.jpg';
+import scalerImage5 from '@/assets/images/technology/CaoVoiRangSieuAm/may-cao-voi-rang-sieu-am-5.jpg';
+import ctConeBeamImage1 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-1.png';
+import ctConeBeamImage2 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-2.jpg';
+import ctConeBeamImage3 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-3.jpg';
+import ctConeBeamImage4 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-4.jpg';
+import ctConeBeamImage5 from '@/assets/images/technology/CTConeBeam3D/may-ct-cone-beam-3d-5.jpg';
+import iteroImage1 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-1.png';
+import iteroImage2 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-2.jpg';
+import iteroImage3 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-3-.png';
+import iteroImage4 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-4.jpg';
+import iteroImage5 from '@/assets/images/technology/iTeroElement5D/may-clincheck-iTero-Element-5D-5.png';
+import osstemImage1 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-1.png';
+import osstemImage2 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-2.png';
+import osstemImage3 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-3.png';
+import osstemImage4 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-4.jpg';
+import osstemImage5 from '@/assets/images/technology/OsstemCaoCap/ghe-nha-khoa-cao-cap-5.jpg';
 import veChungToi from '@/assets/images/ve-chung-toi.webp';
 import { FeaturedDentalServicesSection } from '@/components/FeaturedDentalServicesSection';
 import { HomeCommitmentsSection } from '@/components/home/HomeCommitmentsSection';
@@ -27,6 +47,10 @@ type DoctorTeamDisplay = {
   summary: string[];
   cta: string;
 };
+
+function technologyThumbnails(labels: string[], imageSources: string[]) {
+  return labels.map((label, index) => ({ label, imageSrc: imageSources[index] ?? imageSources[0] }));
+}
 
 function mapDoctorToTeamDisplay(d: Doctor, isVi: boolean): DoctorTeamDisplay {
   const role = d.specialization?.trim() ? d.specialization : isVi ? 'Bác sĩ' : 'Dentist';
@@ -195,7 +219,7 @@ export function HomePage() {
           number: '02',
           title: 'Trusted dental system',
           description:
-            'Tam Duc Smile has multiple branches nationwide, making it easier for patients to access quality care and book appointments.',
+            'Tan Tam Smile has multiple branches nationwide, making it easier for patients to access quality care and book appointments.',
         },
         {
           number: '03',
@@ -219,7 +243,7 @@ export function HomePage() {
           number: '06',
           title: 'Customer trust',
           description:
-            '15,000+ satisfied customers and thousands of positive reviews on Google & Facebook reinforce trust in Tam Duc Smile.',
+            '15,000+ satisfied customers and thousands of positive reviews on Google & Facebook reinforce trust in Tan Tam Smile.',
         },
       ];
 
@@ -242,7 +266,11 @@ export function HomePage() {
             'Mô phỏng dịch chuyển răng trước khi điều trị.',
             'Lưu trữ hồ sơ scan số hóa, dễ theo dõi tiến triển.',
           ],
-          thumbnails: ['Tổng quan máy', 'Bác sĩ thao tác', 'Màn hình mô phỏng', 'Đầu quét 5D', 'Ca lâm sàng'],
+          imageSrc: iteroImage1,
+          thumbnails: technologyThumbnails(
+            ['Tổng quan máy', 'Bác sĩ thao tác', 'Màn hình mô phỏng', 'Đầu quét 5D', 'Ca lâm sàng'],
+            [iteroImage1, iteroImage2, iteroImage3, iteroImage4, iteroImage5],
+          ),
         },
         {
           tabLabel: 'Máy CT Cone Beam 3D',
@@ -258,7 +286,11 @@ export function HomePage() {
             'Giảm thiểu rủi ro khi điều trị xâm lấn.',
             'Rút ngắn thời gian chẩn đoán và lập kế hoạch.',
           ],
-          thumbnails: ['Máy CT', 'Quy trình chụp', 'Kết quả phim', 'Phân tích 3D', 'Ứng dụng Implant'],
+          imageSrc: ctConeBeamImage1,
+          thumbnails: technologyThumbnails(
+            ['Máy CT', 'Quy trình chụp', 'Kết quả phim', 'Phân tích 3D', 'Ứng dụng Implant'],
+            [ctConeBeamImage1, ctConeBeamImage2, ctConeBeamImage3, ctConeBeamImage4, ctConeBeamImage5],
+          ),
         },
         {
           tabLabel: 'Máy Cạo Vôi Răng Siêu Âm',
@@ -274,7 +306,11 @@ export function HomePage() {
             'Rút ngắn thời gian vệ sinh răng định kỳ.',
             'Giảm nguy cơ viêm nướu và chảy máu chân răng.',
           ],
-          thumbnails: ['Thiết bị siêu âm', 'Đầu tip chuyên dụng', 'Làm sạch nướu', 'Trước điều trị', 'Sau điều trị'],
+          imageSrc: scalerImage1,
+          thumbnails: technologyThumbnails(
+            ['Thiết bị siêu âm', 'Đầu tip chuyên dụng', 'Làm sạch nướu', 'Trước điều trị', 'Sau điều trị'],
+            [scalerImage1, scalerImage2, scalerImage3, scalerImage4, scalerImage5],
+          ),
         },
         {
           tabLabel: 'Ghế Osstem Cao Cấp',
@@ -290,7 +326,11 @@ export function HomePage() {
             'Tăng trải nghiệm thoải mái trong phiên điều trị dài.',
             'Tích hợp hệ thống hỗ trợ thao tác hiệu quả.',
           ],
-          thumbnails: ['Ghế điều trị', 'Khu vực điều khiển', 'Đèn chiếu sáng', 'Không gian phòng', 'Thiết kế vô khuẩn'],
+          imageSrc: osstemImage1,
+          thumbnails: technologyThumbnails(
+            ['Ghế điều trị', 'Khu vực điều khiển', 'Đèn chiếu sáng', 'Không gian phòng', 'Thiết kế vô khuẩn'],
+            [osstemImage1, osstemImage2, osstemImage3, osstemImage4, osstemImage5],
+          ),
         },
       ]
     : [
@@ -308,7 +348,11 @@ export function HomePage() {
             'Pre-treatment tooth movement simulation.',
             'Digital records for long-term progress tracking.',
           ],
-          thumbnails: ['Machine overview', 'Doctor workflow', 'Simulation screen', 'Scanner tip', 'Clinical case'],
+          imageSrc: iteroImage1,
+          thumbnails: technologyThumbnails(
+            ['Machine overview', 'Doctor workflow', 'Simulation screen', 'Scanner tip', 'Clinical case'],
+            [iteroImage1, iteroImage2, iteroImage3, iteroImage4, iteroImage5],
+          ),
         },
         {
           tabLabel: 'CT Cone Beam 3D',
@@ -324,7 +368,11 @@ export function HomePage() {
             'Lower risk in invasive procedures.',
             'Faster diagnosis and treatment planning.',
           ],
-          thumbnails: ['CT machine', 'Scanning process', 'Image output', '3D analysis', 'Implant use case'],
+          imageSrc: ctConeBeamImage1,
+          thumbnails: technologyThumbnails(
+            ['CT machine', 'Scanning process', 'Image output', '3D analysis', 'Implant use case'],
+            [ctConeBeamImage1, ctConeBeamImage2, ctConeBeamImage3, ctConeBeamImage4, ctConeBeamImage5],
+          ),
         },
         {
           tabLabel: 'Ultrasonic Scaler',
@@ -340,7 +388,11 @@ export function HomePage() {
             'Faster routine hygiene appointments.',
             'Reduced risk of gingivitis and bleeding gums.',
           ],
-          thumbnails: ['Ultrasonic unit', 'Specialized tips', 'Gum cleaning', 'Before', 'After'],
+          imageSrc: scalerImage1,
+          thumbnails: technologyThumbnails(
+            ['Ultrasonic unit', 'Specialized tips', 'Gum cleaning', 'Before', 'After'],
+            [scalerImage1, scalerImage2, scalerImage3, scalerImage4, scalerImage5],
+          ),
         },
         {
           tabLabel: 'Premium Osstem Chair',
@@ -356,7 +408,11 @@ export function HomePage() {
             'Improved comfort in longer sessions.',
             'Integrated support system for efficient workflow.',
           ],
-          thumbnails: ['Treatment chair', 'Control module', 'LED lighting', 'Room setup', 'Sterile design'],
+          imageSrc: osstemImage1,
+          thumbnails: technologyThumbnails(
+            ['Treatment chair', 'Control module', 'LED lighting', 'Room setup', 'Sterile design'],
+            [osstemImage1, osstemImage2, osstemImage3, osstemImage4, osstemImage5],
+          ),
         },
       ];
 
@@ -542,7 +598,9 @@ export function HomePage() {
 
       <HomeReasonsSection aboutImageSrc={veChungToi} isVi={isVi} leftReasons={leftReasons} rightReasons={rightReasons} />
 
-      <FeaturedDentalServicesSection />
+      <div id="dich-vu" className="scroll-mt-32">
+        <FeaturedDentalServicesSection />
+      </div>
 
       <HomeTechnologySection
         activeTechIndex={activeTechIndex}
@@ -574,16 +632,18 @@ export function HomePage() {
         visibleStories={visibleStories}
       />
 
-      <HomeNewsSection
-        activeNewsTab={activeNewsTab}
-        featuredNews={activeNews.featured}
-        isVi={isVi}
-        newsError={newsError}
-        newsLoading={newsLoading}
-        newsTabs={newsTabs}
-        onSelectNewsTab={setActiveNewsTab}
-        sideNews={activeNews.side}
-      />
+      <div id="tin-tuc-uu-dai" className="scroll-mt-32">
+        <HomeNewsSection
+          activeNewsTab={activeNewsTab}
+          featuredNews={activeNews.featured}
+          isVi={isVi}
+          newsError={newsError}
+          newsLoading={newsLoading}
+          newsTabs={newsTabs}
+          onSelectNewsTab={setActiveNewsTab}
+          sideNews={activeNews.side}
+        />
+      </div>
     </section>
   );
 }

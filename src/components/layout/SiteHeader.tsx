@@ -1,10 +1,11 @@
-import logoTanTam from '@/assets/images/logoTanTam.jpg';
+import logoTanTam from '@/assets/images/logo.png';
 import { HeaderAuthActions } from '@/components/layout/HeaderAuthActions';
 import { HeaderNotificationBell } from '@/components/notifications/HeaderNotificationBell';
 import { ROUTES, getServiceDetailRoute } from '@/constants/routes';
 import { useLanguage, type Language } from '@/contexts/NgonNguContext';
 import { getServiceCategories, type ServiceCategory } from '@/services/serviceCategoryService';
 import { getServices, type Service } from '@/services/serviceService';
+import { Home } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
@@ -72,16 +73,14 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const aboutSubItems =
     language === 'vi'
       ? [
-          { label: 'Về Tâm Đức Smile', to: ROUTES.about },
+          { label: 'Về Tận Tâm Smile', to: ROUTES.about },
           { label: 'Đội ngũ Bác sĩ', to: ROUTES.aboutTeam },
           { label: 'Cơ sở vật chất', to: ROUTES.aboutFacilities },
-          { label: 'Tuyển dụng', to: ROUTES.aboutRecruitment },
         ]
       : [
-          { label: 'About Tam Duc Smile', to: ROUTES.about },
+          { label: 'About Tan Tam Smile', to: ROUTES.about },
           { label: 'Our Doctors', to: ROUTES.aboutTeam },
           { label: 'Facilities', to: ROUTES.aboutFacilities },
-          { label: 'Recruitment', to: ROUTES.aboutRecruitment },
         ];
 
   const priceSubItems =
@@ -285,7 +284,7 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
       <div className="mx-auto w-full max-w-[1360px] px-4">
         <div className="flex flex-wrap items-center gap-4 py-3 lg:flex-nowrap">
           <Link className="shrink-0" to={ROUTES.home}>
-            <img alt="Tam Duc Smile" className="h-20 w-auto" src={logoTanTam} />
+            <img alt="Tan Tam Smile" className="h-20 w-auto" src={logoTanTam} />
           </Link>
 
           <form className="relative w-full lg:max-w-[760px]" onSubmit={(event) => event.preventDefault()}>
@@ -356,10 +355,17 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
         <div className="flex items-center justify-between border-t border-slate-100 pb-3 pt-2">
           <nav className="flex flex-wrap items-center gap-5">
             <NavLink
-              className="grid h-10 w-10 place-items-center rounded-md border-b-2 border-slate-300 text-slate-900"
+              aria-label={language === 'vi' ? 'Trang chủ' : 'Home'}
+              className={({ isActive }) =>
+                `grid h-10 w-10 place-items-center rounded-xl border text-slate-700 transition ${
+                  isActive
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+                }`
+              }
               to={ROUTES.home}
             >
-              &#127968;
+              <Home className="h-5 w-5" strokeWidth={2.4} />
             </NavLink>
 
             <div
