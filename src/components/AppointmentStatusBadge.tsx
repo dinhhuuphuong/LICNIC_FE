@@ -1,4 +1,4 @@
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'checked_in';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'checked_in' | 'paid';
 
 const APPOINTMENT_STATUS_STYLE: Record<AppointmentStatus, { vi: string; en: string; className: string }> = {
   pending: {
@@ -25,6 +25,11 @@ const APPOINTMENT_STATUS_STYLE: Record<AppointmentStatus, { vi: string; en: stri
     vi: 'Đã hủy',
     en: 'Cancelled',
     className: 'bg-rose-50 text-rose-700',
+  },
+  paid: {
+    vi: 'Đã thanh toán',
+    en: 'Paid',
+    className: 'bg-indigo-50 text-indigo-700',
   },
 };
 

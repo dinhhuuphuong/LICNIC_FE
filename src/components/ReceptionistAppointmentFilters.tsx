@@ -9,6 +9,7 @@ const RECEPTIONIST_APPOINTMENT_STATUS_OPTIONS = [
   { value: 'completed', labelVi: 'Đã khám xong', labelEn: 'Completed' },
   { value: 'cancelled', labelVi: 'Đã hủy', labelEn: 'Cancelled' },
   { value: 'checked_in', labelVi: 'Đã check-in', labelEn: 'Checked in' },
+  { value: 'paid', labelVi: 'Đã thanh toán', labelEn: 'Paid' },
 ];
 
 type ReceptionistAppointmentFiltersProps = {
