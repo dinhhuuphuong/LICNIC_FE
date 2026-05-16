@@ -1,4 +1,5 @@
 import { BookingModal } from '@/components/layout/BookingModal';
+import { OpenRouterChatbot } from '@/components/layout/OpenRouterChatbot';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { useEffect, useState } from 'react';
@@ -30,6 +31,7 @@ export function MainLayout() {
 
       {/* <ThanhLienHeNoi onOpenBooking={() => setIsBookingOpen(true)} /> */}
 
+      <OpenRouterChatbot />
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
     </div>
   );
