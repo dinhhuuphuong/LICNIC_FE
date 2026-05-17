@@ -1,8 +1,9 @@
 import { useLanguage } from '@/contexts/NgonNguContext';
-import { askChatbotRag } from '@/services/chatbotRagService';
+import { askChatbotRagStream } from '@/services/chatbotRagService';
 import { useAuthStore } from '@/stores/authStore';
-import { Bot } from 'lucide-react';
+import { Bot, SquarePen } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 
@@ -52,11 +53,28 @@ const markdownComponents: Partial<Components> = {
   h3: ({ children }) => <h3 className="mb-1.5 text-sm font-semibold">{children}</h3>,
 };
 
-function ChatMessageMarkdown({ content, role }: { content: string; role: ChatRole }) {
+function ChatMessageMarkdown({
+  content,
+  role,
+  isStreaming,
+}: {
+  content: string;
+  role: ChatRole;
+  isStreaming?: boolean;
+}) {
   const prose =
     role === 'user'
       ? '[&_a]:text-blue-100 [&_code]:bg-blue-800/75 [&_code]:text-white [&_pre]:bg-blue-900/55 [&_pre]:text-blue-50 [&_blockquote]:border-blue-200/70 [&_blockquote]:text-blue-50'
       : '[&_a]:text-blue-700 [&_code]:bg-slate-200 [&_code]:text-slate-900 [&_pre]:bg-slate-900 [&_pre]:text-slate-100 [&_blockquote]:border-slate-300 [&_blockquote]:text-slate-700';
+
+  if (role === 'assistant' && isStreaming) {
+    return (
+      <div className={`min-w-0 wrap-break-word whitespace-pre-wrap ${prose}`}>
+        {content}
+        <span className="ml-0.5 inline-block h-[1em] w-0.5 animate-pulse bg-slate-500 align-[-0.15em]" aria-hidden />
+      </div>
+    );
+  }
 
   return (
     <div className={`min-w-0 wrap-break-word ${prose}`}>
@@ -102,28 +120,42 @@ export function OpenRouterChatbot() {
     sendingLockRef.current = true;
     setIsSending(true);
 
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
     try {
-      const parsed = await askChatbotRag(trimmed, ragSessionRef.current);
+      let assistantText = '';
 
-      if (parsed.error != null && parsed.error !== '') {
-        throw new Error(typeof parsed.error === 'string' ? parsed.error : JSON.stringify(parsed.error));
-      }
+      await askChatbotRagStream(trimmed, ragSessionRef.current, {
+        onMeta: (meta) => {
+          if (meta.session?.trim()) {
+            ragSessionRef.current = meta.session.trim();
+          }
+        },
+        onDelta: (chunk) => {
+          assistantText += chunk;
+          flushSync(() => {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last?.role !== 'assistant') return prev;
+              updated[updated.length - 1] = { role: 'assistant', content: assistantText };
+              return updated;
+            });
+          });
+        },
+      });
 
-      const assistantText = parsed.data?.answer;
-      if (typeof assistantText !== 'string' || !assistantText.trim()) {
+      if (!assistantText.trim()) {
         throw new Error(isVi ? 'Phản hồi không hợp lệ từ máy chủ.' : 'Invalid response from server.');
       }
-
-      const nextSession = parsed.data?.session;
-      if (typeof nextSession === 'string' && nextSession.trim() !== '') {
-        ragSessionRef.current = nextSession.trim();
-      }
-
-      setMessages((prev) => [...prev, { role: 'assistant', content: assistantText }]);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       setError(message);
-      setMessages((prev) => prev.slice(0, -1));
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === 'assistant' && !last.content) return prev.slice(0, -2);
+        return prev.slice(0, -1);
+      });
       setInput(trimmed);
     } finally {
       sendingLockRef.current = false;
@@ -131,11 +163,20 @@ export function OpenRouterChatbot() {
     }
   }, [input, isVi, messages]);
 
+  const startNewChat = useCallback(() => {
+    if (isSending) return;
+    setMessages([]);
+    setInput('');
+    setError(null);
+    ragSessionRef.current = null;
+  }, [isSending]);
+
   if (!user) return null;
 
   const title = isVi ? 'Trợ lý AI' : 'AI assistant';
   const placeholder = isVi ? 'Nhập câu hỏi…' : 'Ask something…';
   const sendLabel = isVi ? 'Gửi' : 'Send';
+  const newChatLabel = isVi ? 'Cuộc trò chuyện mới' : 'New chat';
 
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 md:bottom-6 md:right-6">
@@ -143,13 +184,26 @@ export function OpenRouterChatbot() {
         <div className="pointer-events-auto flex min-h-[520px] max-h-[min(520px,calc(100vh-8rem))] w-[min(100vw-2rem,380px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15">
           <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
             <span className="text-sm font-bold text-slate-800">{title}</span>
-            <button
-              type="button"
-              className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200/80"
-              onClick={() => setIsOpen(false)}
-            >
-              {isVi ? 'Đóng' : 'Close'}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200/80 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={startNewChat}
+                disabled={isSending}
+                title={newChatLabel}
+                aria-label={newChatLabel}
+              >
+                <SquarePen className="h-3.5 w-3.5" aria-hidden />
+                <span className="hidden sm:inline">{newChatLabel}</span>
+              </button>
+              <button
+                type="button"
+                className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200/80"
+                onClick={() => setIsOpen(false)}
+              >
+                {isVi ? 'Đóng' : 'Close'}
+              </button>
+            </div>
           </div>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
@@ -158,20 +212,26 @@ export function OpenRouterChatbot() {
                 {isVi ? 'Chào bạn! Bạn cần hỗ trợ gì về phòng khám?' : 'Hi! How can I help you today?'}
               </p>
             ) : (
-              messages.map((m, i) => (
-                <div
-                  key={`${m.role}-${i}`}
-                  className={`max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
-                    m.role === 'user'
-                      ? 'ml-auto bg-blue-600 text-white'
-                      : 'mr-auto border border-slate-100 bg-slate-50 text-slate-800'
-                  }`}
-                >
-                  <ChatMessageMarkdown content={m.content} role={m.role} />
-                </div>
-              ))
+              messages.map((m, i) => {
+                const isLastAssistantStreaming =
+                  isSending && i === messages.length - 1 && m.role === 'assistant';
+                return (
+                  <div
+                    key={`${m.role}-${i}`}
+                    className={`max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                      m.role === 'user'
+                        ? 'ml-auto bg-blue-600 text-white'
+                        : 'mr-auto border border-slate-100 bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <ChatMessageMarkdown content={m.content} role={m.role} isStreaming={isLastAssistantStreaming} />
+                  </div>
+                );
+              })
             )}
-            {isSending ? (
+            {isSending &&
+            messages[messages.length - 1]?.role === 'assistant' &&
+            !messages[messages.length - 1]?.content ? (
               <p className="text-center text-xs text-slate-400">{isVi ? 'Đang trả lời…' : 'Thinking…'}</p>
             ) : null}
           </div>
