@@ -35,6 +35,7 @@ import { TaoBenhAnVaDonThuocPage } from '@/pages/TaoBenhAnVaDonThuocPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { TaoThanhToanLeTanPage } from '@/pages/TaoThanhToanLeTanPage';
 import { ThongTinCaNhanBacSiPage } from '@/pages/ThongTinCaNhanBacSiPage';
+import { LichSuTroLyAiPage } from '@/pages/LichSuTroLyAiPage';
 import { HomePage } from '@/pages/TrangChuPage';
 import { AboutPage } from '@/pages/VeTamDucSmilePage';
 import queryString from 'query-string';
@@ -212,6 +213,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.serviceDetail,
             element: <ServiceDetailPage />,
+          },
+          {
+            path: ROUTES.chatHistory,
+            element: <LichSuTroLyAiPage />,
           },
         ],
       },

@@ -1,6 +1,7 @@
-import { http, type Response } from '@/services/http';
+import { http, type PaginationResponse, type Response } from '@/services/http';
 
 const CHATBOT_RAG_ASK_URL = '/chatbot-rag/ask';
+const CHATBOT_RAG_CHATS_URL = '/chatbot-rag/chats';
 const CHATBOT_RAG_ASK_STREAM_URL = '/chatbot-rag/ask/stream';
 
 export type ChatbotRagPayload = {
@@ -240,4 +241,68 @@ export async function askChatbotRagStream(
   }
 
   await consumeSseStream(reader, handlers);
+}
+
+export type ChatbotRagChatSummary = {
+  session: string;
+  firstQuestion: string;
+  firstAnswer: string;
+  firstCreatedAt: string;
+  lastCreatedAt: string;
+  messageCount: number;
+};
+
+export type ChatbotRagMessage = {
+  id: number;
+  question: string;
+  answer: string;
+  createdAt: string;
+};
+
+export type ChatbotRagMessagesPage = {
+  items: ChatbotRagMessage[];
+  nextCursor: string | null;
+  limit: number;
+};
+
+export async function getChatbotRagChats(params?: { page?: number; limit?: number }) {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 10;
+  const query = new URLSearchParams({ page: String(page), limit: String(limit) });
+  return http<PaginationResponse<ChatbotRagChatSummary>>(`${CHATBOT_RAG_CHATS_URL}?${query}`, {
+    method: 'GET',
+    headers: { accept: '*/*' },
+  });
+}
+
+export async function getChatbotRagChatMessages(
+  session: string,
+  params?: { limit?: number; cursor?: string },
+) {
+  const limit = params?.limit ?? 50;
+  const query = new URLSearchParams({ limit: String(limit) });
+  if (params?.cursor) query.set('cursor', params.cursor);
+  return http<Response<ChatbotRagMessagesPage>>(
+    `${CHATBOT_RAG_CHATS_URL}/${encodeURIComponent(session)}/messages?${query}`,
+    {
+      method: 'GET',
+      headers: { accept: '*/*' },
+    },
+  );
+}
+
+export async function getAllChatbotRagChatMessages(session: string): Promise<ChatbotRagMessage[]> {
+  const all: ChatbotRagMessage[] = [];
+  let cursor: string | undefined;
+  const limit = 50;
+
+  while (true) {
+    const res = await getChatbotRagChatMessages(session, { limit, cursor });
+    const page = res.data;
+    all.push(...page.items);
+    if (!page.nextCursor) break;
+    cursor = page.nextCursor;
+  }
+
+  return all.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 }

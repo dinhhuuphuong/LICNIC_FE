@@ -40,6 +40,7 @@ export const ROUTES = {
   serviceDetail: '/dich-vu/:serviceId',
   /** Đặt lịch theo dịch vụ — dùng `getServiceBookingRoute(id)` */
   serviceBooking: '/dich-vu/:serviceId/dat-lich',
+  chatHistory: '/tro-ly-ai/lich-su',
 
   // admin routes
   admin: '/admin',
