@@ -33,6 +33,8 @@ export type RegisterResponse = Response<{
 
 const REGISTER_URL = '/auth/register';
 const REQUEST_OTP_URL = '/auth/register/request-otp';
+const FORGOT_PASSWORD_REQUEST_OTP_URL = '/auth/forgot-password/request-otp';
+const FORGOT_PASSWORD_URL = '/auth/forgot-password';
 
 function logAuthDebug(label: string, payload: Record<string, unknown>) {
     if (!import.meta.env.DEV) return;
@@ -110,6 +112,60 @@ export function requestOtp(payload: RequestOtpPayload) {
     return http<RequestOtpResponse>(REQUEST_OTP_URL, {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        skipAuth: true,
+        skipRefresh: true,
+    });
+}
+
+export type ForgotPasswordRequestOtpPayload = {
+    email: string;
+};
+
+export type ForgotPasswordRequestOtpResponse = unknown;
+
+export function requestForgotPasswordOtp(payload: ForgotPasswordRequestOtpPayload) {
+    logAuthDebug('forgot password request otp', {
+        url: `${import.meta.env.VITE_ENDPOINT_API}${FORGOT_PASSWORD_REQUEST_OTP_URL}`,
+        method: 'POST',
+        email: payload.email,
+    });
+
+    return http<ForgotPasswordRequestOtpResponse>(FORGOT_PASSWORD_REQUEST_OTP_URL, {
+        method: 'POST',
+        headers: {
+            accept: '*/*',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        skipAuth: true,
+        skipRefresh: true,
+    });
+}
+
+export type ForgotPasswordPayload = {
+    email: string;
+    otp: string;
+    password: string;
+};
+
+export type ForgotPasswordResponse = unknown;
+
+export function forgotPassword(payload: ForgotPasswordPayload) {
+    logAuthDebug('forgot password', {
+        url: `${import.meta.env.VITE_ENDPOINT_API}${FORGOT_PASSWORD_URL}`,
+        method: 'POST',
+        email: payload.email,
+        otp: payload.otp,
+        passwordLength: payload.password.length,
+    });
+
+    return http<ForgotPasswordResponse>(FORGOT_PASSWORD_URL, {
+        method: 'POST',
+        headers: {
+            accept: '*/*',
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

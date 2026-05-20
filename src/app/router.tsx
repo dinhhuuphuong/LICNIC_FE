@@ -31,6 +31,7 @@ import { QuanLyDatLichLeTanPage } from '@/pages/QuanLyDatLichLeTanPage';
 import { QuanLyHoSoBenhNhanBacSiPage } from '@/pages/QuanLyHoSoBenhNhanBacSiPage';
 import { QuanLyReviewLeTanPage } from '@/pages/QuanLyReviewLeTanPage';
 import { QuanLyThanhToanLeTanPage } from '@/pages/QuanLyThanhToanLeTanPage';
+import { ForgotPasswordPage } from '@/pages/QuenMatKhauPage';
 import { TaoBenhAnVaDonThuocPage } from '@/pages/TaoBenhAnVaDonThuocPage';
 import { TaoLichLamViecBacSiPage } from '@/pages/TaoLichLamViecBacSiPage';
 import { TaoThanhToanLeTanPage } from '@/pages/TaoThanhToanLeTanPage';
@@ -121,6 +122,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.register,
             element: <RegisterPage />,
+          },
+          {
+            path: ROUTES.forgotPassword,
+            element: <ForgotPasswordPage />,
           },
           {
             path: ROUTES.patientProfile,

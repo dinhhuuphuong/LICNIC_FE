@@ -14,6 +14,7 @@ export const ROUTES = {
   knowledgePorcelain: '/kien-thuc/kien-thuc-rang-su',
   login: '/dang-nhap',
   register: '/dang-ky',
+  forgotPassword: '/quen-mat-khau',
   patientProfile: '/benh-nhan/ho-so',
   patientAppointments: '/benh-nhan/lich-hen',
   patientAppointmentDetail: '/benh-nhan/lich-hen/:appointmentId',

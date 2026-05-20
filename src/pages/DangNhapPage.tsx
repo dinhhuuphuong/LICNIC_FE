@@ -96,6 +96,11 @@ export function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
           required
         />
+        <div className="text-right">
+          <Link className="text-sm font-semibold text-blue-700 hover:text-blue-800" to={ROUTES.forgotPassword}>
+            {isVi ? 'Quên mật khẩu?' : 'Forgot password?'}
+          </Link>
+        </div>
 
         {error ? <p className="mt-2! text-sm text-red-600">{error}</p> : null}
         {success ? <p className="mt-2! text-sm text-green-600">{success}</p> : null}
