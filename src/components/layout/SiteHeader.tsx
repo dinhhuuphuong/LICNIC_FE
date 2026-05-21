@@ -7,7 +7,7 @@ import { getServiceCategories, type ServiceCategory } from '@/services/serviceCa
 import { getServices, type Service } from '@/services/serviceService';
 import { Home } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 type TopMenuItem = {
   label: string;
@@ -43,6 +43,7 @@ const languageOptions: Array<{
 
 export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
 
   const isAboutActive = location.pathname.startsWith('/gioi-thieu/');
@@ -56,6 +57,12 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [serviceMenuStatus, setServiceMenuStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Service[]>([]);
+  const [searchStatus, setSearchStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const aboutMenuRef = useRef<HTMLDivElement>(null);
   const serviceMenuRef = useRef<HTMLDivElement>(null);
@@ -115,8 +122,11 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
   const text =
     language === 'vi'
       ? {
-          searchPlaceholder: 'Tìm kiếm thông tin nha khoa tại đây...',
+          searchPlaceholder: 'Tìm kiếm dịch vụ nha khoa tại đây...',
           searchAriaLabel: 'Tìm kiếm',
+          searching: 'Đang tìm kiếm...',
+          noSearchResults: 'Không tìm thấy kết quả.',
+          searchError: 'Lỗi tìm kiếm, vui lòng thử lại.',
           consultLabel: 'Liên hệ tư vấn',
           aboutMenu: 'Giới thiệu',
           serviceMenu: 'Dịch vụ',
@@ -130,8 +140,11 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
           serviceEmpty: 'Chưa có dịch vụ đang hoạt động.',
         }
       : {
-          searchPlaceholder: 'Search dental information here...',
+          searchPlaceholder: 'Search dental services here...',
           searchAriaLabel: 'Search',
+          searching: 'Searching...',
+          noSearchResults: 'No results found.',
+          searchError: 'Search error, please try again.',
           consultLabel: 'Consultation Hotline',
           aboutMenu: 'About',
           serviceMenu: 'Services',
@@ -169,6 +182,9 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
       }
       if (!languageMenuRef.current?.contains(event.target as Node)) {
         setIsLanguageMenuOpen(false);
+      }
+      if (!searchRef.current?.contains(event.target as Node)) {
+        setIsSearchOpen(false);
       }
     };
 
@@ -279,6 +295,37 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
     };
   }, [language]);
 
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setSearchStatus('idle');
+      setIsSearchOpen(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      setSearchStatus('loading');
+      setIsSearchOpen(true);
+      getServices({ status: true, keyword: searchQuery.trim(), limit: 10, page: 1 })
+        .then((res) => {
+          if (cancelled) return;
+          setSearchResults(res.data.items ?? []);
+          setSearchStatus('loaded');
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setSearchStatus('error');
+          setSearchResults([]);
+        });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">
       <div className="mx-auto w-full max-w-[1360px] px-4">
@@ -287,20 +334,60 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
             <img alt="Tan Tam Smile" className="h-20 w-auto" src={logoTanTam} />
           </Link>
 
-          <form className="relative w-full lg:max-w-[760px]" onSubmit={(event) => event.preventDefault()}>
-            <input
-              className="h-12 w-full rounded-xl border border-slate-300 bg-slate-100 px-5 pr-16 text-base text-slate-700 outline-none transition focus:border-blue-600 focus:bg-white"
-              placeholder={text.searchPlaceholder}
-              type="text"
-            />
-            <button
-              aria-label={text.searchAriaLabel}
-              className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-xl text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
-              type="submit"
+          <div className="relative w-full lg:max-w-[760px]" ref={searchRef}>
+            <form className="relative" onSubmit={(event) => event.preventDefault()}>
+              <input
+                className="h-12 w-full rounded-xl border border-slate-300 bg-slate-100 px-5 pr-16 text-base text-slate-700 outline-none transition focus:border-blue-600 focus:bg-white"
+                placeholder={text.searchPlaceholder}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => {
+                  if (searchQuery.trim() && (searchResults.length > 0 || searchStatus !== 'idle')) {
+                    setIsSearchOpen(true);
+                  }
+                }}
+              />
+              <button
+                aria-label={text.searchAriaLabel}
+                className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-xl text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
+                type="submit"
+              >
+                &#128269;
+              </button>
+            </form>
+
+            <div
+              className={`absolute left-0 top-full z-30 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg transition ${
+                isSearchOpen ? 'visible opacity-100' : 'invisible opacity-0'
+              }`}
             >
-              &#128269;
-            </button>
-          </form>
+              {searchStatus === 'loading' && <p className="px-4 py-3 text-sm text-slate-500">{text.searching}</p>}
+              {searchStatus === 'error' && <p className="px-4 py-3 text-sm text-amber-700">{text.searchError}</p>}
+              {searchStatus === 'loaded' && searchResults.length === 0 && (
+                <p className="px-4 py-3 text-sm text-slate-500">{text.noSearchResults}</p>
+              )}
+              {searchStatus === 'loaded' && searchResults.length > 0 && (
+                <ul className="max-h-80 overflow-auto py-2">
+                  {searchResults.map((service) => (
+                    <li key={service.serviceId}>
+                      <button
+                        className="cursor-pointer w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                        type="button"
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                          navigate(getServiceDetailRoute(service.serviceId));
+                        }}
+                      >
+                        {service.serviceName}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
 
           <div className="ml-auto flex items-center gap-4">
             <div className="hidden items-center gap-2 border-l border-slate-200 pl-4 md:flex">
@@ -435,7 +522,9 @@ export function SiteHeader({ onOpenBooking }: SiteHeaderProps) {
                   <p className="mb-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">{text.loadingServices}</p>
                 ) : null}
                 {serviceMenuStatus === 'error' ? (
-                  <p className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{text.serviceLoadError}</p>
+                  <p className="mb-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                    {text.serviceLoadError}
+                  </p>
                 ) : null}
 
                 {serviceMenuStatus === 'loaded' && serviceGroups.length === 0 ? (
