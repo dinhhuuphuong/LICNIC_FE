@@ -1,11 +1,9 @@
-import { ADMIN_ROLE_ID } from '@/constants/roleIds';
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { register, requestOtp } from '@/services/authService';
-import { getRoles, type Role } from '@/services/roleService';
 import { type AuthUser, useAuthStore } from '@/stores/authStore';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 type RegisterLocationState = { returnTo?: string };
@@ -25,51 +23,51 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [roleId, setRoleId] = useState<number | ''>('');
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [roleId] = useState<number | ''>(3);
+  // const [roles, setRoles] = useState<Role[]>([]);
   const [otp, setOtp] = useState('');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+  // const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   useDocumentTitle(isVi ? 'NHA KHOA TẬN TÂM | Đăng ký' : 'NHA KHOA TẬN TÂM | Register');
 
-  useEffect(() => {
-    let isMounted = true;
+  // useEffect(() => {
+  //   let isMounted = true;
 
-    const fetchRoles = async () => {
-      try {
-        setIsLoadingRoles(true);
-        const response = await getRoles({ page: 1, limit: 100 });
-        const roleItems = response.data.items;
+  //   const fetchRoles = async () => {
+  //     try {
+  //       setIsLoadingRoles(true);
+  //       const response = await getRoles({ page: 1, limit: 100 });
+  //       const roleItems = response.data.items;
 
-        if (!isMounted) return;
+  //       if (!isMounted) return;
 
-        setRoles(roleItems.filter((item) => ![ADMIN_ROLE_ID].includes(item.roleId)));
+  //       setRoles(roleItems.filter((item) => ![ADMIN_ROLE_ID].includes(item.roleId)));
 
-        const defaultRole = roleItems.find((role) => role.roleId === 2) ?? roleItems[0];
-        setRoleId(defaultRole?.roleId ?? '');
-      } catch {
-        if (!isMounted) return;
-        setError(
-          isVi ? 'Không tải được danh sách quyền. Vui lòng thử lại.' : 'Failed to load roles. Please try again.',
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoadingRoles(false);
-        }
-      }
-    };
+  //       const defaultRole = roleItems.find((role) => role.roleId === 2) ?? roleItems[0];
+  //       setRoleId(defaultRole?.roleId ?? '');
+  //     } catch {
+  //       if (!isMounted) return;
+  //       setError(
+  //         isVi ? 'Không tải được danh sách quyền. Vui lòng thử lại.' : 'Failed to load roles. Please try again.',
+  //       );
+  //     } finally {
+  //       if (isMounted) {
+  //         setIsLoadingRoles(false);
+  //       }
+  //     }
+  //   };
 
-    void fetchRoles();
+  //   void fetchRoles();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isVi]);
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [isVi]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -151,7 +149,9 @@ export function RegisterPage() {
       setSuccess(isVi ? 'Đã gửi mã OTP đến email của bạn.' : 'OTP has been sent to your email.');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : null;
-      setError(errorMessage ?? (isVi ? 'Gửi mã OTP thất bại. Vui lòng thử lại.' : 'Failed to send OTP. Please try again.'));
+      setError(
+        errorMessage ?? (isVi ? 'Gửi mã OTP thất bại. Vui lòng thử lại.' : 'Failed to send OTP. Please try again.'),
+      );
     } finally {
       setIsRequestingOtp(false);
     }
@@ -231,7 +231,7 @@ export function RegisterPage() {
           required
         />
 
-        <label className="mb-1 mt-4 block text-sm font-semibold text-slate-700" htmlFor="register-role">
+        {/* <label className="mb-1 mt-4 block text-sm font-semibold text-slate-700" htmlFor="register-role">
           {isVi ? 'Quyền tài khoản' : 'Account role'}
         </label>
         <select
@@ -254,7 +254,7 @@ export function RegisterPage() {
               {role.roleName}
             </option>
           ))}
-        </select>
+        </select> */}
 
         <label className="mb-1 block text-sm font-semibold text-slate-700 mt-4" htmlFor="register-otp">
           OTP
@@ -291,7 +291,8 @@ export function RegisterPage() {
         <button
           className="mt-2! inline-flex h-11 w-full items-center justify-center rounded-xl bg-blue-700 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
           type="submit"
-          disabled={isSubmitting || isLoadingRoles}
+          disabled={isSubmitting}
+          // disabled={isSubmitting || isLoadingRoles}
         >
           {isSubmitting ? (isVi ? 'Đang xử lý...' : 'Submitting...') : isVi ? 'Đăng ký' : 'Register'}
         </button>
