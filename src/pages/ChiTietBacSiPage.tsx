@@ -5,6 +5,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getDoctorDetail } from '@/services/doctorService';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { Rate } from 'antd';
 
 export function DoctorDetailPage() {
   const { language } = useLanguage();
@@ -91,9 +92,21 @@ export function DoctorDetailPage() {
         </div>
 
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">{isVi ? 'Hồ sơ bác sĩ' : 'Doctor profile'}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
+            {isVi ? 'Hồ sơ bác sĩ' : 'Doctor profile'}
+          </p>
           <h1 className="mt-1 text-3xl font-black text-slate-900">{doctor.user.name}</h1>
-          <p className="mt-2 text-sm font-semibold text-slate-600">{doctor.specialization || (isVi ? 'Bác sĩ nha khoa' : 'Dentist')}</p>
+          <p className="mt-2 text-sm font-semibold text-slate-600">
+            {doctor.specialization || (isVi ? 'Bác sĩ nha khoa' : 'Dentist')}
+          </p>
+          {doctor.averageRating != null && doctor.reviewCount != null ? (
+            <div className="mt-1 flex items-center gap-2">
+              <Rate allowHalf disabled value={doctor.averageRating} className="text-sm" />
+              <span className="text-sm text-slate-500">
+                {doctor.averageRating.toFixed(1)} ({doctor.reviewCount} {isVi ? 'đánh giá' : 'reviews'})
+              </span>
+            </div>
+          ) : null}
           <p className="mt-1 text-sm text-slate-500">
             {isVi ? 'Kinh nghiệm:' : 'Experience:'} {doctor.experienceYears} {isVi ? 'năm' : 'years'}
           </p>

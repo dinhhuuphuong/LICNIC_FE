@@ -7,6 +7,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getActiveDoctorsForHome, type Doctor } from '@/services/doctorService';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Rate } from 'antd';
 
 function formatConsultationFee(value: string, isVi: boolean) {
   const amount = Number(value);
@@ -97,7 +98,9 @@ export function AboutTeamPage() {
           tone="muted"
           centered
           title={isVi ? 'Chưa có bác sĩ đang hoạt động' : 'No active doctors yet'}
-          description={isVi ? 'Danh sách đội ngũ bác sĩ sẽ được cập nhật sớm.' : 'The doctor list will be updated soon.'}
+          description={
+            isVi ? 'Danh sách đội ngũ bác sĩ sẽ được cập nhật sớm.' : 'The doctor list will be updated soon.'
+          }
         />
       ) : null}
 
@@ -133,6 +136,14 @@ export function AboutTeamPage() {
                 <div className="flex flex-1 flex-col p-5">
                   <p className="text-sm font-bold text-blue-700">{specialization}</p>
                   <h3 className="mt-2 text-2xl font-black text-slate-900">{doctor.user.name}</h3>
+                  {doctor.averageRating != null && doctor.reviewCount != null ? (
+                    <div className="mt-1 flex items-center gap-2">
+                      <Rate allowHalf disabled value={doctor.averageRating} className="text-sm" />
+                      <span className="text-sm text-slate-500">
+                        {doctor.averageRating.toFixed(1)} ({doctor.reviewCount} {isVi ? 'đánh giá' : 'reviews'})
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="mt-3 flex flex-wrap gap-2 text-sm text-slate-600">
                     <span className="rounded-full bg-slate-100 px-3 py-1">
                       {doctor.experienceYears} {isVi ? 'năm kinh nghiệm' : 'years experience'}

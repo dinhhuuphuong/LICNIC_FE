@@ -23,6 +23,8 @@ export type Doctor = {
   consultationFee: string;
   createdAt: string;
   deletedAt: string | null;
+  averageRating: number | null;
+  reviewCount: number | null;
 };
 
 export type GetDoctorsResponse = PaginationResponse<Doctor>;
