@@ -1,6 +1,7 @@
 import { ROUTES } from '@/constants/routes';
 import { useLanguage } from '@/contexts/NgonNguContext';
 import { getClinicInfo, parseWorkingHours } from '@/services/clinicInfoService';
+import footerFanpageImage from '@/assets/images/hinh3.JPG?url';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
@@ -158,7 +159,12 @@ export function SiteFooter() {
           <div>
             <h3 className="border-b border-blue-400 pb-3 text-2xl font-black">{isVi ? 'Fanpage' : 'Fanpage'}</h3>
             <div className="mt-4 rounded-xl border border-blue-400 bg-blue-800/40 p-3">
-              <div className="grid h-[120px] place-items-center rounded-lg bg-white/90 text-center text-sm font-semibold text-slate-500">
+              <img
+                src={footerFanpageImage}
+                alt={isVi ? 'Fanpage Nha khoa Tận Tâm' : 'Tan Tam Dental fanpage'}
+                className="h-[120px] w-full rounded-lg object-cover"
+              />
+              <div className="hidden h-[120px] place-items-center rounded-lg bg-white/90 text-center text-sm font-semibold text-slate-500">
                 {isVi ? 'Ảnh fanpage sẽ bổ sung sau' : 'Fanpage image will be added later'}
               </div>
             </div>

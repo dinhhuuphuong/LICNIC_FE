@@ -115,7 +115,7 @@ async function readErrorMessage(response: globalThis.Response) {
 }
 
 export async function http<T>(input: RequestInfo | URL, init?: HttpOptions): Promise<T> {
-  const endpoint = import.meta.env.VITE_ENDPOINT_API;
+  const endpoint = import.meta.env.VITE_ENDPOINT_API ?? '';
 
   let url = input;
 
