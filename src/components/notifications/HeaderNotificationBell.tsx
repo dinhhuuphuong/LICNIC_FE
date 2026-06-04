@@ -161,7 +161,10 @@ export function HeaderNotificationBell() {
     }
 
     setIsOpen(false);
-    const url = n.redirectUrl?.trim();
+    const preprocessedUrl = n.redirectUrl?.trim();
+    const url = preprocessedUrl?.replace(/\/doctor-work-schedules\/.*/, '/bac-si/lich-lam-viec')
+      ?.replace(/\/appointments\/.*/, '/bac-si/quan-ly-dat-lich')
+
     if (url) {
       if (url.startsWith('http://') || url.startsWith('https://')) {
         window.location.href = url;

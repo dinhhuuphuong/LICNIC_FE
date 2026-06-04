@@ -41,7 +41,27 @@ export function OpenRouterChatbot() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatTurn[]>([]);
+  const [messages, setMessages] = useState<ChatTurn[]>([
+//     {
+//       role: 'user',
+//       content: 'Cho tôi thêm thông tin của bác sĩ bác sĩ phung tran minh',
+//     },
+//     {
+//       role: 'assistant',
+//       content: `Chào bạn,
+
+// Dưới đây là thông tin chi tiết về bác sĩ phung tran minh (ID: 4):
+
+// *   **Chuyên khoa:** Nha khoa thẩm mỹ
+// *   **Số năm kinh nghiệm:** 5 năm
+// *   **Mô tả:** Bác sĩ có nhiều kinh nghiệm trong lĩnh vực phục hình và thẩm mỹ răng.
+// *   **Phí tư vấn:** 100000.00 VNĐ
+// *   **Số điện thoại:** 02525149369
+// *   **Email:** danh0963.com.vn@gmail.com
+
+// Bác sĩ phung tran minh (ID: 4) có thực hiện dịch vụ Tẩy trắng răng với chi phí là 250000 VNĐ.`
+//     }
+  ]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -163,9 +183,7 @@ export function OpenRouterChatbot() {
     : ['Clinic opening hours?', 'How do I book an appointment?', 'What services are available?'];
 
   const showTypingIndicator =
-    isSending &&
-    messages[messages.length - 1]?.role === 'assistant' &&
-    !messages[messages.length - 1]?.content;
+    isSending && messages[messages.length - 1]?.role === 'assistant' && !messages[messages.length - 1]?.content;
 
   const headerIconBtnClass =
     'flex h-8 w-8 items-center justify-center rounded-lg text-white/90 transition hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-40';
@@ -174,7 +192,7 @@ export function OpenRouterChatbot() {
     <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       {isOpen ? (
         <div
-          className="pointer-events-auto flex min-h-[min(560px,calc(100vh-6rem))] max-h-[min(560px,calc(100vh-6rem))] w-[min(100vw-2rem,400px)] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20 ring-1 ring-slate-900/5"
+          className="pointer-events-auto flex min-h-[min(650px,calc(100vh-6rem))] max-h-[min(650px,calc(100vh-6rem))] w-[min(100vw-2rem,700px)] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/20 ring-1 ring-slate-900/5"
           role="dialog"
           aria-label={title}
         >
@@ -245,18 +263,14 @@ export function OpenRouterChatbot() {
               </div>
             ) : (
               messages.map((m, i) => {
-                const isLastAssistantStreaming =
-                  isSending && i === messages.length - 1 && m.role === 'assistant';
+                const isLastAssistantStreaming = isSending && i === messages.length - 1 && m.role === 'assistant';
                 const isEmptyAssistant = m.role === 'assistant' && !m.content;
                 if (isEmptyAssistant) return null;
 
                 const isUser = m.role === 'user';
 
                 return (
-                  <div
-                    key={`${m.role}-${i}`}
-                    className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
-                  >
+                  <div key={`${m.role}-${i}`} className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div
                       className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full ${
                         isUser ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
@@ -281,11 +295,7 @@ export function OpenRouterChatbot() {
                           : 'rounded-tl-md border border-slate-100 bg-white text-slate-800'
                       }`}
                     >
-                      <ChatMessageMarkdown
-                        content={m.content}
-                        role={m.role}
-                        isStreaming={isLastAssistantStreaming}
-                      />
+                      <ChatMessageMarkdown content={m.content} role={m.role} isStreaming={isLastAssistantStreaming} />
                     </div>
                   </div>
                 );
@@ -349,7 +359,11 @@ export function OpenRouterChatbot() {
         aria-expanded={isOpen}
         title={isOpen ? (isVi ? 'Thu gọn' : 'Minimize') : title}
       >
-        {isOpen ? <X className="h-6 w-6" strokeWidth={2} aria-hidden /> : <Bot className="h-7 w-7" strokeWidth={2} aria-hidden />}
+        {isOpen ? (
+          <X className="h-6 w-6" strokeWidth={2} aria-hidden />
+        ) : (
+          <Bot className="h-7 w-7" strokeWidth={2} aria-hidden />
+        )}
       </button>
     </div>
   );

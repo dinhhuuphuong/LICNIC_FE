@@ -168,14 +168,6 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
               >
                 {medicalRecordsLabel}
               </Link>
-              <Link
-                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                to={ROUTES.blogPostsManage}
-                role="menuitem"
-                onClick={() => setIsPopoverOpen(false)}
-              >
-                {blogPostsManageLabel}
-              </Link>
             </>
           )}
 
@@ -223,14 +215,6 @@ export function HeaderAuthActions({ loginLabel, registerLabel }: HeaderAuthActio
                 onClick={() => setIsPopoverOpen(false)}
               >
                 {doctorAppointmentsLabel}
-              </Link>
-              <Link
-                className="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                to={ROUTES.blogPostsManage}
-                role="menuitem"
-                onClick={() => setIsPopoverOpen(false)}
-              >
-                {blogPostsManageLabel}
               </Link>
             </>
           )}
